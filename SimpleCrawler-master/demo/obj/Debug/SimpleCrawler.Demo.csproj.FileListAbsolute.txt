@@ -1,0 +1,15 @@
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.exe
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.pdb
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.dll
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.pdb
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.exe
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.exe
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.csprojResolveAssemblyReference.cache
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.exe
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\HtmlAgilityPack.dll

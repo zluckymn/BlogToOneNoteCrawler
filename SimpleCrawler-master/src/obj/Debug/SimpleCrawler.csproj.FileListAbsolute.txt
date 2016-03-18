@@ -1,0 +1,9 @@
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.dll
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.pdb
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.dll
+C:\Users\Administrator\Desktop\SimpleCrawler-master\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.pdb
