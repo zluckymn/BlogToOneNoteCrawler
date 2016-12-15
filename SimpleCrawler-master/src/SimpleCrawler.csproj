@@ -30,13 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SuperWebClient">
+      <HintPath>..\demo\library\SuperWebClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Toolslib">
+      <HintPath>..\demo\library\Toolslib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddUrlEventArgs.cs" />
@@ -47,8 +54,12 @@
     <Compile Include="CrawlSettings.cs" />
     <Compile Include="CrawlStatus.cs" />
     <Compile Include="DataReceivedEventArgs.cs" />
+    <Compile Include="HttpHelper.cs" />
+    <Compile Include="LoginAccount.cs" />
+    <Compile Include="PassGeetestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecurityQueue.cs" />
+    <Compile Include="IPProxy.cs" />
     <Compile Include="UrlInfo.cs" />
     <Compile Include="UrlQueue.cs" />
   </ItemGroup>

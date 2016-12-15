@@ -19,25 +19,66 @@ namespace SimpleCrawler.Demo
     using HtmlAgilityPack;
     using System.Text.RegularExpressions;
     using System.Collections.Generic;
+    using System.Drawing;
+    using System.Net;
+    using System.IO.Compression;
+    using System.Web;
+    using Yinhe.ProcessingCenter;
+    using MongoDB.Bson;
+    using Yinhe.ProcessingCenter.DataRule;
+    using MongoDB.Driver.Builders;
+    using System.Collections;
+    using System.Threading.Tasks;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// The program.
     /// </summary>
-    internal class Program
+    internal partial class Program
     {
         #region Static Fields
 
         /// <summary>
         /// The settings.
         /// </summary>
+     
+        private static string connStr = "mongodb://sa:dba@59.61.72.34/SimpleCrawler";
+        private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
+        // private static string connStr = "mongodb://sa:dba@59.61.72.34/Shared";
+        static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
         private static readonly CrawlSettings Settings = new CrawlSettings();
-
         /// <summary>
         /// The filter.
         /// 关于使用 Bloom 算法去除重复 URL：http://www.cnblogs.com/heaad/archive/2011/01/02/1924195.html
         /// </summary>
         private static BloomFilter<string> filter;
+      
         private static List<string> urlFilterKeyWord = new List<string>();
+        private static ISimpleCrawler simpleCrawler = null;
+        static SecurityQueue<StorageData> DBUpdateQueue  ;
+        #endregion
+        #region 控制台关闭代理
+        public delegate bool ControlCtrlDelegate(int CtrlType);
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleCtrlHandler(ControlCtrlDelegate HandlerRoutine, bool Add);
+
+        static ControlCtrlDelegate newDelegate = new ControlCtrlDelegate(HandlerRoutine);
+
+        public static bool HandlerRoutine(int CtrlType)
+        {
+            switch (CtrlType)
+            {
+                case 0:
+                    Console.WriteLine("0工具被强制关闭"); //Ctrl+C关闭
+                    SaveUrlQueue();
+                    break;
+                case 2:
+                    Console.WriteLine("2工具被强制关闭");//按控制台关闭按钮关闭
+                    SaveUrlQueue();
+                    break;
+            }
+            return false;
+        }
         #endregion
 
         #region Methods
@@ -50,27 +91,29 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void Main(string[] args)
         {
-             filter = new BloomFilter<string>(200000);
-           
-            const string CityName = "beijing";
-         
-         
-                // 设置种子地址
-                 //Settings.SeedsAddress.Add(string.Format("http://jobs.zhaopin.com/{0}", CityName));
-                 // Settings.SeedsAddress.Add(string.Format("http://www.fzhouse.com.cn:7002/result_new.asp"));
-          
 
+            
+            filter = new BloomFilter<string>(5000000);
+            //LandFangUserUpdateCrawler,LandFangCrawler  
+            //SimpleCrawler.Demo.LandFangUserUpdateCrawler 通过模拟登陆更新*号数据
+            //LandFangCityRegionCrawler 获取城市区县市的guidCode对应
+            //LandFangCityRegionUpdateCrawler 更新交易状态与区县
+            //QiXinEnterpriseCrawler  启信爬取对应 企业与guid
+            Console.WriteLine(connStr);
+            simpleCrawler = SimpleCrawlerFactory.Instance.Create("SimpleCrawler.Demo.LandFangCityRegionEXUpdateCrawler", Settings, filter, dataop);
+            
+            //const string CityName = "beijing";
+            // 设置种子地址 需要添加布隆过滤种子地址，防止重新2次读取种子地址
+            //Settings.SeedsAddress.Add(string.Format("http://jobs.zhaopin.com/{0}", CityName));
+            // Settings.SeedsAddress.Add(string.Format("http://www.fzhouse.com.cn:7002/result_new.asp"));
             // 设置 URL 关键字
             //Settings.HrefKeywords.Add(string.Format("/{0}/bj", CityName));
             //Settings.HrefKeywords.Add(string.Format("/{0}/sj", CityName));
-
-           
-
             //Settings.HrefKeywords.Add(string.Format("building.asp?ProjectID="));
             //Settings.HrefKeywords.Add(string.Format("result_new"));
             // 设置爬取线程个数
-            Settings.ThreadCount = 5;
-            // Settings.ThreadCount = 1;
+            //Settings.ThreadCount = 5;
+            //Settings.ThreadCount =1;
             // 设置爬取深度
             Settings.Depth = 27;
 
@@ -91,19 +134,26 @@ namespace SimpleCrawler.Demo
             // settings.Timeout 按照自己的要求确定超时时间
 
             // 设置用于过滤的正则表达式
-            // settings.RegularFilterExpressions.Add("");
-
+            // settings.RegularFilterExpressions.Add("http://land.fang.com/market/a0a95a6f-43d4-4b59-a948-d48f21a4e468.html");
+            //代理ip模式
+            //Settings.IPProxyList = new List<IPProxy>();
+            //var ipProxyList = dataop.FindAllByQuery("IPProxy", Query.NE("status", "1")).ToList();
+            //Settings.IPProxyList.AddRange(ipProxyList.Select(c => new IPProxy(c.Text("ip"))));
+            // Settings.IPProxyList.Add(new IPProxy("31.168.236.236:8080")); 
             //云风Bloginit初始化
-            //YunFengBlogInit();
-            JGZFBlogInit();
+            // fang99Init();
+            // JGZFBlogInit();
+            simpleCrawler.SettingInit();
             var master = new CrawlMaster(Settings);
             master.AddUrlEvent += MasterAddUrlEvent;
             master.DataReceivedEvent += MasterDataReceivedEvent;
+            master.CrawlErrorEvent += CrawlErrorEvent;
             master.Crawl();
-            //Console.WriteLine("遍历结束");
+            // Console.WriteLine("遍历结束");
             Console.ReadKey();
         }
 
+        
         /// <summary>
         /// The master add url event.
         /// </summary>
@@ -115,7 +165,9 @@ namespace SimpleCrawler.Demo
         /// </returns>
         private static bool MasterAddUrlEvent(AddUrlEventArgs args)
         {
-            if (urlFilterKeyWord.Any(c => args.Url.Contains(c))) return false;//url过滤
+            //符合条件的url
+            //if (urlFilterKeyWord.Any(c => args.Url.Contains(c))) return false;//url过滤
+            if (!simpleCrawler.CanAddUrl(args)) return false;
             if (!filter.Contains(args.Url))
             {
                 filter.Add(args.Url);
@@ -134,144 +186,310 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void MasterDataReceivedEvent(DataReceivedEventArgs args)
         {
-
-
+ 
             // 在此处解析页面，可以用类似于 HtmlAgilityPack（页面解析组件）的东东、也可以用正则表达式、还可以自己进行字符串分析
-
-            //云风blog
-            var parseHtml = JGZFBlogProcess(args);
-            if(!string.IsNullOrEmpty(parseHtml))
+          try
             {
-                SendOneNote(parseHtml, args.Url, "blog");
+                Console.WriteLine(string.Format("当前处理：{0} ip:{1}", UrlQueue.Instance.Count,Settings.curIPProxy!=null? Settings.curIPProxy.IP:"localhost"));
+                //进行ip限定处理,返回IP是否被限制了
+                if (simpleCrawler.IPLimitProcess(args))
+                {
+                    IPInvalidProcess(args.IpProx);
+                    if (Settings.IgnoreFailUrl) { 
+                      UrlQueue.Instance.EnQueue(new UrlInfo(args.Url));
+                    }
+                    Console.WriteLine(string.Format("当前：{0}被IPLimitProcess判定为IP失效页面", UrlQueue.Instance.Count));
+                }
+                else
+                {
+                   
+                    simpleCrawler.DataReceive(args);
+                    if (!Settings.IgnoreSucceedUrlToDB) { 
+                    // Console.WriteLine("{0}处理结束", args.Url);
+                    //成功处理后添加当前url到保存队列
+                    var curIp = args.IpProx != null ? args.IpProx.IP : string.Empty;
+                    AddSucceedUrl(args.Url, curIp, simpleCrawler.DataTableNameURL);
+                        // //开始保存数据库进程，后续考虑执行一段时间后进行更新，或者超过一定数量进行更新
+                    }
+                    StartDBChangeProcess();
+                }
+
+                if (UrlQueue.Instance.Count <= 0)
+                {
+                    Console.WriteLine("处理完毕");
+                    Environment.Exit(0);
+                }
+                //YunFengBlogReceive(args);
+                // fang99DataReceive(args);
+                
+            
+            }
+            catch (NullReferenceException ex)//未将对象引用到对象实例，将当前连接所使用的Ip进行设置为无效,IP被禁用
+            {
+                 IPInvalidProcess(args.IpProx);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(string.Format("{0}出错{1}", args.Url, ex.Message));
             }
            
+
         }
-
-
-        #region 结构之法
         /// <summary>
-        /// blog初始化设置
+        /// ip无效处理
         /// </summary>
-        private static void JGZFBlogInit()
+        private static void IPInvalidProcess(IPProxy ipproxy)
         {
-            Settings.SeedsAddress.Add(string.Format("http://blog.csdn.net/v_JULY_v/article/list/7"));
+            Settings.SetUnviableIP(ipproxy);//设置为无效代理
             
-            var title = string.Format("结构之法blog");
-            SendOneNote(title, "http://blog.csdn.net/v_JULY_v/article/list/7", "blog");
-            Settings.HrefKeywords.Add(string.Format("/v_july_v/article/list"));
-            Settings.HrefKeywords.Add(string.Format("/v_JULY_v/article/list"));
-            Settings.HrefKeywords.Add(string.Format("v_july_v/article/details"));
-            urlFilterKeyWord.Add("#comments");//过滤url关键字
-            urlFilterKeyWord.Add("#trackback");
-        }
-
-        /// <summary>
-        /// 云风blog爬取
-        /// </summary>
-        /// <param name="args"></param>
-        private static string JGZFBlogProcess(DataReceivedEventArgs args)
-        {
-            if (!args.Url.Contains("details")) return string.Empty;
-            // 在此处解析页面，可以用类似于 HtmlAgilityPack（页面解析组件）的东东、也可以用正则表达式、还可以自己进行字符串分析
-         
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(args.Html);
-
-            //var parseHtml = htmlDoc.DocumentNode.InnerText;
-            var parseHtml = string.Empty;
-            var content = htmlDoc.GetElementbyId("article_content");
-             if(content!=null)
-            { parseHtml= content.InnerText; }
-
-            parseHtml = parseHtml.Replace("<", "").Replace(">", "");
-            //var url = args.Url;
-            return parseHtml;
-
-        }
-        #endregion
-
-        #region 云风Blog爬取初始化
-        /// <summary>
-        /// blog初始化设置
-        /// </summary>
-        private static void YunFengBlogInit()
-        {
-            Settings.SeedsAddress.Add(string.Format("http://blog.codingnow.com/"));
-            for (var startYear = 2016; startYear <= 2016; startYear++)
-            {
-                var title = string.Format("云风blog{0}", startYear);
-                SendOneNote(title, string.Format("blog.codingnow.com/{0}", startYear),"blog");
-                Settings.HrefKeywords.Add(string.Format("blog.codingnow.com/{0}", startYear));
+            simpleCrawler.SimulateLogin();//模拟登陆
+            if (ipproxy != null) {
+             
+                DBChangeQueue.Instance.EnQueue(new StorageData()
+                {
+                    Name = "IPProxy",
+                    Document = new BsonDocument().Add(string.Format("{0}_status", simpleCrawler.DataTableName), "1"),
+                    Query = Query.EQ("ip", ipproxy.IP)
+                });
+                StartDBChangeProcess();
             }
-            urlFilterKeyWord.Add("#comments");//过滤url关键字
-            urlFilterKeyWord.Add("#trackback");
+
         }
 
         /// <summary>
-        /// 云风blog爬取
+        /// 对需要更新的队列数据更新操作进行批量处理,可考虑异步执行
         /// </summary>
-        /// <param name="args"></param>
-        private static string YunFengBlogProcess(DataReceivedEventArgs args)
+        private static void StartDBChangeProcess()
         {
-            if ("http://blog.codingnow.com/" == args.Url) return string.Empty ;
-            // 在此处解析页面，可以用类似于 HtmlAgilityPack（页面解析组件）的东东、也可以用正则表达式、还可以自己进行字符串分析
-            // if ("http://blog.codingnow.com/2005/12/aiooossaeeeoeoee.html#comments" != args.Url) return;
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(args.Html);
+            StartDBChangeProcessQuick();
+                return;
+             var limitCount = Settings.DBSaveCountLimit;
+            if (limitCount <= 0)
+            {
+                limitCount = 20;
+            }
+             if (UrlQueue.Instance.Count >= 10&&DBChangeQueue.Instance.Count<= limitCount) return;//待处理rul队列大于10并且更新队列小与10进行处理，批量更新
+            //    var task = new Task(() =>
+            //{
+                    List<StorageData> updateList = new List<StorageData>();
+                    while (DBChangeQueue.Instance.Count > 0&& updateList.Count()<= limitCount)
+                    {
+                        var curStorage = DBChangeQueue.Instance.DeQueue();
+                        if (curStorage != null)
+                        {
+                            updateList.Add(curStorage);
+                        }
+                    }
+                    if (updateList.Count() > 0)
+                    {
+                        var result = dataop.BatchSaveStorageData(updateList);
+                        if (result.Status != Status.Successful)//出错进行重新添加处理
+                        {
+                            Console.WriteLine(string.Format("数据插入失败当前{0}个!", updateList.Count()));
+                            foreach (var storageData in updateList)
+                            {
+                                DBChangeQueue.Instance.EnQueue(storageData);
+                            }
+                        }
+                    }
+                    ///队列中还有
+                    if (DBChangeQueue.Instance.Count > 0)
+                    {
+                        StartDBChangeProcess();
+                    }
+           // }
+            //);
+            //task.Start();
+       }
 
-            var parseHtml = htmlDoc.DocumentNode.InnerText;
-            parseHtml = Regex.Replace(parseHtml, @"<!--[\s\S]*?-->", "");
-            parseHtml = Regex.Replace(parseHtml, @"</form>[\s\S]*?</form>", "");
-            parseHtml = parseHtml.Replace("</form>", "").Replace("云风的 BLOG:", "");
+
+
+        private static void StartDBChangeProcessQuick()
+        {
+            var result = new InvokeResult();
+            List<StorageData> updateList = new List<StorageData>();
+            var limitCount = Settings.DBSaveCountLimit;
+            //if (limitCount <= 0)
+            //{
+            //    limitCount = 5;
+            //}
+           // if (UrlQueue.Instance.Count >= 10 && DBChangeQueue.Instance.Count < limitCount) return;
+             if(DBChangeQueue.Instance.Count>0)
+            {
+
+                var temp = DBChangeQueue.Instance.DeQueue();
+                if (temp != null)
+                {
+                    var insertDoc = temp.Document;
+
+                    switch (temp.Type)
+                    {
+                        case StorageType.Insert:
+                            if (insertDoc.Contains("createDate") == false) insertDoc.Add("createDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));      //添加时,默认增加创建时间
+                            if (insertDoc.Contains("createUserId") == false) insertDoc.Add("createUserId", "1");
+                            //更新用户
+                            result = _mongoDBOp.Save(temp.Name, insertDoc); ;
+                            break;
+                        case StorageType.Update:
+                            // insertDoc.Set("updateDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));      //更新时间
+                            // insertDoc.Set("updateUserId", "1");
+                            result = _mongoDBOp.Save(temp.Name, temp.Query, insertDoc);
+                            break;
+                        case StorageType.Delete:
+                            result = _mongoDBOp.Delete(temp.Name, temp.Query);
+                            break;
+                    }
+                    //logInfo1.Info("");
+                    if (result.Status == Status.Failed) throw new Exception(result.Message);
+
+                }
+
+            }
+
+            if (DBChangeQueue.Instance.Count > 0)
+            {
+                StartDBChangeProcessQuick();
+            }
             
-            //var url = args.Url;
-            return parseHtml;
-
         }
-        #endregion
+        /// <summary>
+        /// 对成功处理后的url进行保存,以小写保证防止大小写
+        /// </summary>
+        private static void AddSucceedUrl(string url,string ip,string DataTableName)//保存
+        {
+            var urlBson = new BsonDocument().Add("url", url.ToLower()).Add("ip", ip);
+            DBChangeQueue.Instance.EnQueue(new StorageData() {  Document=urlBson, Name=DataTableName,Type=StorageType.Insert});
+        }
+
+
+        /// <summary>
+        /// 获取url对应查询参数
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        private static string GetQueryString(string url)
+        {
+            var queryStrIndex = url.IndexOf("?");
+            if (queryStrIndex != -1)
+            {
+                var queryStr = url.Substring(queryStrIndex + 1, url.Length - queryStrIndex - 1);
+                return queryStr;
+            }
+            return string.Empty;
+        }
+         
         /// <summary>
         /// 发送至我的oneNote
         /// </summary>
         /// <param name="html"></param>
-        private static void SendOneNote(string html,string url,string pageName)
+        private static void SendOneNote(string html, string url, string pageName)
         {
-               
-                var ls = new Application();
-                string ls_return = "";
-                var pageId = string.Empty;
 
-                string notebookXml;
-                ls.GetHierarchy(null, HierarchyScope.hsPages, out notebookXml);
-                string existingPageId = string.Empty;
-                var doc = XDocument.Parse(notebookXml);
-                var ns = doc.Root.Name.Namespace;
-                var session = doc.Descendants(ns + "Section").Where(n => n.Attribute("name").Value == pageName).FirstOrDefault();
-                if (session != null)
+            var ls = new Application();
+            string ls_return = "";
+            var pageId = string.Empty;
+
+            string notebookXml;
+            ls.GetHierarchy(null, HierarchyScope.hsPages, out notebookXml);
+            string existingPageId = string.Empty;
+            var doc = XDocument.Parse(notebookXml);
+            var ns = doc.Root.Name.Namespace;
+            var session = doc.Descendants(ns + "Section").Where(n => n.Attribute("name").Value == pageName).FirstOrDefault();
+            if (session != null)
+            {
+                existingPageId = session.Attribute("ID").Value;
+                ls.CreateNewPage(existingPageId, out pageId, NewPageStyle.npsDefault);
+                var page = new XDocument(new XElement(ns + "Page",
+                                          new XElement(ns + "Outline",
+                                            new XElement(ns + "OEChildren",
+                                              new XElement(ns + "OE",
+                                                new XElement(ns + "T",
+                                                  new XCData(html + url)))))));
+                page.Root.SetAttributeValue("ID", pageId);
+                try
                 {
-                    existingPageId = session.Attribute("ID").Value;
-                    ls.CreateNewPage(existingPageId, out pageId, NewPageStyle.npsDefault);
-                    var page = new XDocument(new XElement(ns + "Page",
-                                              new XElement(ns + "Outline",
-                                                new XElement(ns + "OEChildren",
-                                                  new XElement(ns + "OE",
-                                                    new XElement(ns + "T",
-                                                      new XCData(html + url)))))));
-                    page.Root.SetAttributeValue("ID", pageId);
-                    try
-                    {
-                        ls.UpdatePageContent(page.ToString(), DateTime.MinValue);
-                         
+                    ls.UpdatePageContent(page.ToString(), DateTime.MinValue);
 
-                    }
-                    catch (Exception ex)
-                    {
-                       ls.DeleteHierarchy(pageId, DateTime.MinValue);
-                        Console.WriteLine(url+ex.Message);
-                    }
+
                 }
-            
+                catch (Exception ex)
+                {
+                    ls.DeleteHierarchy(pageId, DateTime.MinValue);
+                    Console.WriteLine(url + ex.Message);
+                }
+            }
+
 
         }
         #endregion
+
+
+        /// <summary>
+        /// 异常捕获
+        /// </summary>
+        /// <param name="args"></param>
+        private static void CrawlErrorEvent(CrawlErrorEventArgs args)
+        {
+          
+
+            simpleCrawler.ErrorReceive(args);
+
+            if (args.needChangeIp)//限制无法访问的IP
+            {
+                IPInvalidProcess(args.IpProx);
+            }
+
+            var nextDepth = args.Depth + Settings.Depth / 10;
+            //超时考虑重新添加,防止无限循环
+            if (args.needTryAgain&&Settings.IgnoreFailUrl==false)
+            {
+                if (args.Depth <= Settings.Depth)
+                {
+                    UrlQueue.Instance.EnQueue(new UrlInfo(args.Url) { Depth = nextDepth });
+                }
+                Console.WriteLine(string.Format("{0}重试深度{1}{2}", args.Exception.Message, nextDepth, args.IpProx!=null? args.IpProx.IP:string.Empty));
+            }
+           
+
+            Console.WriteLine(args.Exception.Message);
+        }
+
+
+
+        /// <summary>
+        /// 序列化当前队列
+        /// </summary>
+        public static void SaveUrlQueue()
+        {
+            List<string> QueueList = new List<string>();
+            if (UrlQueue.Instance.Count > 0)
+            {
+                while (UrlQueue.Instance.Count > 0)
+                {
+                    QueueList.Add(UrlQueue.Instance.DeQueue().UrlString);
+                }
+                SerializerXml<List<string>> serial = new SerializerXml<List<string>>(QueueList);
+                serial.BuildXml(string.Format("UrlQueue_{0}.xml", simpleCrawler.DataTableName));
+            }
+        }
+        /// <summary>
+        /// 反序列化当前队列
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> LoadUrlQueue()
+        {
+            var fileName = string.Format("UrlQueue_{0}.xml", simpleCrawler.DataTableName);
+            List<string> QueueList = new List<string>();
+            if (File.Exists(fileName)) { 
+                SerializerXml<List<string>> serial = new SerializerXml<List<string>>(QueueList);
+                QueueList = serial.BuildObject(fileName);
+                if (QueueList.Count() > 0)
+                {
+                    QueueList.ForEach(c => { UrlQueue.Instance.EnQueue(new UrlInfo(c)); });
+
+                }
+            }
+            return QueueList;
+        }
     }
 }

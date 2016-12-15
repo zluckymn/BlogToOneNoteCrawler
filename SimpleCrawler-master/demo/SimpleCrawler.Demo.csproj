@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SimpleCrawler.Demo</RootNamespace>
     <AssemblyName>SimpleCrawler.Demo</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HtmlAgilityPack">
@@ -39,23 +42,80 @@
       <HintPath>..\..\..\Library\Interop.Microsoft.Office.Interop.OneNote.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\..\..\..\115Box\A3\packages\MongoDriver\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\..\..\..\115Box\A3\packages\MongoDriver\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>library\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SuperWebClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>library\SuperWebClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Toolslib">
+      <HintPath>library\Toolslib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountQueue.cs" />
+    <Compile Include="Cookie\FullWebBrowserCookie.cs" />
+    <Compile Include="Cookie\INativeMethods.cs" />
+    <Compile Include="DBChangeQueue.cs" />
+    <Compile Include="Fang99\Fang99Crawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionEXCrawler.cs" />
+    <Compile Include="LandFang\LandFangVipUserUpdateCrawler.cs" />
+    <Compile Include="LandFang\LandFangXYInfoUpdateEXCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionEXUpdateCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionUpdateCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionCrawler.cs" />
+    <Compile Include="LandFang\LandFangUserUpdateCrawler.cs" />
+    <Compile Include="LandFang\LandFangCrawler.cs" />
+    <Compile Include="ISimpleCrawler.cs" />
+    <Compile Include="csdnProcess.cs" />
+    <Compile Include="fang99Process.cs" />
+    <Compile Include="HttpCookieHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QCC\QCCEnterpriseCrawler_FUJIAN.cs" />
+    <Compile Include="QCC\QCCEnterpriseCrawler_Province.cs" />
+    <Compile Include="QCC\QCCEnterpriseCrawler_FOSHAN.cs" />
+    <Compile Include="QCC\QCCEnterpriseDetailInfoGuidAdd.cs" />
+    <Compile Include="QCC\QCCEnterpriseDetailInfoAnalyse.cs" />
+    <Compile Include="QCC\QCCEnterpriseDetailInfoCrawler.cs" />
+    <Compile Include="QiXin\QiXinEnterpriseDetailInfoCrawler.cs" />
+    <Compile Include="QiXin\QiXinEnterpriseCrawler.cs" />
+    <Compile Include="RegisterAddEnterprise\RegisterEnterpriseAddInfoCrawler.cs" />
+    <Compile Include="RuiLIZiXun\RuiLiZiXunCrawler.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\115Box\A3\Yinhe.ProcessingCenter\Yinhe.ProcessingCenter.csproj">
+      <Project>{09b5bb08-c041-466f-8aaa-0e4c49747b6b}</Project>
+      <Name>Yinhe.ProcessingCenter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\115Box\A3\Yinhe.WebReference\Yinhe.WebReference.csproj">
+      <Project>{8d2934a3-8ce8-4943-a8a3-3353f8df030b}</Project>
+      <Name>Yinhe.WebReference</Name>
+    </ProjectReference>
     <ProjectReference Include="..\src\SimpleCrawler.csproj">
       <Project>{67f07677-22a9-4176-b549-28f1448b0448}</Project>
       <Name>SimpleCrawler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

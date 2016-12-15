@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+<targets>
+  <target name="console" xsi:type="ColoredConsole"
+            layout="${date:format=HH\:mm\:ss}|${level}|${stacktrace}|${message}"/>
+  <target name="file" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log.txt" 
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Trace" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Trace.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Debug" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Debug.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Info" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Info.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Warn" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Warn.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Error" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Error.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+  <target name="log_Fatal" xsi:type="File" fileName="${basedir}/.log/${date:format=yyyyMMdd}/log_Fatal.txt"
+            layout="[${date:format=yyyy-MM-dd HH\:mm\:ss}][${level}] ${message} ${exception}"/>
+</targets>
+<rules>
+    <logger name="*" minlevel="debug" writeTo="file,console"></logger>
+  <logger name="*" levels="Trace" writeTo="log_Trace"></logger>
+  <logger name="*" levels="Debug" writeTo="log_Debug"></logger>
+  <logger name="*" levels="Info" writeTo="log_Info"></logger>
+  <logger name="*" levels="Warn" writeTo="log_Warn"></logger>
+  <logger name="*" levels="Error" writeTo="log_Error"></logger>
+  <logger name="*" levels="Fatal" writeTo="log_Fatal"></logger>
+</rules>
+</nlog>
+

@@ -41,6 +41,15 @@ namespace SimpleCrawler
         /// </summary>
         public string Url { get; set; }
 
+        /// <summary>
+        /// Gets or sets the url.
+        /// </summary>
+        public IPProxy IpProx { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsException.
+        /// </summary>
+        public bool IsException { get; set; }
         #endregion
     }
 }

@@ -11,6 +11,8 @@ namespace SimpleCrawler
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
 
     /// <summary>
     /// The crawl settings.
@@ -40,16 +42,22 @@ namespace SimpleCrawler
         /// </summary>
         private int timeout = 15000;
 
+        private string _loginAccount = string.Empty;
+      
+       
         /// <summary>
         /// The user agent.
         /// </summary>
-        private string userAgent = 
+        private string userAgent =
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11";
 
         #endregion
 
         #region Constructors and Destructors
-
+        /// <summary>
+        /// 当前使用的ip
+        /// </summary>
+        public IPProxy curIPProxy { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="CrawlSettings"/> class.
         /// </summary>
@@ -67,12 +75,68 @@ namespace SimpleCrawler
         #endregion
 
         #region Public Properties
+        /// <summary>
+        /// ipProxy list
+        /// </summary>
+        public List<IPProxy> IPProxyList { get; set; }
+        /// <summary>
+        /// 达到多少进行保存
+        /// </summary>
+        public int DBSaveCountLimit { get; set; }
 
+        // <summary>
+        /// 是否立即存储
+        /// </summary>
+        public int DBSaveImediate { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether auto speed limit.
         /// </summary>
         public bool AutoSpeedLimit { get; set; }
 
+        /// <summary>
+        /// 设定随机间隔最大毫秒5000
+        /// </summary>
+        public int AutoSpeedLimitMaxMSecond { get; set; }
+        /// <summary>
+        /// 设定随机间隔最小毫秒1000
+        /// </summary>
+        public int AutoSpeedLimitMinMSecond { get; set; }
+        /// <summary>
+        /// 上一次成功获取的时间
+        /// </summary>
+        public DateTime LastAvaiableTokenTime { get; set; }
+        /// <summary>
+        /// 上一次成功获取的时间
+        /// </summary>
+        public DateTime LastAvaiableTime { get; set; }
+        /// <summary>
+        /// 上一次成功获取的时间
+        /// </summary>
+        public DateTime LastLoginTime { get; set; }
+
+        /// 当前url
+        /// </summary>
+        public string CurUrl { get; set; }
+
+        /// 可用的访问token
+        /// </summary>
+        public string sign { get; set; }
+        /// 可用的访问token
+        /// </summary>
+        public string timestamp { get; set; }
+        /// 可用的访问token
+        /// </summary>
+        public string AppId { get; set; }
+        /// 可用的访问token
+        /// </summary>
+        public string DeviceId { get; set; }
+        /// 可用的访问token
+        /// </summary>
+        public string AccessToken { get; set; }
+
+        /// 可用的访问refleshToken
+        /// </summary>
+        public string RefleshToken { get; set; }
         /// <summary>
         /// Gets or sets the depth.
         /// </summary>
@@ -175,6 +239,133 @@ namespace SimpleCrawler
             set
             {
                 this.userAgent = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the user agent.
+        /// </summary>
+        public string LoginAccount
+        {
+            get
+            {
+                return this._loginAccount;
+            }
+
+            set
+            {
+                this._loginAccount = value;
+            }
+        }
+
+
+
+        List<SimpleCrawler.LoginAccount> _curAccountList = new List<SimpleCrawler.LoginAccount>();
+        /// <summary>
+        /// Gets or sets the AllAccountList agent.
+        /// </summary>
+        public List<SimpleCrawler.LoginAccount> AllAccountList
+        {
+            get
+            {
+                return this._curAccountList;
+            }
+
+            set
+            {
+                this._curAccountList = value;
+            }
+        }
+        /// <summary>
+        /// 当前webip代理
+        /// </summary>
+        public WebProxy CurWebProxy { get; set; }
+
+        /// <summary>
+        /// Gets  the simulateCookies.
+        /// </summary>
+        public string SimulateCookies { get;   set; }
+        /// <summary>
+        /// Gets  the ContentType.
+        /// </summary>
+        public string ContentType { get; set; }
+        /// <summary>
+        /// Gets  the Accept.
+        /// </summary>
+        public string Accept { get; set; }
+
+
+        /// <summary>
+        /// Gets  the IgnoreSucceedUrlToDB.是否不添加到数据库
+        /// </summary>
+        public bool IgnoreSucceedUrlToDB { get; set; }
+
+        /// <summary>
+        /// Gets  the IgnoreSucceedUrlToDB.是否不添加到数据库
+        /// </summary>
+        public int MaxReTryTimes { get; set; }
+
+        /// <summary>
+        ///每个账号最大可用爬取值
+        /// </summary>
+        public int MaxAccountCrawlerCount { get; set; }
+
+        /// <summary>
+        /// 失败的url是否尝试重新进行
+        /// </summary>
+        public bool IgnoreFailUrl { get; set; }
+        /// <summary>
+        /// 失败的url是否尝试重新进行
+        /// </summary>
+        public LibCurlNet.HttpInput hi { get; set; }
+        /// <summary>
+        /// 是否使用 UseSuperWebClient 
+        /// </summary>
+        public bool UseSuperWebClient { get; set; }
+        /// <summary>
+        /// 失败的url是否尝试重新进行
+        /// </summary>
+        public bool neeedChangeAccount { get; set; }
+        /// 设置为无效ip
+        /// </summary>
+        /// <param name="curIPProxy"></param>
+        public void SetUnviableIP(IPProxy _curIPProxy)
+        {
+            if (_curIPProxy != null)
+            {
+                var hitIpObj = IPProxyList.Where(c => c.IP == _curIPProxy.IP && c.Port == _curIPProxy.Port&&c.Unavaiable==false).FirstOrDefault();
+                if (hitIpObj != null)
+                {
+                    hitIpObj.Unavaiable = true;
+                    curIPProxy = null;
+                    GetIPProxy();
+                }
+                 
+            }
+        }
+        /// <summary>
+        /// 随机获取一个IPProxy
+        /// </summary>
+        /// <returns></returns>
+        public IPProxy GetIPProxy()
+        {
+            if (IPProxyList == null|| IPProxyList.Count()<=0) return null;
+                if (curIPProxy != null && curIPProxy.Unavaiable == false)
+            {
+                return curIPProxy;
+            }
+            else { 
+              
+                //添加代理ip列表,随机挑选ip
+                var avaiableIpList =  IPProxyList.Where(c => c.Unavaiable == false).ToList();
+                if (avaiableIpList.Count() > 0)
+                {
+                    var rnd = new Random();
+                    var index = rnd.Next(0, avaiableIpList.Count() - 1);
+                    curIPProxy = avaiableIpList[index];
+                     return curIPProxy;
+                }
+                return null;
             }
         }
 

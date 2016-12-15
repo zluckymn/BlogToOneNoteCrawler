@@ -57,6 +57,11 @@ namespace SimpleCrawler
         }
 
         /// <summary>
+        /// Gets the url string.
+        /// </summary>
+        public string PostData { get; set; }
+         
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         public CrawlStatus Status { get; set; }

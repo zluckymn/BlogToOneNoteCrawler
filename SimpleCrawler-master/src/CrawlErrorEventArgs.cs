@@ -36,6 +36,24 @@ namespace SimpleCrawler
         /// </summary>
         public string Url { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Depth.
+        /// </summary>
+        public int Depth { get; set; }
+        /// <summary>
+        /// Gets or sets the IpProx.
+        /// </summary>
+        public IPProxy IpProx { get; set; }
+        /// <summary>
+        /// Gets or sets the IpProx.
+        /// </summary>
+        public bool needTryAgain { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the needChangeIp
+        /// </summary>
+        public bool needChangeIp { get; set; }
         #endregion
     }
 }
