@@ -27,6 +27,7 @@ namespace SimpleCrawler
         /// </summary>
         private readonly HashFunction getHashSecondary;
 
+        
         /// <summary>
         /// The hash bits.
         /// </summary>
@@ -198,7 +199,7 @@ namespace SimpleCrawler
         #endregion
 
         #region Public Methods and Operators
-
+        private bool canAdd = true;
         /// <summary>
         /// The add.
         /// </summary>
@@ -207,13 +208,19 @@ namespace SimpleCrawler
         /// </param>
         public void Add(T item)
         {
-            int primaryHash = item.GetHashCode();
-            int secondaryHash = this.getHashSecondary(item);
+            if (canAdd == false) return;
+            try { 
+                int primaryHash = item.GetHashCode();
+                int secondaryHash = this.getHashSecondary(item);
 
-            for (int i = 0; i < this.hashFunctionCount; i++)
+                for (int i = 0; i < this.hashFunctionCount; i++)
+                {
+                    int hash = this.ComputeHash(primaryHash, secondaryHash, i);
+                    this.hashBits[hash] = true;
+                }
+            }catch(Exception ex)
             {
-                int hash = this.ComputeHash(primaryHash, secondaryHash, i);
-                this.hashBits[hash] = true;
+                canAdd = false;
             }
         }
 

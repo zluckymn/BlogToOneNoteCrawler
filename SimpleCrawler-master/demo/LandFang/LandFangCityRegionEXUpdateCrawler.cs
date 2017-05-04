@@ -17,15 +17,18 @@ using Yinhe.ProcessingCenter.DataRule;
 
 namespace SimpleCrawler.Demo
 {
-  
+    /// app 土地公告与土地预告
+    /// https://appapi.3g.fang.com/LandApp/LandNotice?count=20&page=1&mode=PushLand&wirelesscode=904e5fed8bef6df7c0fb79bc0e897ac4&r=6cFqC2ZmBQA%3D
+    /// https://appapi.3g.fang.com/LandApp/LandNotice?count=20&page=1&mode=PushLand&wirelesscode=904e5fed8bef6df7c0fb79bc0e897ac4&r=6cFqC2ZmBQA%3D
+    /// https://appapi.3g.fang.com/LandApp/MarketSearch?scity=%E5%8C%97%E4%BA%AC%E5%B8%82&imei=000000000000000&psize=20&ordertype=2&type=1&mode=json&pindex=2&ordername=landstartdate&messagename=search&wirelesscode=e72f6a278fd134dab78adbcde73c8341&r=kNLFpDufcFo%3D(北京)
     /// <summary>
     /// 用于地块地区获取,经过改程序跑完还是没有县市 表示该房子已经变更，或者不存在了,支持用户更新的地块更新
     /// </summary>
     public class LandFangCityRegionEXUpdateCrawler : ISimpleCrawler
     {
    
-        object lock_obj = new object();
-        //private   string connStr = "mongodb://sa:dba@59.61.72.34/WorkPlanManage";
+        object lock_obj = new object(); 
+        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>
@@ -103,8 +106,8 @@ namespace SimpleCrawler.Demo
             cityUrlList = dataop.FindAll(DataTableNameCity).ToList();//城市url
 
             //仙桃潜江天门神农架林区
-            var typeValue =0;//0地区，1所在地
-            var cityName = "江苏";//广州，西安,南京，佛山,武汉
+            var typeValue =1;//0地区，1所在地
+            var cityName = "南京";//苏州 郑州 合肥  武汉  天津 佛山 
             var placeType = string.Empty;
             var codeType = string.Empty;
             

@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yinhe.ProcessingCenter", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yinhe.WebReference", "..\..\..\115Box\A3\Yinhe.WebReference\Yinhe.WebReference.csproj", "{8D2934A3-8CE8-4943-A8A3-3353F8DF030B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebBrowser", "WebBrowser\WebBrowser.csproj", "{A899D051-CB66-401C-8C9D-96604878D222}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QCCWebBrowser", "QCCWebBrowser\QCCWebBrowser.csproj", "{C71A0474-7E8E-4210-BCE8-5C7A8970E767}"
 EndProject
 Global
@@ -55,14 +53,6 @@ Global
 		{8D2934A3-8CE8-4943-A8A3-3353F8DF030B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8D2934A3-8CE8-4943-A8A3-3353F8DF030B}.Release|x86.ActiveCfg = Release|Any CPU
 		{8D2934A3-8CE8-4943-A8A3-3353F8DF030B}.Release|x86.Build.0 = Release|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Debug|x86.Build.0 = Debug|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Release|x86.ActiveCfg = Release|Any CPU
-		{A899D051-CB66-401C-8C9D-96604878D222}.Release|x86.Build.0 = Release|Any CPU
 		{C71A0474-7E8E-4210-BCE8-5C7A8970E767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C71A0474-7E8E-4210-BCE8-5C7A8970E767}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C71A0474-7E8E-4210-BCE8-5C7A8970E767}.Debug|x86.ActiveCfg = Debug|Any CPU

@@ -54,6 +54,8 @@ namespace SimpleCrawler
         /// Gets or sets the needChangeIp
         /// </summary>
         public bool needChangeIp { get; set; }
+
+        public UrlInfo urlInfo { get; set; }
         #endregion
     }
 }

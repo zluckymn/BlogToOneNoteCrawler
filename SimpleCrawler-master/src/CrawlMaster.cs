@@ -411,6 +411,7 @@ namespace SimpleCrawler
 
                 UrlInfo urlInfo = UrlQueue.Instance.DeQueue();
 
+              
 
                 var curIPProxy = Settings.GetIPProxy();
                 try
@@ -423,20 +424,27 @@ namespace SimpleCrawler
                     // 1~5 秒随机间隔的自动限速
                     if (this.Settings.AutoSpeedLimit)
                     {
-                        var maxSecond = 5000;
-                        var inSecond = 1000;
-                        if (this.Settings.AutoSpeedLimitMinMSecond >= inSecond)
+                        try
                         {
-                            inSecond = this.Settings.AutoSpeedLimitMinMSecond;
+                            var maxSecond = 5000;
+                            var inSecond = 1000;
+                            if (this.Settings.AutoSpeedLimitMinMSecond >= inSecond)
+                            {
+                                inSecond = this.Settings.AutoSpeedLimitMinMSecond;
+                            }
+                            if (this.Settings.AutoSpeedLimitMaxMSecond >= maxSecond)
+                            {
+                                maxSecond = this.Settings.AutoSpeedLimitMaxMSecond;
+                            }
+
+                            int span = this.random.Next(inSecond, maxSecond);
+
+                            Thread.Sleep(span);
                         }
-                        if (this.Settings.AutoSpeedLimitMaxMSecond >= maxSecond)
+                        catch (Exception ex)
                         {
-                            maxSecond = this.Settings.AutoSpeedLimitMaxMSecond;
+                            throw new Exception("AutoSpeedLimit"+ex.Message);
                         }
-                      
-                        int span = this.random.Next(inSecond, maxSecond);
-                        
-                        Thread.Sleep(span);
                     }
                         string html = string.Empty;
                     if (Settings.UseSuperWebClient)
@@ -446,9 +454,12 @@ namespace SimpleCrawler
                     else { 
                          html = GetHttpResult(urlInfo);
                     }
-                    this.ParseLinks(urlInfo, html);
-
-                            if (this.DataReceivedEvent != null)
+                    if (!string.IsNullOrEmpty(html))
+                    {
+                        this.ParseLinks(urlInfo, html);
+                    }
+                     
+                    if (this.DataReceivedEvent != null)
                             {
                                 this.DataReceivedEvent(
                                     new DataReceivedEventArgs
@@ -456,7 +467,7 @@ namespace SimpleCrawler
                                         Url = urlInfo.UrlString,
                                         Depth = urlInfo.Depth,
                                         Html = html,
-                                        IpProx = curIPProxy
+                                        IpProx = curIPProxy,urlInfo=urlInfo
                                     });
                             }
 
@@ -470,7 +481,8 @@ namespace SimpleCrawler
                         Url = urlInfo.UrlString,
                         Depth = urlInfo.Depth,
                         Exception = webEx,
-                        IpProx = curIPProxy
+                        IpProx = curIPProxy,
+                        urlInfo = urlInfo
 
                     };
                     if (webEx.Status == WebExceptionStatus.Timeout || webEx.Status == WebExceptionStatus.ProtocolError || webEx.Message.Contains("远程服务器返回错误") || webEx.Message.Contains("网关"))
@@ -491,7 +503,7 @@ namespace SimpleCrawler
 
                 catch (Exception exception)
                 {
-                    var errorEV = new CrawlErrorEventArgs { Url = urlInfo.UrlString, Depth = urlInfo.Depth, Exception = exception, IpProx = curIPProxy };
+                    var errorEV = new CrawlErrorEventArgs { Url = urlInfo.UrlString, Depth = urlInfo.Depth, Exception = exception, IpProx = curIPProxy , urlInfo=urlInfo};
 
                     if (exception.Message.Contains("超时") || exception.Message.Contains("远程服务器返回错误"))
                     {
@@ -524,24 +536,87 @@ namespace SimpleCrawler
         }
         private string GetSupperHttpResult(UrlInfo urlInfo)
         {
-            var hi = Settings.hi;
-            hi.Url = urlInfo.UrlString;
-            if (!string.IsNullOrEmpty(urlInfo.PostData)) {
-                hi.PostData = urlInfo.PostData;
-             }
-             var ho = LibCurlNet.HttpManager.Instance.ProcessRequest(hi);
-             return ho.TxtData;
+
+            try
+            {
+               
+                #region 进行url替换
+                urlInfo = UrlInfoFix(urlInfo);
+                #endregion
+                var url = urlInfo.UrlString;
+                var hi = Settings.hi;
+                if (Settings.HeadSetDic != null)
+                {
+                    foreach (var key in Settings.HeadSetDic.Keys)
+                    {
+                        hi.HeaderSet(key, Settings.HeadSetDic[key]);
+                    }
+                }
+                if (!string.IsNullOrEmpty(urlInfo.Authorization))
+                {
+                    Settings.hi.HeaderSet("Authorization", urlInfo.Authorization);
+                }
+                hi.Url = url;
+                if (!string.IsNullOrEmpty(urlInfo.PostData))
+                {
+                    hi.PostData = urlInfo.PostData;
+                }
+
+                var ho = LibCurlNet.HttpManager.Instance.ProcessRequest(hi);
+
+                return ho.TxtData;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetSupperHttpResult" + ex.Message);
+            }
              
+        }
+        private UrlInfo UrlInfoFix(UrlInfo urlInfo)
+        {
+            #region 进行url替换
+            if (Settings.LandFangIUserId != 0)
+            {
+                var appChangeUrl = new LandFangAppHelper();
+                var fixUrl = appChangeUrl.FixIUserIdUrl(urlInfo.UrlString, Settings.LandFangIUserId.ToString());
+                urlInfo.UrlString = fixUrl;
+            }
+        
+            switch (Settings.CrawlerClassName)
+            {
+                case "WenShuAPPCrawler":
+                    var reqToken = Toolslib.Str.Sub(urlInfo.PostData, "reqtoken\": \"", "\",");
+                    if (string.IsNullOrEmpty(reqToken))
+                    {
+                        reqToken = Settings.AccessToken;
+                    }
+                    urlInfo.PostData = urlInfo.PostData.Replace(reqToken, WenShuAppHelper.GetRequestToken());
+                    break;
+
+                case "HuiCongMaterial":
+                    var huiCongAppHelper = new HuiCongAppHelper();
+                    var authorizationCode = huiCongAppHelper.GetHuiCongAuthorizationCode(urlInfo.UrlString);
+                    if (authorizationCode != urlInfo.Authorization)
+                    {
+                        urlInfo.Authorization = authorizationCode;
+                    }
+                    break;
+            }
+
+            return urlInfo;
+            #endregion
         }
         private string GetHttpResult(UrlInfo urlInfo)
         {
-
+            urlInfo = UrlInfoFix(urlInfo);
+            var url = urlInfo.UrlString;
+           
             HttpHelper http = new HttpHelper();
             HttpItem item = null;
 
             item = new HttpItem()
             {
-                URL = urlInfo.UrlString,//URL     必需项    
+                URL = url,//URL     必需项    
                                         //URL = "http://luckymn.cn/QuestionAnswer",
                 Method = "get",//URL     可选项 默认为Get   
                 ContentType = "text/html",//返回类型    可选项有默认值 
@@ -581,13 +656,39 @@ namespace SimpleCrawler
 
                 item.ContentType = Settings.ContentType;
             }
+            if (!string.IsNullOrEmpty(Settings.Referer))
+            {
+                item.Referer = Settings.Referer;
+            }
+            if (Settings.PostEncoding!=null)
+            {
+
+                item.PostEncoding = Settings.PostEncoding;
+            }
             if (!string.IsNullOrEmpty(Settings.Accept))
             {
 
                 item.ContentType = Settings.Accept;
             }
-
-
+            if (!string.IsNullOrEmpty(urlInfo.Authorization))
+            {
+               item.Header.Add("Authorization", urlInfo.Authorization);
+            }
+           
+            try
+            {
+                if (Settings.HeadSetDic != null)
+                {
+                    foreach (var key in Settings.HeadSetDic.Keys)
+                    {
+                        item.Header.Add(key, Settings.HeadSetDic[key]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("GetHttpResult:"+ex.Message);
+            }
             //添加代理ip列表,随机挑选ip
             //创建并配置Web请求
             //request = WebRequest.Create(urlInfo.UrlString) as HttpWebRequest;

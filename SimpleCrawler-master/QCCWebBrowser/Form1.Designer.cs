@@ -75,6 +75,8 @@
             this.ipChangeTimer = new System.Windows.Forms.Timer(this.components);
             this.button9 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.EnterpriseKeySuffixTxt = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // webBrowser
@@ -250,7 +252,7 @@
             // 
             this.accountInfoTxt.Location = new System.Drawing.Point(124, 24);
             this.accountInfoTxt.Name = "accountInfoTxt";
-            this.accountInfoTxt.Size = new System.Drawing.Size(244, 23);
+            this.accountInfoTxt.Size = new System.Drawing.Size(132, 23);
             this.accountInfoTxt.TabIndex = 16;
             this.accountInfoTxt.Text = "信息";
             // 
@@ -321,7 +323,7 @@
             // 
             // guardTimer
             // 
-            this.guardTimer.Interval = 15000;
+            this.guardTimer.Interval = 10000;
             this.guardTimer.Tick += new System.EventHandler(this.guardTimer_Tick);
             // 
             // ipProxyTxt
@@ -427,7 +429,7 @@
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(96, 23);
             this.button5.TabIndex = 28;
-            this.button5.Text = "模拟账号注册";
+            this.button5.Text = "QCC账号注册";
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
@@ -496,11 +498,30 @@
             this.button10.UseVisualStyleBackColor = true;
             this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(1063, 660);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(91, 23);
+            this.button11.TabIndex = 34;
+            this.button11.Text = "LandFang账号注册";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // EnterpriseKeySuffixTxt
+            // 
+            this.EnterpriseKeySuffixTxt.Location = new System.Drawing.Point(263, 26);
+            this.EnterpriseKeySuffixTxt.Name = "EnterpriseKeySuffixTxt";
+            this.EnterpriseKeySuffixTxt.Size = new System.Drawing.Size(100, 21);
+            this.EnterpriseKeySuffixTxt.TabIndex = 35;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 742);
+            this.Controls.Add(this.EnterpriseKeySuffixTxt);
+            this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.button8);
@@ -601,6 +622,8 @@
         private System.Windows.Forms.Timer ipChangeTimer;
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.TextBox EnterpriseKeySuffixTxt;
     }
 }
 

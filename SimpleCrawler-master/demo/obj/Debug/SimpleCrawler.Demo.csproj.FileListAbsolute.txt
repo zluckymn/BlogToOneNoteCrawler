@@ -1,5 +1,7 @@
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\nlog.dll.nlog
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.exe.config
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.exe
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\nlog.dll.nlog
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.exe
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\SimpleCrawler.Demo.pdb
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\HtmlAgilityPack.dll
@@ -21,13 +23,14 @@ F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\ABCp
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Yinhoo.Framework.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\zxing.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\MyXls.SL2.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\NPOI.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Yinhoo.Utilities.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Data.SQLite.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.Razor.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.WebPages.Razor.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.WebPages.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Microsoft.Web.Infrastructure.dll
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\NPOI.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\ICSharpCode.SharpZipLib.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Microsoft.mshtml.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.WebPages.Deployment.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Yinhe.ProcessingCenter.pdb
@@ -44,6 +47,7 @@ F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Luce
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\PanGu.HighLight.pdb
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\PanGu.Lucene.Analyzer.pdb
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\PanGu.pdb
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\NPOI.xml
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.Razor.xml
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.WebPages.Razor.xml
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\System.Web.WebPages.xml
@@ -56,7 +60,4 @@ F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\zh-H
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\zh-Hans\Microsoft.Web.Infrastructure.resources.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\zh-Hans\System.Web.WebPages.Deployment.resources.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.csprojResolveAssemblyReference.cache
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.exe
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\obj\Debug\SimpleCrawler.Demo.pdb
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Yinhe.ProcessingCenter.xml
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\demo\bin\Debug\Yinhe.ProcessingCenter.XmlSerializers.dll

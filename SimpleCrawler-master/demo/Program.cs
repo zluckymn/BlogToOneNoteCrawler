@@ -42,9 +42,11 @@ namespace SimpleCrawler.Demo
         /// The settings.
         /// </summary>
      
-        private static string connStr = "mongodb://sa:dba@59.61.72.34/SimpleCrawler";
+       //  static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+        private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37089/SimpleCrawler";
+        private const string crawlerClassName = "SchoolDetailCrawler";
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
-        // private static string connStr = "mongodb://sa:dba@59.61.72.34/Shared";
+        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
         private static readonly CrawlSettings Settings = new CrawlSettings();
         /// <summary>
@@ -66,6 +68,7 @@ namespace SimpleCrawler.Demo
 
         public static bool HandlerRoutine(int CtrlType)
         {
+             
             switch (CtrlType)
             {
                 case 0:
@@ -92,7 +95,7 @@ namespace SimpleCrawler.Demo
         private static void Main(string[] args)
         {
 
-            
+            var factoryClassName = string.Format("SimpleCrawler.Demo.{0}", crawlerClassName);
             filter = new BloomFilter<string>(5000000);
             //LandFangUserUpdateCrawler,LandFangCrawler  
             //SimpleCrawler.Demo.LandFangUserUpdateCrawler 通过模拟登陆更新*号数据
@@ -100,8 +103,9 @@ namespace SimpleCrawler.Demo
             //LandFangCityRegionUpdateCrawler 更新交易状态与区县
             //QiXinEnterpriseCrawler  启信爬取对应 企业与guid
             Console.WriteLine(connStr);
-            simpleCrawler = SimpleCrawlerFactory.Instance.Create("SimpleCrawler.Demo.LandFangCityRegionEXUpdateCrawler", Settings, filter, dataop);
-            
+            Console.WriteLine("确认数据库连接后继续进行");
+            simpleCrawler = SimpleCrawlerFactory.Instance.Create(factoryClassName, Settings, filter, dataop);
+            Console.ReadLine();
             //const string CityName = "beijing";
             // 设置种子地址 需要添加布隆过滤种子地址，防止重新2次读取种子地址
             //Settings.SeedsAddress.Add(string.Format("http://jobs.zhaopin.com/{0}", CityName));
@@ -196,7 +200,7 @@ namespace SimpleCrawler.Demo
                 {
                     IPInvalidProcess(args.IpProx);
                     if (Settings.IgnoreFailUrl) { 
-                      UrlQueue.Instance.EnQueue(new UrlInfo(args.Url));
+                      UrlQueue.Instance.EnQueue(args.urlInfo);
                     }
                     Console.WriteLine(string.Format("当前：{0}被IPLimitProcess判定为IP失效页面", UrlQueue.Instance.Count));
                 }
@@ -216,7 +220,9 @@ namespace SimpleCrawler.Demo
 
                 if (UrlQueue.Instance.Count <= 0)
                 {
+                    
                     Console.WriteLine("处理完毕");
+                      
                     Environment.Exit(0);
                 }
                 //YunFengBlogReceive(args);
@@ -313,8 +319,9 @@ namespace SimpleCrawler.Demo
             //{
             //    limitCount = 5;
             //}
-           // if (UrlQueue.Instance.Count >= 10 && DBChangeQueue.Instance.Count < limitCount) return;
-             if(DBChangeQueue.Instance.Count>0)
+            // if (UrlQueue.Instance.Count >= 10 && DBChangeQueue.Instance.Count < limitCount) return;
+            var curDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            while (DBChangeQueue.Instance.Count > 0)
             {
 
                 var temp = DBChangeQueue.Instance.DeQueue();
@@ -325,10 +332,10 @@ namespace SimpleCrawler.Demo
                     switch (temp.Type)
                     {
                         case StorageType.Insert:
-                            if (insertDoc.Contains("createDate") == false) insertDoc.Add("createDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));      //添加时,默认增加创建时间
+                            if (insertDoc.Contains("createDate") == false) insertDoc.Add("createDate", curDate);      //添加时,默认增加创建时间
                             if (insertDoc.Contains("createUserId") == false) insertDoc.Add("createUserId", "1");
                             //更新用户
-                            result = _mongoDBOp.Save(temp.Name, insertDoc); ;
+                            result = _mongoDBOp.Save(temp.Name, insertDoc);
                             break;
                         case StorageType.Update:
                             // insertDoc.Set("updateDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));      //更新时间

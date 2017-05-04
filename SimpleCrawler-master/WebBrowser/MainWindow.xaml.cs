@@ -37,8 +37,8 @@ namespace WebBrowser
     public partial class MainWindow : Window
     {
         #region 变量
-        private static string connStr = "mongodb://sa:dba@59.61.72.34/SimpleCrawler";
-        // private static string connStr = "mongodb://sa:dba@59.61.72.34/Shared";
+        private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
         static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         private const string _DataTableName = "QiXinEnterpriseKey";//存储的数据库表明

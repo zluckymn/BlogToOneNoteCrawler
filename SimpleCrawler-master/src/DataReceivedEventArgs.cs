@@ -50,6 +50,11 @@ namespace SimpleCrawler
         /// Gets or sets the IsException.
         /// </summary>
         public bool IsException { get; set; }
+        /// <summary>
+        /// Gets or sets the IsException.
+        /// </summary>
+        public UrlInfo urlInfo { get; set; }
+        
         #endregion
     }
 }

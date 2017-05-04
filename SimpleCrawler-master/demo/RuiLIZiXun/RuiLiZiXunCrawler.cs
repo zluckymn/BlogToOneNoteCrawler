@@ -22,7 +22,7 @@ namespace SimpleCrawler.Demo
     public class RuiLiZiXunCrawler : ISimpleCrawler
     {
         object lock_obj = new object();
-        //private   string connStr = "mongodb://sa:dba@59.61.72.34/WorkPlanManage";
+        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>
@@ -72,7 +72,7 @@ namespace SimpleCrawler.Demo
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
             //种子地址需要加布隆过滤
-
+            
             //Settings.Depth = 4;
             //代理ip模式
             Settings.IPProxyList = new List<IPProxy>();

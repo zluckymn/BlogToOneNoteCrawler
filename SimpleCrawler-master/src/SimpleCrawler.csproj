@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,6 +56,9 @@
     <Compile Include="CrawlStatus.cs" />
     <Compile Include="DataReceivedEventArgs.cs" />
     <Compile Include="HttpHelper.cs" />
+    <Compile Include="HuiCongAppHelper.cs" />
+    <Compile Include="WenShuAppHelper.cs" />
+    <Compile Include="LandFangAppHelper.cs" />
     <Compile Include="LoginAccount.cs" />
     <Compile Include="PassGeetestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

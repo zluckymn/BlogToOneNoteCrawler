@@ -22,7 +22,7 @@ namespace SimpleCrawler.Demo
     public class LandFangUserUpdateCrawler : ISimpleCrawler
     {
 
-        //private   string connStr = "mongodb://sa:dba@59.61.72.34/WorkPlanManage";
+        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>
@@ -81,6 +81,14 @@ namespace SimpleCrawler.Demo
             Settings = _Settings; filter = _filter; dataop = _dataop;
         }
         public bool isSpecialUrlMode = false;
+        public WebProxy GetWebProxy()
+        {
+            // 设置代理服务器
+            var proxy = new WebProxy();
+            proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
+            proxy.Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE");
+            return proxy;
+        }
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
             //种子地址需要加布隆过滤
@@ -93,7 +101,7 @@ namespace SimpleCrawler.Demo
             // Settings.IPProxyList.Add(new IPProxy("1.209.188.180:8080"));
             Settings.IgnoreSucceedUrlToDB = true;
             Settings.ThreadCount = 1;
-            
+            Settings.CurWebProxy = GetWebProxy();
             Console.WriteLine("正在获取已存在的url数据");
             var partName = "所在地";
             //注意需要定时爬去isSpecialUrl 为1 的url 这些url需要用无账号登陆进行使用
@@ -102,9 +110,10 @@ namespace SimpleCrawler.Demo
             //var distinctAreaStr = new string[] {"长沙","成都","大连","佛山","福州","广州","杭州","黄山","济南","昆明","龙岩","南昌","南京","宁波","泉州","深圳","苏州","武汉","西安","厦门","烟台","镇江","郑州" };
             //var distinctAreaStr = new string[] { "北京", "上海", "重庆" };
             //var distinctAreaStr = new string[] { "长沙", "成都", "大连", "佛山", "福州", "广州", "杭州","佛山", "南京", "深圳", "武汉","西安" };
-            //var cityStr = "南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
+            // var cityStr = "南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
+            var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
             // var cityStr = "广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
-            var cityStr = "东莞";
+            // var cityStr = "武汉";
             var distinctAreaStr = cityStr.Split(new string[] { ","},StringSplitOptions.RemoveEmptyEntries);
             var orQuery = Query.In("所在地", distinctAreaStr.Select(c=>(BsonValue)c));
             isSpecialUrlMode = false;//使用特殊模式表是某些url 需要进行不登陆进行爬去，true代表不登陆爬取
@@ -440,9 +449,12 @@ namespace SimpleCrawler.Demo
                     {
                         item.ProxyIp = ipProxy.IP;
                     }
+                    if (Settings.CurWebProxy != null) { 
+                    item.WebProxy = Settings.CurWebProxy;
+                    }
                     Console.WriteLine(string.Format("尝试登陆{0}", Settings.curIPProxy != null ? Settings.curIPProxy.IP : string.Empty));
                     HttpResult result = http.GetHtml(item);
-                    if (result.Html.Contains("ip"))
+                    if (!result.Html.Contains("Success"))
                     {
                         return false;
                     }

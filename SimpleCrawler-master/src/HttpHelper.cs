@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using System.Web;
 
 namespace SimpleCrawler
 {
@@ -458,6 +459,21 @@ namespace SimpleCrawler
         private IPEndPoint BindIPEndPointCallback(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
         {
             return _IPEndPoint;//端口号
+        }
+        #endregion
+
+        #region urlParam
+        /// <summary>
+        /// 获取查询字符串
+        /// </summary>
+        /// <param name="queryStr"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string GetUrlParam(string queryStr, string name)
+        {
+            var dic = HttpUtility.ParseQueryString(queryStr);
+            var industryCode = dic[name] != null ? dic[name].ToString() : string.Empty;//行业代码
+            return industryCode;
         }
         #endregion
     }

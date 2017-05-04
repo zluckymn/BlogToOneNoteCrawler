@@ -54,14 +54,14 @@ F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\bin\D
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\bin\Debug\zh-Hans\System.Web.WebPages.resources.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\bin\Debug\zh-Hans\Microsoft.Web.Infrastructure.resources.dll
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\bin\Debug\zh-Hans\System.Web.WebPages.Deployment.resources.dll
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\发布包\QCCWebBrowser.exe.config
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\Interop.SHDocVw.dll
-F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.csproj.ResolveComReference.cache
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\发布包\nlog.dll.nlog
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\发布包\QCCWebBrowser.exe.config
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\发布包\QCCWebBrowser.exe
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\发布包\QCCWebBrowser.pdb
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.csprojResolveAssemblyReference.cache
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.csproj.QCCWebBrowser.exe.config
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\Interop.SHDocVw.dll
+F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.csproj.ResolveComReference.cache
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.Form1.resources
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.Properties.Resources.resources
 F:\MN测试Project\SimpleCrawler-master\SimpleCrawler-master\QCCWebBrowser\obj\Debug\QCCWebBrowser.SettingsForm.resources

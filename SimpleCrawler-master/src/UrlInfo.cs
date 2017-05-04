@@ -19,7 +19,7 @@ namespace SimpleCrawler
         /// <summary>
         /// The url.
         /// </summary>
-        private readonly string url;
+        private   string url;
 
         #endregion
 
@@ -54,13 +54,22 @@ namespace SimpleCrawler
             {
                 return this.url;
             }
+            set {
+                this.url = value;
+            }
         }
 
         /// <summary>
         /// Gets the url string.
         /// </summary>
         public string PostData { get; set; }
-         
+
+
+        /// <summary>
+        /// Gets the url string.
+        /// </summary>
+        public string Authorization { get; set; }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

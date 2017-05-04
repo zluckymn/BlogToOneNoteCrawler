@@ -13,6 +13,7 @@ namespace SimpleCrawler
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
+    using System.Text;
 
     /// <summary>
     /// The crawl settings.
@@ -245,6 +246,16 @@ namespace SimpleCrawler
         /// <summary>
         /// Gets or sets the user agent.
         /// </summary>
+        public string Referer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user agent.
+        /// </summary>
+        public Encoding PostEncoding { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user agent.
+        /// </summary>
         public string LoginAccount
         {
             get
@@ -282,6 +293,10 @@ namespace SimpleCrawler
         public WebProxy CurWebProxy { get; set; }
 
         /// <summary>
+        /// Gets  the userId.
+        /// </summary>
+        public int LandFangIUserId { get; set; }
+        /// <summary>
         /// Gets  the simulateCookies.
         /// </summary>
         public string SimulateCookies { get;   set; }
@@ -289,6 +304,12 @@ namespace SimpleCrawler
         /// Gets  the ContentType.
         /// </summary>
         public string ContentType { get; set; }
+        /// <summary>
+        /// Gets  the CrawlerClassName.
+        /// </summary>
+        public string CrawlerClassName { get; set; }
+
+        
         /// <summary>
         /// Gets  the Accept.
         /// </summary>
@@ -314,6 +335,11 @@ namespace SimpleCrawler
         /// 失败的url是否尝试重新进行
         /// </summary>
         public bool IgnoreFailUrl { get; set; }
+
+        /// <summary>
+        /// head设置
+        /// </summary>
+        public Dictionary<string,string> HeadSetDic{ get; set; }
         /// <summary>
         /// 失败的url是否尝试重新进行
         /// </summary>

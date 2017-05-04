@@ -23,7 +23,7 @@ namespace SimpleCrawler.Demo
     public class QCCEnterpriseDetailInfoCrawler : ISimpleCrawler
     {
 
-        //private   string connStr = "mongodb://sa:dba@59.61.72.34/WorkPlanManage";
+        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
 
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
@@ -150,7 +150,7 @@ namespace SimpleCrawler.Demo
             builder.Password = "dba";
             builder.SocketTimeout = new TimeSpan(00, 01, 59);
             dataop = new DataOperation(new MongoOperation(builder));
-            string cookieConnStr = "mongodb://sa:dba@59.61.72.34/SimpleCrawler";
+            string cookieConnStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
             var cookieDataop = new DataOperation(cookieConnStr, true);
             var hitCookie = cookieDataop.FindAllByQuery(DataTableAccountCookie, Query.EQ("ip", "192.168.1.134")).FirstOrDefault();
             Settings.CurWebProxy = GetWebProxy();//使用代理
@@ -178,7 +178,7 @@ namespace SimpleCrawler.Demo
             //return;
             this.Settings.Timeout = 6000;
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
-            Settings.ThreadCount =2;
+            Settings.ThreadCount =1;
             //Settings.AutoSpeedLimit = true;
             Settings.DBSaveCountLimit = 1;
             Settings.IgnoreFailUrl = true;//失败数据不进行继续爬取，多几次就好，因为有些数据获取的为空与无登陆一样无法判断
@@ -289,9 +289,9 @@ namespace SimpleCrawler.Demo
             //}
             try
             {
-                if (UrlQueue.Instance.Count <= 40)
+                if (UrlQueue.Instance.Count <= Settings.ThreadCount*10)
                 {
-                    if ((DateTime.Now - Settings.LastAvaiableTime).TotalSeconds >= 40)
+                    if ((DateTime.Now - Settings.LastAvaiableTime).TotalSeconds >= 60)
                     {
                         Console.WriteLine("url剩余少于40");
                         Settings.LastAvaiableTime = DateTime.Now;

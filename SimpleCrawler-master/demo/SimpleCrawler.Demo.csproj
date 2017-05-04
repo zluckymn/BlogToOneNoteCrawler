@@ -74,8 +74,18 @@
     <Compile Include="Cookie\FullWebBrowserCookie.cs" />
     <Compile Include="Cookie\INativeMethods.cs" />
     <Compile Include="DBChangeQueue.cs" />
+    <Compile Include="DistrictLeader\DistrictLeaderCrawler.cs" />
     <Compile Include="Fang99\Fang99Crawler.cs" />
+    <Compile Include="GoodDoctor\DoctorHospitalDoctorListAPPCrawler.cs" />
+    <Compile Include="GoodDoctor\DoctorHospitalDoctorSheduleAPPCrawler.cs" />
+    <Compile Include="GoodDoctor\DoctorHospitalDetailAPPCrawler.cs" />
+    <Compile Include="GoodDoctor\DoctorHospitalAPPCrawler.cs" />
+    <Compile Include="HuiCaiMaterial\HuiCongMaterialDetailAPPCrawler.cs" />
+    <Compile Include="HuiCaiMaterial\HuiCongMaterialAPPCrawler.cs" />
+    <Compile Include="IPProxyHelper.cs" />
     <Compile Include="LandFang\LandFangCityRegionEXCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionUpdateAPPCrawler.cs" />
+    <Compile Include="LandFang\LandFangUserUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangVipUserUpdateCrawler.cs" />
     <Compile Include="LandFang\LandFangXYInfoUpdateEXCrawler.cs" />
     <Compile Include="LandFang\LandFangCityRegionEXUpdateCrawler.cs" />
@@ -87,6 +97,13 @@
     <Compile Include="csdnProcess.cs" />
     <Compile Include="fang99Process.cs" />
     <Compile Include="HttpCookieHelper.cs" />
+    <Compile Include="MeiTu\MeiTuCityBusinessDistinctAPPCrawler.cs" />
+    <Compile Include="MeiTu\MeiTuCityBusinessEnterpriseAPPCrawler.cs" />
+    <Compile Include="MeiTu\MeiTuCityBusinessCategoryAppCrawler.cs" />
+    <Compile Include="Profile\ProfileCompany56JobDetailCrawler.cs" />
+    <Compile Include="Profile\ProfileCompanyDetailCrawler_BaiCheng.cs" />
+    <Compile Include="Profile\ProfileCompanyCrawler_BaiCheng.cs" />
+    <Compile Include="Profile\ProfileCompanyDetailCrawler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QCC\QCCEnterpriseCrawler_FUJIAN.cs" />
@@ -95,10 +112,17 @@
     <Compile Include="QCC\QCCEnterpriseDetailInfoGuidAdd.cs" />
     <Compile Include="QCC\QCCEnterpriseDetailInfoAnalyse.cs" />
     <Compile Include="QCC\QCCEnterpriseDetailInfoCrawler.cs" />
+    <Compile Include="QCC\QCCEnterpriseHelper.cs" />
     <Compile Include="QiXin\QiXinEnterpriseDetailInfoCrawler.cs" />
     <Compile Include="QiXin\QiXinEnterpriseCrawler.cs" />
     <Compile Include="RegisterAddEnterprise\RegisterEnterpriseAddInfoCrawler.cs" />
     <Compile Include="RuiLIZiXun\RuiLiZiXunCrawler.cs" />
+    <Compile Include="School\SchoolAreaCrawler.cs" />
+    <Compile Include="School\SchoolDetailCrawler.cs" />
+    <Compile Include="School\SchoolListCrawler.cs" />
+    <Compile Include="School\SchoolRegionCrawler.cs" />
+    <Compile Include="WeiXin\WeiXinUrlDetailCrawler.cs" />
+    <Compile Include="WenShu\WenShuAPPCrawler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\115Box\A3\Yinhe.ProcessingCenter\Yinhe.ProcessingCenter.csproj">
@@ -117,6 +141,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
