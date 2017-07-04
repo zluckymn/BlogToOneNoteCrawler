@@ -70,6 +70,12 @@ namespace SimpleCrawler
         /// </summary>
         public string Authorization { get; set; }
 
+
+        /// <summary>
+        ///通过urlsplit次数 通过限制个数节约key的用量
+        /// </summary>
+        public int UrlSplitTimes { get; set; }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

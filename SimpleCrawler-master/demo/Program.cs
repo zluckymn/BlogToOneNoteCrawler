@@ -42,9 +42,9 @@ namespace SimpleCrawler.Demo
         /// The settings.
         /// </summary>
      
-       //  static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
-        private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37089/SimpleCrawler";
-        private const string crawlerClassName = "SchoolDetailCrawler";
+        //static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+       private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/SimpleCrawler";
+        private static string crawlerClassName = "SoHuBuildingDetailCrawler";
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
@@ -66,6 +66,35 @@ namespace SimpleCrawler.Demo
 
         static ControlCtrlDelegate newDelegate = new ControlCtrlDelegate(HandlerRoutine);
 
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <returns></returns>
+        static WebProxy GetWebProxy()
+        {
+            // 设置代理服务器
+            var proxy = new WebProxy();
+            proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
+            proxy.Credentials = new NetworkCredential("HE0X2CG05WM7953P", "544B04D565F22D97");
+            return proxy;
+        }
+        static string GetWebProxyString()
+        {
+            return string.Format("{0}:{1}@{2}:{3}", "HE0X2CG05WM7953P", "544B04D565F22D97", "proxy.abuyun.com", "9010");
+        }
+
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <returns></returns>
+        public WebProxy GetWebProxy(string ip, string port)
+        {
+            // 设置代理服务器
+            var proxy = new WebProxy();
+            proxy.Address = new Uri(string.Format("{0}:{1}", ip, port));
+            return proxy;
+
+        }
         public static bool HandlerRoutine(int CtrlType)
         {
              
@@ -94,7 +123,17 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void Main(string[] args)
         {
+            if (args.Count() > 0)
+            {
 
+                crawlerClassName = args[0];
+            }
+            if (string.IsNullOrEmpty(crawlerClassName))
+            {
+                Console.WriteLine("请-classname 设置对应的爬取类");
+                Console.Read();
+                return;
+            }
             var factoryClassName = string.Format("SimpleCrawler.Demo.{0}", crawlerClassName);
             filter = new BloomFilter<string>(5000000);
             //LandFangUserUpdateCrawler,LandFangCrawler  
@@ -103,9 +142,10 @@ namespace SimpleCrawler.Demo
             //LandFangCityRegionUpdateCrawler 更新交易状态与区县
             //QiXinEnterpriseCrawler  启信爬取对应 企业与guid
             Console.WriteLine(connStr);
+            Console.WriteLine(crawlerClassName);
             Console.WriteLine("确认数据库连接后继续进行");
             simpleCrawler = SimpleCrawlerFactory.Instance.Create(factoryClassName, Settings, filter, dataop);
-            Console.ReadLine();
+            //Console.ReadLine();
             //const string CityName = "beijing";
             // 设置种子地址 需要添加布隆过滤种子地址，防止重新2次读取种子地址
             //Settings.SeedsAddress.Add(string.Format("http://jobs.zhaopin.com/{0}", CityName));
@@ -130,6 +170,10 @@ namespace SimpleCrawler.Demo
             // 设置都是锁定域名,去除二级域名后，判断域名是否相等，相等则认为是同一个站点
             // 例如：mail.pzcast.com 和 www.pzcast.com
             Settings.LockHost = false;
+            //是否启用代理
+            Settings.CurWebProxy = GetWebProxy();
+            Settings.CurWebProxyString = GetWebProxyString();
+
 
             // 设置请求的 User-Agent HTTP 标头的值
             // settings.UserAgent 已提供默认值，如有特殊需求则自行设置
@@ -241,6 +285,7 @@ namespace SimpleCrawler.Demo
            
 
         }
+
         /// <summary>
         /// ip无效处理
         /// </summary>

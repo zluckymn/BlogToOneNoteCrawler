@@ -81,7 +81,7 @@ namespace SimpleCrawler.Demo
             Console.WriteLine("正在获取已存在的url数据");
             //布隆url初始化,防止重复读取url
             cityUrlList = dataop.FindAll(DataTableNameCity).ToList();//城市url
-             landUrlList = dataop.FindAllByQuery(DataTableName,Query.Or(Query.Exists("县市",false),Query.EQ("县市", ""))).SetFields("url","交易状况", "县市","区域","地区","所在地").ToList();//土地url
+            landUrlList = dataop.FindAllByQuery(DataTableName,Query.Or(Query.Exists("县市",false),Query.EQ("县市", ""))).SetFields("url","交易状况", "县市","区域","地区","所在地").ToList();//土地url
              //landUrlList = dataop.FindAllByQuery(DataTableName,Query.And(Query.EQ("所在地","三明"), Query.Or(Query.Exists("县市", false), Query.EQ("县市", "")))).SetFields("url", "交易状况", "县市", "区域", "地区", "所在地").ToList();//土地url
             var hitDistinct = new List<string>();
             hitDistinct.AddRange(landUrlList.Select(c => c.Text("地区")).Distinct());

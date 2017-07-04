@@ -126,7 +126,7 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.MaxReTryTimes = 20;
             Settings.ThreadCount =5;
-            Settings.CurWebProxy = GetWebProxy();
+            //Settings.CurWebProxy = GetWebProxy();
             Console.WriteLine("正在获取已存在的url数据");
             //布隆url初始化,防止重复读取url
             

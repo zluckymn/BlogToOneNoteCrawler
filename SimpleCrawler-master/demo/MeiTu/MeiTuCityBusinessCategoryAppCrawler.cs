@@ -208,7 +208,10 @@ namespace SimpleCrawler.Demo
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
             Settings.hi = new HttpInput();
             HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
-            Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, GetWebProxyString());
+            if (!string.IsNullOrEmpty(Settings.CurWebProxyString))
+            {
+                Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
+            }
             var headSetDic = new Dictionary<string, string>();
             __skcy="CSJl8p2O4tbR2VGkjdZ3Kxs2Igo=";
             __skua = "4eb0ecaa0317917e9556ee7cc8082100";

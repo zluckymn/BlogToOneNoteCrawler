@@ -170,7 +170,7 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreFailUrl = true;
             Settings.AutoSpeedLimit = true;
             Settings.AutoSpeedLimitMaxMSecond = 1000;
-            Settings.CurWebProxy = GetWebProxy();
+            //Settings.CurWebProxy = GetWebProxy();
             Settings.AccessToken = reqtoken;
             Settings.CrawlerClassName = "WenShuAPPCrawler";//需要进行token替换
             Settings.ContentType = "application/json";

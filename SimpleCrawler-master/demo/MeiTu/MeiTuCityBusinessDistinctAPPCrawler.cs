@@ -114,7 +114,7 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreSucceedUrlToDB = true;
             Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
-            Settings.CurWebProxy = GetWebProxy();
+            //Settings.CurWebProxy = GetWebProxy();
  
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
             

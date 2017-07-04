@@ -101,7 +101,7 @@ namespace SimpleCrawler.Demo
             // Settings.IPProxyList.Add(new IPProxy("1.209.188.180:8080"));
             Settings.IgnoreSucceedUrlToDB = true;
             Settings.ThreadCount = 1;
-            Settings.CurWebProxy = GetWebProxy();
+            //Settings.CurWebProxy = GetWebProxy();
             Console.WriteLine("正在获取已存在的url数据");
             var partName = "所在地";
             //注意需要定时爬去isSpecialUrl 为1 的url 这些url需要用无账号登陆进行使用

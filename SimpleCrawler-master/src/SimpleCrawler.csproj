@@ -56,7 +56,9 @@
     <Compile Include="CrawlStatus.cs" />
     <Compile Include="DataReceivedEventArgs.cs" />
     <Compile Include="HttpHelper.cs" />
+    <Compile Include="JGJAppHelper.cs" />
     <Compile Include="HuiCongAppHelper.cs" />
+    <Compile Include="StringQueue.cs" />
     <Compile Include="WenShuAppHelper.cs" />
     <Compile Include="LandFangAppHelper.cs" />
     <Compile Include="LoginAccount.cs" />

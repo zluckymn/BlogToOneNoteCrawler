@@ -121,7 +121,7 @@ namespace SimpleCrawler.Demo
             return string.Format("http://{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010");
             
         }
-
+       
         List<BsonDocument> cityList = new List<BsonDocument>();
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
@@ -136,7 +136,10 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreSucceedUrlToDB = true;
             Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
-            Settings.CurWebProxy = GetWebProxy();
+            //if (Settings.CurWebProxy != null)
+            //{
+            //    Settings.CurWebProxy = GetWebProxy();
+            //}
             Settings.MaxReTryTimes = 30;
             this.Settings.UserAgent = "android_tudi%7EGT-P5210%7E4.2.2";
             
@@ -162,9 +165,9 @@ namespace SimpleCrawler.Demo
 
             Console.WriteLine("正在获取已存在的url数据");
             var partName = "所在地";
-            Console.WriteLine("正在处理更新数据100页每次100个", landUrlList.Count);
+            Console.WriteLine("正在处理更新数据10页每次100个", landUrlList.Count);
             cityList = dataop.FindAllByQuery("LandFangCityEXURL",Query.NE("type","2")).SetFields("name", "cityCode","type", "provinceCode").ToList();
-            for (var i= 1;i < 10; i++){ 
+            for (var i= 1;i < 20; i++){ 
                 var detailUrl = appHelper.InitPushLandUrl( "100", i.ToString());
                 UrlQueue.Instance.EnQueue(new UrlInfo(detailUrl) { Depth = 1 });
             }
@@ -279,7 +282,15 @@ namespace SimpleCrawler.Demo
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("{0}已存在{1}剩余url:{2}", "", Settings.LandFangIUserId, UrlQueue.Instance.Count));
+                    if (string.IsNullOrEmpty(hitLandObj.Text("竞得方")) || hitLandObj.Text("竞得方") == "******")
+                    {
+                        updateBson.Add("needUpdate", "1");
+                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Query = Query.EQ("url", url), Name = DataTableName, Type = StorageType.Update });
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Format("{0}已存在{1}剩余url:{2}", "", Settings.LandFangIUserId, UrlQueue.Instance.Count));
+                    }
                 }
             }
 

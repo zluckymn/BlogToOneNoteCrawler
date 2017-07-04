@@ -314,9 +314,9 @@ namespace SimpleCrawler.Demo
                 }
                 return true;
             }
-         
+            if (avaiableCount > 0){ 
             Console.WriteLine("当前剩余可用Ip数：{0}",avaiableCount);
-           
+            }
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(args.Html);
             var searchResult = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='search-result-company-name']");

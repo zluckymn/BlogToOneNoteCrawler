@@ -83,6 +83,9 @@
     <Compile Include="HuiCaiMaterial\HuiCongMaterialDetailAPPCrawler.cs" />
     <Compile Include="HuiCaiMaterial\HuiCongMaterialAPPCrawler.cs" />
     <Compile Include="IPProxyHelper.cs" />
+    <Compile Include="JGJUserInfo\JGJProjectAPPCrawler.cs" />
+    <Compile Include="JGJUserInfo\JGJUserAPPCrawler.cs" />
+    <Compile Include="JGJUserInfo\JGJUserDetailAppCrawler.cs" />
     <Compile Include="LandFang\LandFangCityRegionEXCrawler.cs" />
     <Compile Include="LandFang\LandFangCityRegionUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangUserUpdateAPPCrawler.cs" />
@@ -116,11 +119,12 @@
     <Compile Include="QiXin\QiXinEnterpriseDetailInfoCrawler.cs" />
     <Compile Include="QiXin\QiXinEnterpriseCrawler.cs" />
     <Compile Include="RegisterAddEnterprise\RegisterEnterpriseAddInfoCrawler.cs" />
-    <Compile Include="RuiLIZiXun\RuiLiZiXunCrawler.cs" />
     <Compile Include="School\SchoolAreaCrawler.cs" />
     <Compile Include="School\SchoolDetailCrawler.cs" />
     <Compile Include="School\SchoolListCrawler.cs" />
     <Compile Include="School\SchoolRegionCrawler.cs" />
+    <Compile Include="SoHu\SoHuBuildingDetailCrawler.cs" />
+    <Compile Include="SoHu\SoHuBuildingListCrawler.cs" />
     <Compile Include="WeiXin\WeiXinUrlDetailCrawler.cs" />
     <Compile Include="WenShu\WenShuAPPCrawler.cs" />
   </ItemGroup>

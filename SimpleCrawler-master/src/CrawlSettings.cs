@@ -291,7 +291,10 @@ namespace SimpleCrawler
         /// 当前webip代理
         /// </summary>
         public WebProxy CurWebProxy { get; set; }
-
+        /// <summary>
+        /// 当前webip代理
+        /// </summary>
+        public string CurWebProxyString { get; set; }
         /// <summary>
         /// Gets  the userId.
         /// </summary>

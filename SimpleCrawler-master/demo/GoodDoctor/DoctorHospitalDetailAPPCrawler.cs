@@ -163,7 +163,7 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreFailUrl = true;
             //Settings.AutoSpeedLimit = true;
             //Settings.AutoSpeedLimitMaxMSecond = 1000;
-            Settings.CurWebProxy = GetWebProxy();
+            //Settings.CurWebProxy = GetWebProxy();
             Settings.AccessToken = reqtoken;
           
             Settings.ContentType = "application/x-www-form-urlencoded";

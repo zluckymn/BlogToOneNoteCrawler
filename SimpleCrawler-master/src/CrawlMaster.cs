@@ -601,6 +601,11 @@ namespace SimpleCrawler
                         urlInfo.Authorization = authorizationCode;
                     }
                     break;
+                case "JGJApp":
+                    var jgjAppHelper = new JGJAppHelper();
+                    var fixUrl = jgjAppHelper.FixJGJUrl(urlInfo.UrlString);
+                    urlInfo.UrlString = fixUrl;
+                    break;
             }
 
             return urlInfo;

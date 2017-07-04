@@ -113,29 +113,14 @@ namespace SimpleCrawler.Demo
             guidFilter = new BloomFilter<string>(9000000);
         }
         public bool isSpecialUrlMode = false;
-        /// <summary>
-        /// 代理
-        /// </summary>
-        /// <returns></returns>
-        public WebProxy GetWebProxy()
-        {
-            // 设置代理服务器
-            var proxy = new WebProxy();
-            proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
-            proxy.Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE");
-            return proxy;
-        }
-        public string GetWebProxyString()
-        {
-           return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010");
-        }
+      
 
         int pageSize = 100;//24
         int pageBeginNum = 1;
        // string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&w={0}&v=59&e={1}&c=供应信息&n={2}&m=2&H=1&bt=0";
       //  string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&e={1}&c=供应信息&a=13&n={2}&m=2&H=1&fc=0&bt=0&w={0}&v=60&t=1";
         string materialUrl = "http://z.hc360.com/getmmtlast.cgi?sys=yidonghulian&bus=phone_ios&m=2&c=%E4%BE%9B%E5%BA%94%E4%BF%A1%E6%81%AF&bt=0&dt=1&w={0}&e={1}&v=59&n={2}&H=1";
-
+        //将z.hc360改成 s.hc360 可用
         HuiCongAppHelper appHelper = new HuiCongAppHelper();
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
@@ -162,7 +147,10 @@ namespace SimpleCrawler.Demo
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
             Settings.hi = new HttpInput();
             HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
-            Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, GetWebProxyString());
+            if (!string.IsNullOrEmpty(Settings.CurWebProxyString))
+            {
+                Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
+            }
             var headSetDic = new Dictionary<string, string>();
             // Settings.hi.HeaderSet("Authorization", authorizationCode);
             headSetDic.Add("If-Modified-Since", "0");

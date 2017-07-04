@@ -143,6 +143,7 @@ namespace SimpleCrawler.Demo
             var proxy = new WebProxy();
             proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
             proxy.Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE");
+
             return proxy;
         }
         /// <summary>
@@ -171,7 +172,7 @@ namespace SimpleCrawler.Demo
             //Settings.IgnoreFailUrl = false;
             Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
-            Settings.CurWebProxy = GetWebProxy();
+           // Settings.CurWebProxy = GetWebProxy();
            
             this.Settings.UserAgent = "android_tudi%7EGT-P5210%7E4.2.2";
             InitMapDic();
@@ -217,10 +218,13 @@ namespace SimpleCrawler.Demo
                 specialUrlQuery = Query.EQ("isSpecialUrl", "1");
             }
             //var orQuery = Query.In("地区", " ");deleteStatus
-            landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"),specialUrlQuery,  Query.Or(Query.Exists("竞得方", false),Query.EQ("竞得方", "******")))).Take(10000).ToList();//土地url
+            landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"),specialUrlQuery,  Query.Or(Query.Exists("竞得方", false), Query.EQ("竞得方", "******")))).Take(10000).ToList();//土地url
+            //未更新的地块
+             //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.EQ("竞得方", "")))).Take(10000).ToList();//土地url
+
             //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And( specialUrlQuery, Query.EQ("needUpdate", "1"))).Take(100000).ToList();//土地url
             //landUrlList = dataop.FindAllByQuery(DataTableName, Query.Or(Query.Exists("竞得方", false))).Take(10000).ToList();//土地url
-                                                                                                                                              //  var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
+            //  var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
             Console.WriteLine("待处理数据{0}个", landUrlList.Count);
 
             foreach (var cityObj in landUrlList)

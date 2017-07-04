@@ -77,6 +77,9 @@
             this.button10 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
             this.EnterpriseKeySuffixTxt = new System.Windows.Forms.TextBox();
+            this.singalKeyWordCHK = new System.Windows.Forms.CheckBox();
+            this.button12 = new System.Windows.Forms.Button();
+            this.splitLimitChk = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // webBrowser
@@ -84,11 +87,11 @@
             this.webBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.webBrowser.Location = new System.Drawing.Point(-11, 51);
+            this.webBrowser.Location = new System.Drawing.Point(-11, 71);
             this.webBrowser.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser.Name = "webBrowser";
             this.webBrowser.ScriptErrorsSuppressed = true;
-            this.webBrowser.Size = new System.Drawing.Size(1257, 582);
+            this.webBrowser.Size = new System.Drawing.Size(1257, 562);
             this.webBrowser.TabIndex = 0;
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
             this.webBrowser.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.webBrowser_Navigated);
@@ -323,7 +326,7 @@
             // 
             // guardTimer
             // 
-            this.guardTimer.Interval = 10000;
+            this.guardTimer.Interval = 9000;
             this.guardTimer.Tick += new System.EventHandler(this.guardTimer_Tick);
             // 
             // ipProxyTxt
@@ -515,11 +518,46 @@
             this.EnterpriseKeySuffixTxt.Size = new System.Drawing.Size(100, 21);
             this.EnterpriseKeySuffixTxt.TabIndex = 35;
             // 
+            // singalKeyWordCHK
+            // 
+            this.singalKeyWordCHK.AutoSize = true;
+            this.singalKeyWordCHK.Checked = true;
+            this.singalKeyWordCHK.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.singalKeyWordCHK.Location = new System.Drawing.Point(1177, 52);
+            this.singalKeyWordCHK.Name = "singalKeyWordCHK";
+            this.singalKeyWordCHK.Size = new System.Drawing.Size(72, 16);
+            this.singalKeyWordCHK.TabIndex = 36;
+            this.singalKeyWordCHK.Text = "单关键字";
+            this.singalKeyWordCHK.UseVisualStyleBackColor = true;
+            // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(1097, 48);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(75, 23);
+            this.button12.TabIndex = 37;
+            this.button12.Text = "下一个关键字";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
+            // 
+            // splitLimitChk
+            // 
+            this.splitLimitChk.AutoSize = true;
+            this.splitLimitChk.Location = new System.Drawing.Point(989, 52);
+            this.splitLimitChk.Name = "splitLimitChk";
+            this.splitLimitChk.Size = new System.Drawing.Size(102, 16);
+            this.splitLimitChk.TabIndex = 38;
+            this.splitLimitChk.Text = "限制split次数";
+            this.splitLimitChk.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 742);
+            this.Controls.Add(this.splitLimitChk);
+            this.Controls.Add(this.button12);
+            this.Controls.Add(this.singalKeyWordCHK);
             this.Controls.Add(this.EnterpriseKeySuffixTxt);
             this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
@@ -624,6 +662,9 @@
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Button button11;
         private System.Windows.Forms.TextBox EnterpriseKeySuffixTxt;
+        private System.Windows.Forms.CheckBox singalKeyWordCHK;
+        private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.CheckBox splitLimitChk;
     }
 }
 

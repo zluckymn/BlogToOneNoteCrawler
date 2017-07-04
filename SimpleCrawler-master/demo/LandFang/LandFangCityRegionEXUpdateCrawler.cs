@@ -107,7 +107,8 @@ namespace SimpleCrawler.Demo
 
             //仙桃潜江天门神农架林区
             var typeValue =1;//0地区，1所在地
-            var cityName = "南京";//苏州 郑州 合肥  武汉  天津 佛山 
+            var cityName = "东莞";//苏州 郑州 合肥  武汉  天津 佛山 
+            cityName = Console.ReadLine();
             var placeType = string.Empty;
             var codeType = string.Empty;
             
@@ -327,6 +328,7 @@ namespace SimpleCrawler.Demo
                     if (hitLandObj.Text("所在地") != cityObj.Text("name") && !string.IsNullOrEmpty(cityObj.Text("name")) && cityObj.Text("name") != "暂无")
                     {
                         updateBosn.Set("所在地", cityObj.Text("name"));
+                        updateBosn.Set("needUpdate", "1");//需要使用app更新详细信息
                         Console.WriteLine("{0}修正为{1}", hitLandObj.Text("所在地"), cityObj.Text("name"));
                     }
 
