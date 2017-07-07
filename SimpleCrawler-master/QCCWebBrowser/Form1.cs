@@ -1151,7 +1151,7 @@ namespace QCCWebBrowser
             InitKeyWordHitCount(cityNameStr);
             // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
             // typeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
-            //typeNameList =new List<string>() { "化妆用具","化妆品","化妆品毛刷","皮具","内衣","鞋帽","服饰、手袋、手机配件、塑胶制品、包装制品 };
+           //typeNameList =new List<string>() { "贷款" };
             // typeNameList.Add("母婴");
             foreach (var _typeName in typeNameList.Distinct())
             {
