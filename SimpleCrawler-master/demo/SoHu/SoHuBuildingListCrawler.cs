@@ -58,6 +58,15 @@ namespace SimpleCrawler.Demo
             get { return "FocusCity"; }
 
         }
+
+        /// <summary>
+        /// 返回
+        /// </summary>
+        public string DataTableNameCityRegion
+        {
+            get { return "CityRegionInfo_MT"; }
+
+        }
         private const string StartUrlTable = "Focus_StartUrl";
         private const string ProjectTable = "Focus_Project";
         private const string ProjectPriceTable = "Focus_ProjectPrice";
@@ -134,6 +143,7 @@ namespace SimpleCrawler.Demo
         }
         Dictionary<string,string> cityGuidDic = new Dictionary<string, string>();
         private List<BsonDocument> allCityList = new List<BsonDocument>();
+        private List<BsonDocument> curCityRegionList = new List<BsonDocument>();
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
             //种子地址需要加布隆过滤
@@ -147,16 +157,27 @@ namespace SimpleCrawler.Demo
             Settings.CurWebProxy = Settings.CurWebProxy;
             Console.WriteLine("正在获取已存在的url数据");
             //布隆url初始化,防止重复读取url
-            Console.WriteLine("正在初始化选择url队列");
-            var cityName = "拉萨";
+            Console.WriteLine("请输入城市名称");
+ 
+            var cityName = Console.ReadLine();
             allCityList = dataop.FindAll(DataTableNameCity).ToList();
             var hitCityObj = allCityList.Where(c=>c.Text("name")== cityName).FirstOrDefault();
-            if (hitCityObj != null)
+
+            var curCity = dataop.FindOneByQuery(DataTableNameCityRegion, Query.Or(Query.EQ("name", cityName+"市"),Query.EQ("name", cityName)));
+            if (curCity != null)
+            {
+               var curCityRegionIds = dataop.FindAllByQuery("CityRegionRelationInfo_MT", Query.EQ("parentId", curCity.Text("id")));
+                curCityRegionList = dataop.FindAllByQuery(DataTableNameCityRegion, Query.In("id", curCityRegionIds.Select(c => (BsonValue)c.Text("cityId")))).ToList();
+            }
+            if (curCityRegionList.Count <= 0)
+            {
+                Console.WriteLine("对应城市不存在");
+                return;
+            }
+            if (hitCityObj != null&&!string.IsNullOrEmpty(hitCityObj.Text("guid")))
             {
                 InitialUrl(hitCityObj.Text("href"));
             }
-
-           
             //Settings.RegularFilterExpressions.Add(@".*?market/(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1}).html");
             //Settings.RegularFilterExpressions.Add(@".*?data/land.*?.html");
             //广州_440105________1_1.html
@@ -336,7 +357,7 @@ namespace SimpleCrawler.Demo
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(htmlString);
             HtmlNode rootNode = document.DocumentNode;
-            HtmlNodeCollection nodes = rootNode.SelectNodes("//div[@class='s-lp-all']");
+            HtmlNodeCollection nodes = rootNode.SelectNodes("//div[@class='s-lp-all ']");
             List<BsonDocument> projectDocs = new List<BsonDocument>();
             bool isSuccessful = true;
             if (nodes != null)
@@ -404,6 +425,14 @@ namespace SimpleCrawler.Demo
                                 if (arr.Length > 0)
                                 {
                                     doc.Add("region", arr[0]);
+                                    //是否匹配显示
+                                    var hitRegion = curCityRegionList.Where(c => c.Text("name").Contains(arr[0])).Count() > 0;
+                                    if (hitRegion==false&& curCityRegionList.Count()>1)
+                                    {
+                                        Console.WriteLine("{0}不是{1}的县市", arr[0], cityGuid);
+                                        continue;
+                                    }
+
                                 }
                             }
                             #endregion
@@ -545,7 +574,7 @@ namespace SimpleCrawler.Demo
 
                         if (doc.Elements.Count() > 0)
                         {
-                            doc.Add("cityGuid", "cityGuid");
+                            doc.Add("cityGuid", cityGuid);
                             doc.Add("dataSource","focus");
                             projectDocs.Add(doc);
                         }

@@ -9,6 +9,8 @@
 
 namespace SimpleCrawler
 {
+    using OpenQA.Selenium.PhantomJS;
+    using OpenQA.Selenium.Support.UI;
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -18,7 +20,7 @@ namespace SimpleCrawler
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
-    
+
     /// <summary>
     /// The crawl master.
     /// </summary>
@@ -446,14 +448,27 @@ namespace SimpleCrawler
                             throw new Exception("AutoSpeedLimit"+ex.Message);
                         }
                     }
-                        string html = string.Empty;
-                    if (Settings.UseSuperWebClient)
+                    string html = string.Empty;
+                    switch (Settings.CrawlMode)
                     {
-                        html = GetSupperHttpResult(urlInfo);
+                        case EnumCrawlMode.PhantomJsViaSelenium:
+                            html = GetPhantomJsResult(urlInfo);
+                            break;
+                        case EnumCrawlMode.HttpHelper:
+                        case EnumCrawlMode.SuperWebClient:
+                            if (Settings.UseSuperWebClient)
+                            {
+                                html = GetSupperHttpResult(urlInfo);
+                            }
+                            else
+                            {
+                                html = GetHttpResult(urlInfo);
+                            }
+                            break;
+                      
+
                     }
-                    else { 
-                         html = GetHttpResult(urlInfo);
-                    }
+                    
                     if (!string.IsNullOrEmpty(html))
                     {
                         this.ParseLinks(urlInfo, html);
@@ -534,6 +549,61 @@ namespace SimpleCrawler
                 }
             }
         }
+        /// <summary>
+        /// 无头浏览器
+        /// </summary>
+        /// <param name="urlInfo"></param>
+        /// <returns></returns>
+        private string GetPhantomJsResult(UrlInfo urlInfo)
+        {   
+            
+            var pageSource = string.Empty;
+            var _service = Settings._service;
+            var _options = Settings._options;
+            if (_service == null || _service==null)
+            {
+                Console.WriteLine("使用PhantomJsMode请先Settings.InitPhantomJs()");
+            }
+            var driver = new PhantomJSDriver(_service, _options);//实例化PhantomJS的WebDriver
+            try
+            {
+                ///默认为settings的设置
+                SeleniumScript script = Settings.script;
+                SeleniumOperation operation = Settings.operation;
+                if (urlInfo.script != null)
+                { script = urlInfo.script; }
+                if (urlInfo.operation != null)
+                { operation = urlInfo.operation; }
+
+                var watch = DateTime.Now;
+                driver.Navigate().GoToUrl(urlInfo.UrlString);//请求URL地址
+                if (script != null) driver.ExecuteScript(script.Code, script.Args);//执行Javascript代码
+                if (operation.Action != null) operation.Action.Invoke(driver);
+                var driverWait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(operation.Timeout));//设置超时时间为x毫秒
+                if (operation.Condition != null) driverWait.Until(operation.Condition);
+                var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;//获取当前任务线程ID
+                var milliseconds = DateTime.Now.Subtract(watch).Milliseconds;//获取请求执行时间;
+                pageSource = driver.PageSource;//获取网页Dom结构
+                return pageSource;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception("执行GetPhantomJsResult出错");
+            }
+            finally
+            {
+                driver.Close();
+                driver.Quit();
+            }
+            return pageSource;
+        }
+
+        /// <summary>
+        /// 使用 SupperWebClient
+        /// </summary>
+        /// <param name="urlInfo"></param>
+        /// <returns></returns>
         private string GetSupperHttpResult(UrlInfo urlInfo)
         {
 
@@ -652,34 +722,35 @@ namespace SimpleCrawler
                     item.ProxyIp = curIPProxy.IP;
                 }
             }
-            if (!string.IsNullOrEmpty(Settings.SimulateCookies))
+            if (!string.IsNullOrEmpty(this.Settings.SimulateCookies))
             {
-                item.Cookie = Settings.SimulateCookies;
+                item.Cookie = this.Settings.SimulateCookies;
             }
-            if (!string.IsNullOrEmpty(Settings.ContentType))
+            if (!string.IsNullOrEmpty(this.Settings.ContentType))
             {
-
-                item.ContentType = Settings.ContentType;
+                item.ContentType = this.Settings.ContentType;
             }
-            if (!string.IsNullOrEmpty(Settings.Referer))
+            if (!string.IsNullOrEmpty(this.Settings.Referer))
             {
-                item.Referer = Settings.Referer;
+                item.Referer = this.Settings.Referer;
             }
-            if (Settings.PostEncoding!=null)
+            if (this.Settings.PostEncoding!= null)
             {
-
-                item.PostEncoding = Settings.PostEncoding;
+                item.PostEncoding = this.Settings.PostEncoding;
             }
-            if (!string.IsNullOrEmpty(Settings.Accept))
+            if (!string.IsNullOrEmpty(this.Settings.ContentType))
             {
-
-                item.ContentType = Settings.Accept;
+                item.ContentType = this.Settings.ContentType;
+            }
+            if (!string.IsNullOrEmpty(this.Settings.Accept))
+            {
+                item.Accept = this.Settings.Accept;
             }
             if (!string.IsNullOrEmpty(urlInfo.Authorization))
             {
-               item.Header.Add("Authorization", urlInfo.Authorization);
+                item.Header.Add("Authorization", urlInfo.Authorization);
             }
-           
+
             try
             {
                 if (Settings.HeadSetDic != null)

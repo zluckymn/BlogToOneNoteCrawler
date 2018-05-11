@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using SimpleCrawler;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -26,21 +27,30 @@ namespace QCCWebBrowser
         }
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-            var settings = Form1.curCrawlSettings;
-            deviceTxt.Text = settings.DeviceId;
-            timestampTxt.Text = settings.timestamp;
-            signTxt.Text = settings.sign;
-            refleshTokenTxt.Text = settings.RefleshToken;
-            accessTokenTxt.Text = settings.AccessToken;
-            comboBox1.Items.Clear();
-            //GetAccessToken();
-            foreach (var account in mainForm.GetAppDeviceAccount)
+            CrawlSettings settings = Form1.curCrawlSettings;
+            this.deviceTxt.Text = settings.DeviceId;
+            this.timestampTxt.Text = settings.timestamp;
+            this.signTxt.Text = settings.sign;
+            this.refleshTokenTxt.Text = settings.RefleshToken;
+            this.accessTokenTxt.Text = settings.AccessToken;
+            this.enterpriseIpTxt.Text = Form1.enterpriseIp;
+            this.isProvinceCHK.Checked = Form1.IsProvince;
+            this.onlyDateUpdateCHK.Checked = Form1.OnlyDateUpdate;
+            this.industryCHK.Checked = Form1.IndustrySearch;
+            this.GRegistCapiBeginTxt.Text = Form1.GRegistCapiBegin;
+            this.GRegistCapiEndTxt.Text = Form1.GRegistCapiEnd;
+            this.comboBox1.Items.Clear();
+            foreach (BsonDocument account in this.mainForm.GetAppDeviceAccount)
             {
-                var index=this.comboBox1.Items.Add(account.Text("deviceId"));
+                int index = this.comboBox1.Items.Add(account.Text("deviceId"));
                 if (account.Text("deviceId") == settings.DeviceId)
                 {
                     this.comboBox1.SelectedIndex = index;
                 }
+            }
+            if (!string.IsNullOrEmpty(Form1.SearchKeyType))
+            {
+                this.searchKeyTypeComBox.SelectedText = Form1.SearchKeyType;
             }
         }
             
@@ -56,18 +66,19 @@ namespace QCCWebBrowser
             var comboBox1 = sender as ComboBox;
             if (comboBox1 != null)
             {
-                var hitDevice = mainForm.GetAppDeviceAccount.Where(c => c.Text("deviceId") == comboBox1.Text).FirstOrDefault();
+                BsonDocument hitDevice = (from c in this.mainForm.GetAppDeviceAccount
+                                          where c.Text("deviceId") == comboBox1.Text
+                                          select c).FirstOrDefault<BsonDocument>();
                 if (hitDevice != null)
                 {
-                    deviceTxt.Text = hitDevice.Text("deviceId");
-                    accessTokenTxt.Text = hitDevice.Text("accessToken");
-                    refleshTokenTxt.Text = hitDevice.Text("refreshToken");
-                    timestampTxt.Text = hitDevice.Text("timestamp");
-                    signTxt.Text = hitDevice.Text("sign");
-                    isBusyTxt.Text = hitDevice.Text("isBusy");
-                    statusTxt.Text = hitDevice.Text("status");
-                    getCountTxt.Text = hitDevice.Text("EnterpriseGuidByKeyWordApp");
-                   
+                    this.deviceTxt.Text = hitDevice.Text("deviceId");
+                    this.accessTokenTxt.Text = hitDevice.Text("accessToken");
+                    this.refleshTokenTxt.Text = hitDevice.Text("refreshToken");
+                    this.timestampTxt.Text = hitDevice.Text("timestamp");
+                    this.signTxt.Text = hitDevice.Text("sign");
+                    this.isBusyTxt.Text = hitDevice.Text("isBusy");
+                    this.statusTxt.Text = hitDevice.Text("status");
+                    this.getCountTxt.Text = hitDevice.Text("EnterpriseGuidByKeyWord_APP");
                 }
             }
         }
@@ -79,6 +90,29 @@ namespace QCCWebBrowser
                 mainForm.ReloadLoginAccount();
             }
           
+    }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Form1.enterpriseIp = this.enterpriseIpTxt.Text;
+            Form1.IsProvince = this.isProvinceCHK.Checked;
+            Form1.OnlyDateUpdate = this.onlyDateUpdateCHK.Checked;
+            Form1.GRegistCapiBegin = this.GRegistCapiBeginTxt.Text;
+            Form1.GRegistCapiEnd = this.GRegistCapiEndTxt.Text;
+            Form1.IsMoreDetailInfo = this.moreDetailInfoCHK.Checked;
+            Form1.IndustrySearch = this.industryCHK.Checked;
+            this.Close();
+        }
+
+        private void searchKeyTypeComBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+          
+            ComboBox comboBox1 = sender as ComboBox;
+            if (comboBox1 != null)
+            {
+                Form1.SearchKeyType = comboBox1.Text;
+            }
+       
     }
     }
 }

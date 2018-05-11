@@ -430,7 +430,7 @@ namespace SimpleCrawler.Demo
                 {
                     if (skip >= 200)//增加筛选关键字》案件类型》文书类型
                     {
-                       var isNewUrl= InitNextUrl(searchJsonObj);
+                        var isNewUrl= InitNextUrl(searchJsonObj);
                         if (!isNewUrl)
                         {
                             //条件增加时间筛选

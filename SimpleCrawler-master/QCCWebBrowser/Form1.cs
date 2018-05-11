@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver.Builders;
-using SimpleCrawler;
+﻿using MongoDB.Bson;using MongoDB.Driver.Builders;using SimpleCrawler;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,31 +30,51 @@ namespace QCCWebBrowser
     public partial class Form1 : Form
     {
         #region 变量
+        List<BsonDocument> PassKeyWordFilterCondition = new List<BsonDocument>();//判断是否需要进行进入下一个keyWord
         List<BsonDocument> cityList = new List<BsonDocument>();
         private BloomFilter<string> urlFilter = new BloomFilter<string>(9900000);
-        
-        private bool USEWEBPROXY = true;
-        string proxyHost = "http://proxy.abuyun.com";
-        string proxyPort = "9010";
+        private BloomFilter<string> ipLimitFilter = new BloomFilter<string>(200000);
+        private string curKeyWordStr = string.Empty;//当前关键字
+        private bool needPassKeyWord = true;//是否建议调到下一个关键字
+        private bool USEWEBPROXY = true;//是否使用代理
+        public static bool OnlyDateUpdate = false;//是否使用时间更新 
+        public static bool IsProvince = false;//是否使用省进行爬取
+        public static string GRegistCapiBegin = "";//注册金额开始
+        public static string GRegistCapiEnd = "";//注册金额开始
+        //是否查找背后关系
+        public static bool IsMoreDetailInfo = false;
+        public static string SearchKeyType = "";//产业园搜索类型
+        public static bool IndustrySearch = false;//是否产业园搜索
+
+
+        private bool ChangeIpWhenInvalid = true;//是否自动切换IP
+        private int AccountMaxAddional = 1100;//每个账号最大可爬取数量；
+        private static int AddToRetryQueueWhenChangeAccount = 20;//当切换账号的时候将前N个url加入待处理队列
+        private long AllAddCount = 0;
+        string proxyHost = "http://http-cla.abuyun.com";//http://proxy.abuyun.com //http-pro.abuyun.com
+        string proxyPort = "9030";
         // 代理隧道验证信息
         //string proxyUser = "H1880S335RB41F8P";
         //string proxyPass = "ECB2CD5B9D783F4E";
         //string proxyUser = "H1538UM3D6R2133P";//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
         //string proxyPass = "511AF06ABED1E7AE";//"ECB2CD5B9D783F4E";////C835A336CD070F9D
-        string proxyUser = "HE0X2CG05WM7953P";//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
-        string proxyPass = "544B04D565F22D97";//"ECB2CD5B9D783F4E";////C835A336CD070F9D
+        string proxyUser = "H283EZ4CP1YFQCRC";//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
+        string proxyPass = "2BAB4571505B4807";//"ECB2CD5B9D783F4E";////C835A336CD070F9D
         WebProxy getWebProxy = new WebProxy();
         private BloomFilter<string> existGuidList = new BloomFilter<string>(9000000);
         private BloomFilter<string> existNameList = new BloomFilter<string>(9000000);
+        string qccUrl = "https://appv2.qichacha.net/app/v3";//https://app.qichacha.net/app/v1/ 旧接口https://appv2.qichacha.net/app/v3
+       // string qccUrl = "https://app.qichacha.net/app/v1";
         private const string siteUserNameElm = "nameNormal";
         private const string sitePwdElm = "pwdNormal";
-        private static string ip = "59.61.72.34";
-        private static string enterpriseIp = "59.61.72.34";//企业库所在ip跨库处理
+        private static string ip = "192.168.1.121";//192.168.1.230 设备号与企业关键字排序所在Id
+        public static string enterpriseIp = "192.168.1.124";//企业库所在ip跨库处理
         private static int port = 37088;//企业库所在ip跨库处理
         private static string connStr = string.Format("mongodb://MZsa:MZdba@{0}:{1}/SimpleCrawler", ip, port);
         private static string curQCCProvinceCode = string.Empty;//qichacha省代码
         private static string curQCCCityCode = string.Empty;//qichacha城市代码
-
+        private string proxyIpDetail = String.Empty;
+        //关键字查询企业所在数据库
         private static string enterpriseNameConnStr = "mongodb://MZsa:MZdba@192.168.1.114/CompanyHY";
         // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));//主数据库
@@ -83,7 +101,7 @@ namespace QCCWebBrowser
         public static bool hasReceiveData = true;//是否获取到数据
         public static int PassInValidTimes = 1;//过验证码失败次数
         public static int PassSuccessTimes = 2;//过验证码成功次数,保护账号 2代表1次
-        public static int GetAccessRetryTimes = 4;//过验证码成功次数,保护账号 2代表1次
+        public static int GetAccessRetryTimes = 10;//过验证码成功次数,保护账号 2代表1次
         public static DateTime LastGetPassGeetestTime = DateTime.MinValue;  //上次获取geetest的时间 
         public static int GeetestMaxSpanSecond = 10;  //上次获取geetest的时间 秒
         private string cityNameStr = "";
@@ -108,6 +126,193 @@ namespace QCCWebBrowser
         List<BsonDocument> allSubFactoryList = new List<BsonDocument>();//子类
         //线程安全的字典统计
         ConcurrentDictionary<string, decimal> keyWordCountDic = new ConcurrentDictionary<string, decimal>();
+        private List<BsonDocument> allCountyCodeList = new List<BsonDocument>();
+        string[] specialCity = new string[] { "北京", "天津", "上海", "重庆" };
+        string[] specialProvince = new string[] { "SH", "BJ", "TJ", "CQ" };
+        /// <summary>
+        /// 根据城市名获取城市代码
+        /// </summary>
+        /// <param name="cityName"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private string GetCountryCode(string cityName, string type = "1")
+        {
+            // "北京", "天津", "上海", "重庆" 直接使用type=1的市会减少数据，应该返回空
+            if (type == "1"||specialCity.Contains(cityName))
+            {
+                return string.Empty;
+            }
+            if (allCountyCodeList.Count() <= 0)
+            {
+                return string.Empty;
+            }
+            var hitCountyCodeObj = allCountyCodeList.Where(c => c.Text("name") == cityName || c.Text("name").Contains(cityName.TrimEnd('市')) && c.Text("type") == type).FirstOrDefault();
+            if (hitCountyCodeObj== null)
+            {
+             
+               hitCountyCodeObj = allCountyCodeList.Where(c => c.Text("name") == cityName || c.Text("name").Contains(cityName.TrimEnd('市'))).FirstOrDefault();
+            }
+
+            if (hitCountyCodeObj != null)
+            {
+                if (hitCountyCodeObj.Text("type") != type)
+                {
+                    if (hitCountyCodeObj.Text("type") == "2")
+                    {
+                        if (type == "1")
+                        {
+                            return hitCountyCodeObj.Text("cityCode");
+                        }
+                        if (type == "0")
+                        {
+                            return hitCountyCodeObj.Text("provinceCode");
+                        }
+                    }
+                    if (hitCountyCodeObj.Text("type") == "1")
+                    {
+                        if (type == "1")
+                        {
+                            return hitCountyCodeObj.Text("code");
+                        }
+                        if (type == "0")
+                        {
+                            return hitCountyCodeObj.Text("provinceCode");
+                        }
+                    }
+                }
+                return hitCountyCodeObj.Text("code");
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// 根据城市名获取城市代码获取所有的区
+        /// </summary>
+        /// <param name="cityName"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private List<string> GetSubCountryCodeList(string provinceCode, string countryCode,string type="2")
+        {
+            if (!string.IsNullOrEmpty(countryCode))
+            {
+                var regionCountryCodeList = allCountyCodeList.Where(c => c.Text("isCity") != "1" && c.Text("provinceCode") == provinceCode && c.Text("cityCode") == countryCode && c.Text("type") == type).Select(c => c.Text("code")).ToList();
+                return regionCountryCodeList;
+            }
+            else //省份爬取 或者北上广深
+            {
+                var regionCountryCodeList = allCountyCodeList.Where(c => c.Text("isCity") != "1" && c.Text("provinceCode") == provinceCode  && c.Text("type") == type).Select(c => c.Text("code")).ToList();
+                return regionCountryCodeList;
+            }
+        }
+
+        /// <summary>
+        /// 获取省份代码
+        /// </summary>
+        /// <param name="countyCode"></param>
+        /// <returns></returns>
+        private string GetCountryProvinceCode(string countyCode)
+        {
+            BsonDocument cityCountryCode = (from c in this.allCountyCodeList
+                                            where c.Text("code") == countyCode
+                                            select c).FirstOrDefault<BsonDocument>();
+            if (cityCountryCode != null)
+            {
+                return cityCountryCode.Text("provinceCode");
+            }
+            return string.Empty;
+        }
+
+        private string InitalQCCAppUrlByKeyWord(string _typeName, string _cityName = "")
+        {
+            string uniqueKey = string.Empty;
+            if (_typeName.Contains("|H|"))
+            {
+                string[] separator = new string[] { "|H|" };
+                string[] strArray = _typeName.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                if (strArray.Length >= 2)
+                {
+                    _typeName = strArray[0];
+                    _cityName = strArray[1];
+                    if (strArray.Length >= 3)
+                    {
+                        uniqueKey = strArray[2];
+                    }
+                }
+            }
+            string curTypeName = _typeName;
+            if (curTypeName.Length == 1)
+            {
+                curTypeName = curTypeName + "业";
+            }
+            string _curTypeName = string.Empty;
+            if (!string.IsNullOrEmpty(SearchKeyType))
+            {
+                _curTypeName = (_curTypeName + string.Format("\"{0}\"", SearchKeyType)) + ":" + string.Format("\"{0}\"", curTypeName);
+                curTypeName = "{" + _curTypeName + "}";
+            }
+            else
+            {
+                curTypeName = HttpUtility.UrlEncode(curTypeName).ToUpper();
+            }
+            if (string.IsNullOrEmpty(_cityName))
+            {
+                _cityName = this.cityNameStr;
+            }
+            string countyCode = string.Empty;
+            if (this.specialCity.Any<string>(c => c.Contains(_cityName)))
+            {
+                countyCode = this.GetCountryCode(_cityName, "1");
+            }
+            else
+            {
+                countyCode = this.GetCountryCode(_cityName, "");
+            }
+            string province = string.Empty;
+            if (!string.IsNullOrEmpty(countyCode))
+            {
+                province = this.GetCountryProvinceCode(countyCode);
+            }
+            else
+            {
+                province = this.GetCountryCode(_cityName, "0");
+            }
+            if ((countyCode == "") && (province == ""))
+            {
+                this.ShowMessageInfo(string.Format("{0}的代码为null", this.cityNameStr), false);
+                return string.Empty;
+            }
+            string url = string.Format(this.qccUrl + "/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&pageIndex=1&isSortAsc=false&startDateBegin=&startDateEnd=&registCapiBegin=&registCapiEnd=&industryV3=&industryCode=&subIndustryCode=&searchType=&countyCode=", new object[] { curTypeName, province, "", "" });
+            if (IsProvince)
+            {
+                url = string.Format(this.qccUrl + "/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&pageIndex=1&isSortAsc=false&startDateBegin=&startDateEnd=&registCapiBegin=&registCapiEnd=&industryV3=&industryCode=&subIndustryCode=&searchType=&countyCode=", curTypeName, province);
+            }
+            if (!string.IsNullOrEmpty(GRegistCapiBegin) || !string.IsNullOrEmpty(GRegistCapiEnd))
+            {
+                url = this.ReplaceParam(url, "registCapiBegin", "", GRegistCapiBegin);
+                url = this.ReplaceParam(url, "registCapiEnd", "", GRegistCapiEnd);
+            }
+            if ((!IsProvince && !string.IsNullOrEmpty(countyCode)) && this.qccUrl.Contains("v3"))
+            {
+                url = this.ReplaceParam(url, "countyCode", "", countyCode);
+            }
+            if (url.Contains("{"))
+            {
+                url = this.ReplaceParam(url, "searchIndex", "default", "multicondition");
+            }
+            if (!string.IsNullOrEmpty(uniqueKey))
+            {
+                url = url + "&uniqueKey=" + uniqueKey;
+            }
+            if (OnlyDateUpdate)
+            {
+                string endDateStr = DateTime.Now.ToString("yyyyMMdd");
+                string startDateStr = this.updateDateTxt.Text;
+                url = this.ReplaceParam(url, "startDateBegin", "", startDateStr);
+                url = this.ReplaceParam(url, "startDateEnd", "", endDateStr);
+            }
+            return url;
+        }
+
         public enum SearchType
         {
             /// <summary>
@@ -142,6 +347,8 @@ namespace QCCWebBrowser
             EnterpriseGuidByKeyWord = 5,
             [EnumDescription("EnterpriseGuidByKeyWord_APP")]
             EnterpriseGuidByKeyWord_APP = 6,
+            [EnumDescription("EnterpriseInvent")]
+            EnterpriseInvent = 7
         }
         /// <summary>
         /// 账号注册类型
@@ -355,7 +562,51 @@ namespace QCCWebBrowser
         {
             get { return DATATABLENAME + "HashMap"; }
         }
+        /// <summary>
+        ///  新版本对应的countyCode
+        /// </summary>
+        public static string DataTableCountyCode
+        {
+            get { return "QCCEnterpriseKeyCountyCode"; }
+        }
 
+        public static string DataTableKeyWordSearch
+        {
+            get { return "QCCEnterpriseKeyKeyWordSearch"; }
+        }
+
+        
+        public string DataTableListCompany
+        {
+            get
+            {
+                return "ListedCompanyInformation";
+            }
+        }
+
+        public string DataTableUnicornCompany
+        {
+            get
+            {
+                return "UnicornCompany";
+            }
+        }
+
+        public string DataTableMoreDetailInfo
+        {
+            get
+            {
+                return "QCCEnterpriseKeyMoreDetailInfo";
+            }
+        }
+
+        public string DataTableInventInfo
+        {
+            get
+            {
+                return "QCCEnterpriseKeyInventInfo";
+            }
+        }
         /// <summary>
         /// QCCApp设备账号
         /// </summary>
@@ -363,7 +614,10 @@ namespace QCCWebBrowser
         {
             get { return "QCCDeviceAccount"; }
         }
-
+        public static string LimitIpPoor
+        {
+            get { return "LimitIpPoor"; }
+        }
         public static CrawlSettings curCrawlSettings
         {
             get { return Settings; }
@@ -373,6 +627,10 @@ namespace QCCWebBrowser
         /// </summary>
         public bool SetSetting(string deviceId, string timestamp, string sign, string refleshToken, string accessToken)
         {
+            if (USEWEBPROXY)
+            {
+                ChangeIp();
+            }
             Settings.neeedChangeAccount = false;
             DeviceAccountRelease(Settings.DeviceId);//当前设备注销
             if (!string.IsNullOrEmpty(deviceId))
@@ -452,7 +710,7 @@ namespace QCCWebBrowser
                 return;
             }
            // SetEnterpriseDataOP("192.168.1.124");//默认
-            SetEnterpriseDataOP("59.61.72.38");//默认
+            SetEnterpriseDataOP(enterpriseIp);//默认
             //if (!string.IsNullOrEmpty(curCity.Text("enterpriseIp")))
             //{
             //    SetEnterpriseDataOP(curCity.Text("enterpriseIp"));
@@ -474,7 +732,7 @@ namespace QCCWebBrowser
         {
             initCurCity();
 
-            if (UrlQueue.Instance.Count > 0) return;
+            if (UrlQueueCount() > 0) return;
             switch (searchType)
             {
                 case SearchType.EnterpriseGuid:
@@ -497,7 +755,11 @@ namespace QCCWebBrowser
                 case SearchType.EnterpriseGuidByKeyWord_APP:
                     InitialEnterpriseGuidByKeyWord_App();
                     break;
+                case SearchType.EnterpriseInvent:
+                    this.InitialEnterpriseInvent();
+                    return;
                 case SearchType.UpdateEnterpriseInfo:
+
                 default:
                     InitialEnterpriseInfo();
                     break;
@@ -505,6 +767,56 @@ namespace QCCWebBrowser
 
 
 
+        }
+
+
+        private void InitialEnterpriseInvent()
+        {
+            Console.WriteLine("初始化投资数据");
+            Settings.MaxReTryTimes = 100;
+            if (!string.IsNullOrEmpty(this.MaxAccountCrawlerCountTxt.Text))
+            {
+                int crawlerCount = 0;
+                if (int.TryParse(this.MaxAccountCrawlerCountTxt.Text, out crawlerCount))
+                {
+                    Settings.MaxAccountCrawlerCount = crawlerCount;
+                }
+            }
+            this.curModetailInfoTableName = this.DataTableUnicornCompany;
+            string keyName = "guid";
+            IMongoQuery[] clauses = new IMongoQuery[] { Query.NE("isInventUpdate", "4"), Query.Exists("guid", true) };
+            string[] fields = new string[] { "guid" };
+            List<BsonDocument> allEnterpriseList = enterpriseDataop.FindAllByQuery(this.curModetailInfoTableName, Query.And(clauses)).SetFields(fields).ToList<BsonDocument>();
+            Console.WriteLine("待处理个数:{0}", allEnterpriseList.Count<BsonDocument>());
+            if (allEnterpriseList.Count<BsonDocument>() > 0)
+            {
+                foreach (BsonDocument enterprise in allEnterpriseList)
+                {
+                    string key = enterprise.Text(keyName);
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        string backDetailInfoUrl = string.Format("http://www.qichacha.com/cms_map?keyNo={0}", key);
+                        if (!this.urlFilter.Contains(backDetailInfoUrl))
+                        {
+                            UrlInfo urlInfo = new UrlInfo(backDetailInfoUrl)
+                            {
+                                Depth = 1,
+                                UniqueKey = key
+                            };
+                            if (this.splitLimitChk.Checked)
+                            {
+                                urlInfo.UrlSplitTimes = -3;
+                            }
+                            UrlQueue.Instance.EnQueue(urlInfo);
+                        }
+                    }
+                }
+            }
+            if (this.UrlQueueCount() <= 0)
+            {
+                this.richTextBox.AppendText("无查找到数据");
+                MessageBox.Show("无数据");
+            }
         }
 
         /// <summary>
@@ -628,77 +940,68 @@ namespace QCCWebBrowser
         /// </summary>
         private void InitialEnterpriseGuidByKeyWordEnhence()
         {
-            Settings.MaxReTryTimes = 100;
-            var enterpriseDataop = new DataOperation(new MongoOperation(enterpriseNameConnStr));
+            Settings.MaxReTryTimes = 1;
+            
             var cityName = cityNameStr;
 
-            if (string.IsNullOrEmpty(cityName))
-            {
-                MessageBox.Show("请选择城市");
-            }
+            
             var cityQuery = Query.EQ("cityName", cityName);
-            //var hitAllEnterpriseList = dataop.FindAllByQuery(DataTableName, cityQuery).SetFields( "guid").ToList();
 
-            //foreach (var guid in hitAllEnterpriseList.Select(c => c.Text("guid")).ToList())
-            //{
-            //    if (!existGuidList.Contains(guid))
-            //    {
-            //        existGuidList.Add(guid);
-            //        //return;//测试只添加一次
-            //    }
-            //}
-            // var nameList = hitAllEnterpriseList.Select(c => c.Text("name")).ToList();
+            var allExistEnterpriseList = enterpriseDataop.FindAll(DataTableKeyWordSearch).SetFields("guid","key","similar").ToList();
 
-
-            //foreach (var name in nameList)
-            //{
-            //    if (!existNameList.Contains(name))
-            //    {
-            //        existNameList.Add(name);
-            //        //return;//测试只添加一次
-            //    }
-            //}
-            if (cityNameStr == "烟台")
+            foreach (var entObj in allExistEnterpriseList)
             {
-                tempTableName = "SQ_yantai_Company";
+                if (!existGuidList.Contains(entObj.Text("guid")))
+                {
+                    existGuidList.Add(entObj.Text("guid"));
+                    //return;//测试只添加一次
+                }
+                if (!existNameList.Contains(entObj.Text("key")))
+                {
+                    existNameList.Add(entObj.Text("key"));
+                }
             }
+
+
+
+
+            //var tableName = "HuXiuProject"; //"ListedCompanyInformation companyName"; , "geographical"
+            //var columnName = "地址";//
+            //allEnterpriseList = enterpriseDataop.FindAllByQuery(tableName, Query.And(Query.Exists("eGuid", false), Query.Exists(columnName, true))).SetFields(columnName, "法定代表人").ToList();
+            var tableName = "ListedCompanyInformation"; //"ListedCompanyInformation companyName";
+            var columnName = "companyName";//
+              tableName = "SiMu_Project"; //"ListedCompanyInformation companyName";
+              columnName = "epNeedCompanyName";//
+            //var tableName = "UnicornCompany"; //"ListedCompanyInformation companyName";
+            //var columnName = "name";//
             var allEnterpriseList = new List<BsonDocument>();
-            switch (cityNameStr)
-            {
-                case "烟台":
-                    tempTableName = "SQ_yantai_Company";
-                    break;
-                case "西安":
-                    tempTableName = "QCCEnterprise_XiAn";//"SQ_xian_Company";
-                    enterpriseDataop = dataop;
-                    break;
-
-                case "北京": tempTableName = "SQ_beijing_Company"; break;
-
-                case "成都": tempTableName = "SQ_chengdu_Company"; break;
-
-                case "深圳": tempTableName = "SQ_shen_Company"; break;
-
-                case "佛山":
-                    tempTableName = "QCCEnterprise_FoShan";
-                    enterpriseDataop = dataop; break;
-
-
-            }
-            allEnterpriseList = enterpriseDataop.FindAllByQuery(tempTableName, Query.Exists("isSearched", false)).SetFields("name").ToList();
+            allEnterpriseList = enterpriseDataop.FindAllByQuery(tableName, Query.And(Query.Exists(columnName,true))).SetFields(columnName).ToList();
             if (allEnterpriseList.Count() > 0)
             {
 
-                foreach (var enterprise in allEnterpriseList.Where(c => !existNameList.Contains(c.Text("name"))))
+                foreach (var enterprise in allEnterpriseList.Where(c => !existNameList.Contains(c.Text(columnName))))
                 {
-                    var guidUrl = string.Format("http://www.qichacha.com/gongsi_getList?key={0}", enterprise.Text("name"));
-                    UrlQueue.Instance.EnQueue(new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=0", enterprise.Text("name")) });
+                    //var companyName = enterprise.Text("companyName");
+                    //var hitCompany = allExistEnterpriseList.Where(c => c.Text("key") == companyName && c.Text("similar") == "1").FirstOrDefault();
+                    //if (hitCompany != null)
+                    //{
+                    //    DBChangeQueue.Instance.EnQueue(new StorageData() {
+                    //        Document = new BsonDocument().Add("eGuid", hitCompany.Text("guid")),
+                    //        Name = tableName,
+                    //        Query = Query.EQ("companyName", companyName) ,  
+                    //        Type = StorageType.Update});
+                    //}
+                    //continue;
+                     
+                    var guidUrl = string.Format("http://www.qichacha.com/gongsi_getList?key={0}", enterprise.Text(columnName));
+                    UrlQueue.Instance.EnQueue(new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=undefined", enterprise.Text(columnName)), Authorization = tableName });
                 }
             }
             else
             {
                 MessageBox.Show("无数据");
             }
+            StartDBChangeProcessQuick();
         }
 
 
@@ -751,7 +1054,7 @@ namespace QCCWebBrowser
                 UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1 });
 
             }
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.richTextBox.AppendText("无查找到数据");
                 MessageBox.Show("无数据");
@@ -861,7 +1164,7 @@ namespace QCCWebBrowser
             //{
             //    UrlQueue.Instance.EnQueue(new UrlInfo(_url) { Depth = 1 });
             //}
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.richTextBox.AppendText("无查找到数据");
                 MessageBox.Show("无数据");
@@ -869,7 +1172,112 @@ namespace QCCWebBrowser
             }
         }
 
+        private void InitialEnterpriseGuidByKeyWordAPP()
+        {
+            if (StringQueue.Instance.Count > 0)
+            {
+                return;
+            }
+            Console.WriteLine("初始化数据");
+            Settings.MaxReTryTimes = 100;//尝试最大个数
+            if (!string.IsNullOrEmpty(this.MaxAccountCrawlerCountTxt.Text))
+            {
+                int crawlerCount = 0;
+                if (int.TryParse(this.MaxAccountCrawlerCountTxt.Text, out crawlerCount))
+                {//最大化利用账号
+                    Settings.MaxAccountCrawlerCount = crawlerCount;
+                }
+            }
+          
+            if (curCity == null)
+            {
+                ShowMessageInfo("请先初始化城市");
+                return;
+            }
+            var curProvince = cityList.Where(c => c.Text("code") == curCity.Text("provinceCode")).FirstOrDefault();
+           
+                                                                                                                                                                                                                                  //那些超出1000的url 和第一页需要重新进行读取一次，而且分页内容可过滤
+                                                                                                                                                                                                                                  //app只能查找第一页                                                                                                                                                                                      // foreach (var hitUrl in allHitUrlList.Where(c=>c.Int("isSplit")!=1&& c.Int("isFirstPage") != 1))
+                //foreach (var hitUrl in allHitUrlList.Where(c => c.Int("isSplit") != 1 && c.Int("recordCount") <= 40))
+                //{
 
+                //    if (!urlFilter.Contains(hitUrl.Text("url")))
+                //    {
+                //        urlFilter.Add(hitUrl.Text("url"));
+                //    }
+
+                //}
+            
+
+            var typeNameList = new List<string>();
+            var province = curCity.Text("provinceCode");
+            var cityCode = curCity.Text("code");
+            if (curProvince == null)
+            {
+                province = cityCode;
+                cityCode = string.Empty;
+            }
+
+            curQCCProvinceCode = province;
+            curQCCCityCode = cityCode;
+          
+            ///是否限制split次数
+            if (this.splitLimitChk.Checked == true)
+            {
+                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWord, null, new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 0).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
+            }
+            else
+            {
+                var cityNameQueryList = new List<string>() { "南昌", "沈阳", "大连", "上海", "深圳", "广州" };
+                // typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", "广州"), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 20).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
+                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c => (BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 100).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
+            }
+            InitKeyWordHitCount(cityNameStr);
+            // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
+            if (keyWordSourceCHK.Checked == true)
+            { //是否使用关键字数据源
+                typeNameList = typeNameList.Take(10).ToList();
+                var tempTypeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
+
+                typeNameList.AddRange(tempTypeNameList);
+            }
+            // typeNameList.Add("母婴");
+            var fetchKeyWorldCount = 0;
+            int.TryParse(KeyWordFilterTextBox.Text.Trim(), out fetchKeyWorldCount);
+            var skipCount = fetchKeyWorldCount == 0 ? 0 : typeNameList.Distinct().Count() - fetchKeyWorldCount;
+            foreach (var _typeName in typeNameList.Distinct().Skip(skipCount))
+            {
+                if (!this.singalKeyWordCHK.Checked)//是否单个单个运行
+                {
+                    //按时间逆序
+                    //var url = string.Format("https://appv2.qichacha.net/app/v1/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&cityCode={2}&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&sortField=startdate&startDateBegin=&startDateEnd=&industryCode={3}&subIndustryCode={4}&p=1", curTypeName, province, cityCode, "", "");
+                    var url = InitalQCCAppUrlByKeyWord(_typeName);
+
+                    if (!urlFilter.Contains(url))
+                    {
+                        var urlInfo = new UrlInfo(url) { Depth = 1 };
+                        ///是否限制split次数
+                        if (this.splitLimitChk.Checked == true)
+                        {
+                            urlInfo.UrlSplitTimes = -3;//只能拆分三次
+                        }
+
+                        UrlQueue.Instance.EnQueue(urlInfo);
+                    }
+                }
+                else
+                {
+                    StringQueue.Instance.EnQueue(_typeName);
+                }
+            }
+             
+            if (UrlQueueCount() <= 0)
+            {
+                this.richTextBox.AppendText("无查找到数据");
+                MessageBox.Show("无数据");
+
+            }
+        }
 
         /// <summary>
         /// 初始化待转化的企业名称
@@ -963,7 +1371,7 @@ namespace QCCWebBrowser
                     }
                 }
             }
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.richTextBox.AppendText("无查找到数据");
                 MessageBox.Show("无数据");
@@ -1041,7 +1449,7 @@ namespace QCCWebBrowser
             }
 
 
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.richTextBox.AppendText("无查找到数据");
                 MessageBox.Show("无数据");
@@ -1060,18 +1468,21 @@ namespace QCCWebBrowser
             }
             Console.WriteLine("初始化数据");
             Settings.MaxReTryTimes = 100;//尝试最大个数
-            //Settings.MaxAccountCrawlerCount = 200;//最大化利用账号
-            //this.textBox5.Text = "10000";
-            //var allEnterpriseList = dataop.FindAll(DataTableName).SetFields("guid").Select(c => c.Text("guid")).ToList(); ;
-
-
-            //foreach(var guid in allEnterpriseList) { 
-            //  if (!existGuidList.Contains(guid))
-            //    {
-            //        existGuidList.Add(guid);
-            //        //return;//测试只添加一次
-            //    }
-            //}
+            if (!string.IsNullOrEmpty(this.MaxAccountCrawlerCountTxt.Text))
+            {
+                int crawlerCount = 0;
+                if (int.TryParse(this.MaxAccountCrawlerCountTxt.Text,out crawlerCount)) {//最大化利用账号
+                    Settings.MaxAccountCrawlerCount = crawlerCount;
+               }
+            }
+            if (IsMoreDetailInfo)
+            {
+                this.InitialEnterpriseGuidMoreDetailInfoAPP();
+            }
+            else if (IndustrySearch)
+            {
+                this.InitialEnterpriseOtherSourceAPP();
+            }
 
             //var cityNameStr = "上海,北京,成都,福州,广州,杭州,黄山,济南,龙岩,南昌,南京,宁波,泉州,深圳,苏州,武汉,西安,厦门,大连,长沙,合肥,镇江,宁波,中山,郑州,昆明,江苏,重庆";
 
@@ -1083,6 +1494,7 @@ namespace QCCWebBrowser
             var curProvince = cityList.Where(c => c.Text("code") == curCity.Text("provinceCode")).FirstOrDefault();
             var typeList = dataop.FindAll(DataTableIndustry).ToList();//遍历所有的父分类与子分类
             allSubFactoryList = typeList.Where(c => c.Int("type") == 1).ToList();//获取子类
+
             if (NEEDRECORDURL)
             {                                                     //因为app只能取40个一页需要条件筛选到最后，并且超出个数需要后续通过vip账号进行重复爬取                                                                                                                                                                              // foreach (var hitUrl in allHitUrlList.Where(c=>c.Int("isSplit")!=1&& c.Int("isFirstPage") != 1))
                 var allHitUrlList = dataop.FindAllByQuery(DataTableNameKeyWordURLAPP, Query.And(Query.EQ("province", curCity.Text("provinceCode")), Query.EQ("cityCode", curCity.Text("code")), Query.EQ("isApp", "1"))).ToList();//获取执行过的url
@@ -1144,24 +1556,33 @@ namespace QCCWebBrowser
             typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWord,null,new string[] { "keyWord","count"}).Where(c=>c.Int("count")>0).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
             }
             else {
-                var cityNameQueryList = new List<string>() { "南昌", "沈阳", "大连" };
+                var cityNameQueryList = new List<string>() { "南昌", "沈阳", "大连" ,"上海", "深圳", "广州" };
                 // typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", "广州"), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 20).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
-                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c=>(BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") >1).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
+                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c=>(BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") >100).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
             }
             InitKeyWordHitCount(cityNameStr);
             // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
-            // typeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
-           //typeNameList =new List<string>() { "贷款" };
+            if (keyWordSourceCHK.Checked == true) { //是否使用关键字数据源
+                typeNameList = typeNameList.Take(10).ToList();
+               
+                var tempTypeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
+                typeNameList.AddRange(tempTypeNameList);
+                var needAddKeyWords = new string[] { "房地产", "贸易", "交通", "设备", "轻工", "食品", "医药", "公用", "金属","电子","建筑材料","化工","金融" };
+                typeNameList.AddRange(needAddKeyWords);
+            }
             // typeNameList.Add("母婴");
-            foreach (var _typeName in typeNameList.Distinct())
-            {
-              
+            var fetchKeyWorldCount = 0;
+            int.TryParse(KeyWordFilterTextBox.Text.Trim(), out fetchKeyWorldCount);
+            var skipCount = fetchKeyWorldCount==0?0:typeNameList.Distinct().Count() - fetchKeyWorldCount;
 
+            foreach (var _typeName in typeNameList.Distinct().Skip(skipCount))
+            {
                 if (!this.singalKeyWordCHK.Checked)//是否单个单个运行
                 {
                     //按时间逆序
-                    //var url = string.Format("https://app.qichacha.net/app/v1/base/advancedSearch?searchKey={0}&searchIndex=multicondition&province={1}&cityCode={2}&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&sortField=startdate&startDateBegin=&startDateEnd=&industryCode={3}&subIndustryCode={4}&p=1", curTypeName, province, cityCode, "", "");
-                    var url = InitalQCCAppUrlByKeyWord(_typeName);
+                    //var url = string.Format("https://appv2.qichacha.net/app/v1/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&cityCode={2}&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&sortField=startdate&startDateBegin=&startDateEnd=&industryCode={3}&subIndustryCode={4}&p=1", curTypeName, province, cityCode, "", "");
+                    var url = InitalQCCAppUrlByKeyWord(_typeName,"");
+
                     if (!urlFilter.Contains(url))
                     {
                         var urlInfo = new UrlInfo(url) { Depth = 1 };
@@ -1185,19 +1606,184 @@ namespace QCCWebBrowser
             #endregion
             //武汉5000条数据测试用例\
             // MessageBox.Show("泉州测试用例");
-            //var _url = "https://app.qichacha.net/app/v1/base/advancedSearch?searchKey={%22scope%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22opername%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22featurelist%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22address%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22name%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22}&searchIndex=multicondition&province=FJ&cityCode=5&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&startDateBegin=&startDateEnd=&industryCode=&subIndustryCode=&timestamp=1475551026186&sign=38c2d1af098cda090241832505e6cb74cde22be8&p=1";
-            //  var _url = "https://app.qichacha.net/app/v1/base/advancedSearch?searchKey={%22scope%22:%22%E6%AF%8D%E5%A9%B4%22,%22opername%22:%22%E6%AF%8D%E5%A9%B4%22,%22featurelist%22:%22%E6%AF%8D%E5%A9%B4%22,%22address%22:%22%E6%AF%8D%E5%A9%B4%22,%22name%22:%22%E6%AF%8D%E5%A9%B4%22}&searchIndex=multicondition&province=FJ&cityCode=5&pageIndex=1&isSortAsc=false&industryCode=&subIndustryCode=&timestamp=1475645368972&sign=15df1c178fa82b7b7b26d0653afc6eb95c98a7fa";//母婴
+            //var _url = "https://appv2.qichacha.net/app/v1/base/advancedSearch?searchKey={%22scope%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22opername%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22featurelist%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22address%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22%2c%22name%22%3a%22%e5%85%b6%e4%bb%96%e9%87%87%e7%9f%bf%22}&searchIndex=default&province=FJ&cityCode=5&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&startDateBegin=&startDateEnd=&industryCode=&subIndustryCode=&timestamp=1475551026186&sign=38c2d1af098cda090241832505e6cb74cde22be8&p=1";
+            //  var _url = "https://appv2.qichacha.net/app/v1/base/advancedSearch?searchKey={%22scope%22:%22%E6%AF%8D%E5%A9%B4%22,%22opername%22:%22%E6%AF%8D%E5%A9%B4%22,%22featurelist%22:%22%E6%AF%8D%E5%A9%B4%22,%22address%22:%22%E6%AF%8D%E5%A9%B4%22,%22name%22:%22%E6%AF%8D%E5%A9%B4%22}&searchIndex=default&province=FJ&cityCode=5&pageIndex=1&isSortAsc=false&industryCode=&subIndustryCode=&timestamp=1475645368972&sign=15df1c178fa82b7b7b26d0653afc6eb95c98a7fa";//母婴
             //if (!urlFilter.Contains(_url))
             //{
             //    UrlQueue.Instance.EnQueue(new UrlInfo(_url) { Depth = 1 });
             //}
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.richTextBox.AppendText("无查找到数据");
                 MessageBox.Show("无数据");
 
             }
         }
+
+        private string curModetailInfoTableName = string.Empty;
+        private void InitialEnterpriseGuidMoreDetailInfoAPP()
+        {
+            this.curModetailInfoTableName = this.DataTableUnicornCompany;
+            IMongoQuery[] clauses = new IMongoQuery[] { Query.NE("isUpdate", "2"), Query.Exists("guid", true) };
+            string[] fields = new string[] { "guid" };
+            List<BsonDocument> allEnterpriseList = enterpriseDataop.FindAllByQuery(this.curModetailInfoTableName, Query.And(clauses)).SetFields(fields).ToList<BsonDocument>();
+            Console.WriteLine("待处理个数:{0}", allEnterpriseList.Count<BsonDocument>());
+            if (allEnterpriseList.Count<BsonDocument>() > 0)
+            {
+                foreach (BsonDocument enterprise in allEnterpriseList)
+                {
+                    string key = enterprise.Text("guid");
+                    string backDetailInfoUrl = string.Format("http://www.qichacha.com/more_findmuhou?keyNo={0}", key);
+                    if (!this.urlFilter.Contains(backDetailInfoUrl))
+                    {
+                        UrlInfo urlInfo = new UrlInfo(backDetailInfoUrl)
+                        {
+                            Depth = 1,
+                            UniqueKey = key
+                        };
+                        if (this.splitLimitChk.Checked)
+                        {
+                            urlInfo.UrlSplitTimes = -3;
+                        }
+                        UrlQueue.Instance.EnQueue(urlInfo);
+                    }
+                }
+            }
+            if (this.UrlQueueCount() <= 0)
+            {
+                this.richTextBox.AppendText("无查找到数据");
+                MessageBox.Show("无数据");
+            }
+        }
+
+        private string GetCountryByAreaCode(string areaCode)
+        {
+            string cityName = string.Empty;
+            string[] separator = new string[] { "\t", "" };
+            string[] areaCodeArr = areaCode.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            if (areaCode.Length < 6)
+            {
+                areaCode = areaCode.PadRight(6, '0');
+            }
+            if (areaCodeArr.Length >= 2)
+            {
+                string _areaCode = areaCodeArr[0];
+                if (_areaCode.Length < 6)
+                {
+                    _areaCode = _areaCode.PadRight(6, '0');
+                }
+                 var hitCurCityCode = (from c in this.allCountyCodeList
+                                            where c.Text("code") == _areaCode
+                                            select c).FirstOrDefault<BsonDocument>();
+                if (hitCurCityCode == null)
+                {
+                    BsonDocument regionCode = (from c in this.allCountyCodeList
+                                               where c.Text("code") == areaCodeArr[1]
+                                               select c).FirstOrDefault<BsonDocument>();
+                    if (regionCode != null)
+                    {
+                        string cityCode = regionCode.Text("cityCode");
+                        hitCurCityCode = (from c in this.allCountyCodeList
+                                       where c.Text("code") == cityCode
+                                       select c).FirstOrDefault<BsonDocument>();
+                    }
+                }
+                if (hitCurCityCode != null)
+                {
+                    cityName = hitCurCityCode.Text("name");
+                }
+                return cityName;
+            }
+            string code = areaCodeArr[0];
+            if (code.Length < 6)
+            {
+                code = code.PadRight(6, '0');
+            }
+            BsonDocument curCityCode = (from c in this.allCountyCodeList
+                                        where c.Text("code") == code
+                                        select c).FirstOrDefault<BsonDocument>();
+            if (curCityCode != null)
+            {
+                cityName = curCityCode.Text("name");
+            }
+            return cityName;
+        }
+
+        private void InitialEnterpriseOtherSourceAPP()
+        {
+            Console.WriteLine("初始化数据");
+            Settings.MaxReTryTimes = 100;
+            if (!string.IsNullOrEmpty(this.MaxAccountCrawlerCountTxt.Text))
+            {
+                int crawlerCount = 0;
+                if (int.TryParse(this.MaxAccountCrawlerCountTxt.Text, out crawlerCount))
+                {
+                    Settings.MaxAccountCrawlerCount = crawlerCount;
+                }
+            }
+            List<BsonDocument> typeNameList = (from c in dataop.FindAll("ZS_yuanqu")
+                                               where c.Int("count") <= 0
+                                               orderby c.Text("provName")
+                                               select c).ToList<BsonDocument>();
+            int fetchKeyWorldCount = 0;
+            int.TryParse(this.KeyWordFilterTextBox.Text.Trim(), out fetchKeyWorldCount);
+            int skipCount = (fetchKeyWorldCount == 0) ? 0 : (typeNameList.Distinct<BsonDocument>().Count<BsonDocument>() - fetchKeyWorldCount);
+            foreach (BsonDocument item in typeNameList.Distinct<BsonDocument>().Skip<BsonDocument>(skipCount))
+            {
+                string _typeName = item.Text("name").Replace("-", " ").Replace("(", "").Replace("（", "").Replace("）", "").Replace(")", "").Replace(".", "").Replace("。", "").Replace("\"", "").Replace("\"", "").Replace("?", "").Replace("-", "");
+                string cityName = item.Text("cityName");
+                string provName = item.Text("provName");
+                if (_typeName.Contains("#"))
+                {
+                    _typeName = _typeName.Replace("&#8226;", "");
+                }
+                if (!_typeName.Contains("#"))
+                {
+                    if (_typeName.Contains(provName))
+                    {
+                        _typeName = _typeName.Replace(provName, "");
+                    }
+                    if (_typeName.Contains(cityName))
+                    {
+                        _typeName = _typeName.Replace(cityName, "");
+                    }
+                    if (string.IsNullOrEmpty(cityName) || cityName.Contains("全部"))
+                    {
+                        cityName = provName;
+                    }
+                    if (!this.singalKeyWordCHK.Checked)
+                    {
+                        string url = this.InitalQCCAppUrlByKeyWord(_typeName, item.Text("cityName"));
+                        if (!this.urlFilter.Contains(url) && !string.IsNullOrEmpty(url))
+                        {
+                            UrlInfo urlInfo = new UrlInfo(url)
+                            {
+                                Depth = 1,
+                                UniqueKey = item.Text("_id")
+                            };
+                            if (this.splitLimitChk.Checked)
+                            {
+                                urlInfo.UrlSplitTimes = -3;
+                            }
+                            UrlQueue.Instance.EnQueue(urlInfo);
+                        }
+                    }
+                    else
+                    {
+                        string[] textArray1 = new string[] { _typeName, "|H|", cityName, "|H|", item.Text("_id") };
+                        StringQueue.Instance.EnQueue(string.Concat(textArray1));
+                    }
+                }
+            }
+            if (this.UrlQueueCount() <= 0)
+            {
+                this.richTextBox.AppendText("无查找到数据");
+                MessageBox.Show("无数据");
+            }
+        }
+
+
+
         #endregion
         #region 数据处理
 
@@ -1235,6 +1821,9 @@ namespace QCCWebBrowser
                     case SearchType.EnterpriseGuidByKeyWord_APP:
                         DataReceiveEnterpriseGuidByKeyWord_APP(args);
                         break;
+                    case SearchType.EnterpriseInvent:
+                        this.DataReceiveInitialEnterpriseInvent(args);
+                        break;
                     case SearchType.UpdateEnterpriseInfo:
                     default:
                         DataReceiveEnterpriseInfo(args);
@@ -1264,8 +1853,8 @@ namespace QCCWebBrowser
             }
             catch (Exception ex)
             {
-
-                UrlQueue.Instance.EnQueue(new UrlInfo(args.Url) { Depth = args.Depth + Settings.MaxReTryTimes / 10 });
+                args.urlInfo.Depth = Settings.MaxReTryTimes / 10;
+                UrlQueue.Instance.EnQueue(args.urlInfo);
                 ShowMessageInfo(ex.Message + args.Url);
             }
 
@@ -1287,7 +1876,7 @@ namespace QCCWebBrowser
             {
                 guid = GetGuidFromUrl(args.Url);
             }
-            var message = string.Format("详细信息{0}获取成功剩余url{1}\r{2}", guid, UrlQueue.Instance.Count, args.Url);
+            var message = string.Format("详细信息{0}获取成功剩余url{1}\r{2}", guid, UrlQueueCount(), args.Url);
             //获取企业信息http://www.qichacha.com/service/getRootNodeInfoByEnterpriseId?enterpriseId=1b9df7af-e7b3-4d45-93ce-8acf02534adb&_=1466587526737
             if (!string.IsNullOrEmpty(guid))
             {
@@ -1456,6 +2045,7 @@ namespace QCCWebBrowser
 
             if (args.Html == "null")
             {
+                ShowMessageInfo(UrlQueueCount().ToString()+args.urlInfo.PostData);
                 return;
             }
             var content = FromUnicodeString(args.Html).Replace("<em>", "").Replace("</em>", "");
@@ -1469,63 +2059,71 @@ namespace QCCWebBrowser
                 var cityName = cityNameStr;
                 var key = GetUrlParam(args.Url, "key");
                 var enterpriseList = jsonObj["result"];
+               
                 //MessageBox.Show(dataInfo["info"]["id"].ToString());
                 var index = 1;
                 foreach (var enterpriseObj in enterpriseList)
                 {
                     var curUpdateBson = new BsonDocument();
-
-
+                    if (!string.IsNullOrEmpty(args.urlInfo.Authorization))
+                    {
+                        curUpdateBson.Add("type", args.urlInfo.Authorization);//匹配对应表
+                    }
                     var guid = enterpriseObj["KeyNo"].ToString();
                     var name = enterpriseObj["Name"].ToString();
-                    var message = string.Format("详细信息{0}_{1}获取成功剩余url{2}\r", guid, name, UrlQueue.Instance.Count);
+                    var reason =enterpriseObj["Reason"].ToString();
+                    var operName= enterpriseObj["OperName"].ToString();
+                    var message = string.Format("详细信息{0}_{1}获取成功剩余url{2}{3}\r", guid, name, UrlQueueCount(),args.Url);
 
-                    if (!string.IsNullOrEmpty(guid) && !existGuidList.Contains(guid) && !ExistGuid(guid))
+                    if (!string.IsNullOrEmpty(guid))
                     {
                         curUpdateBson.Add("isLandEnterprise", "1");//匹配
-                        if (index == 1)
-                            curUpdateBson.Add("similar", index.ToString());//匹配
+                        if (key == name)
+                        {
+                            curUpdateBson.Add("similar", index.ToString());//第一个匹配
+                        }
                         curUpdateBson.Add("key", key);//匹配
                         curUpdateBson.Set("guid", guid);
                         curUpdateBson.Set("name", name);
-                        curUpdateBson.Set("cityName", cityName);
-                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Type = StorageType.Insert });
+                        curUpdateBson.Set("reason", reason);
+                        curUpdateBson.Set("operName", operName);
+                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableKeyWordSearch, Type = StorageType.Insert });
                         existGuidList.Add(guid);
                     }
                     else
                     {
-                        var updateBosn = new BsonDocument().Add("isLandEnterprise", "1");//地块信息
-                        var hitDistinct = cityList.Where(c => name.Contains(c.Text("name").Replace("市", "").Replace("省", ""))).ToList();
-                        var hitProvince = hitDistinct.Where(c => c.Int("type") == 0).FirstOrDefault();
-                        var provinceName = hitProvince != null ? hitProvince.Text("name") : "";
-                        var hitCityName = hitDistinct.Where(c => c.Int("type") == 1).FirstOrDefault();
-                        if (hitCityName != null)
-                        {
-                            var tempCityName = hitCityName.Text("name").Replace("市", "");
-                            if (cityName != tempCityName)
-                            {
-                                updateBosn.Add("cityName", tempCityName);
-                            }
-                        }
-                        else
-                        {
-                            if (provinceName == "北京" || provinceName == "上海")
-                            {
-                                updateBosn.Add("cityName", provinceName);
-                            }
-                            else
-                            {
-                                updateBosn.Add("provinceName", provinceName);
-                            }
-                        }
-                        if (index == 1)
-                            updateBosn.Add("similar", index.ToString());//匹配
-                        updateBosn.Add("key", key);//匹配
-                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBosn, Query = Query.EQ("guid", guid), Name = DataTableName, Type = StorageType.Update });
+                        //var updateBosn = new BsonDocument().Add("isLandEnterprise", "1");//地块信息
+                        //var hitDistinct = cityList.Where(c => name.Contains(c.Text("name").Replace("市", "").Replace("省", ""))).ToList();
+                        //var hitProvince = hitDistinct.Where(c => c.Int("type") == 0).FirstOrDefault();
+                        //var provinceName = hitProvince != null ? hitProvince.Text("name") : "";
+                        //var hitCityName = hitDistinct.Where(c => c.Int("type") == 1).FirstOrDefault();
+                        //if (hitCityName != null)
+                        //{
+                        //    var tempCityName = hitCityName.Text("name").Replace("市", "");
+                        //    if (cityName != tempCityName)
+                        //    {
+                        //        updateBosn.Add("cityName", tempCityName);
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    if (provinceName == "北京" || provinceName == "上海")
+                        //    {
+                        //        updateBosn.Add("cityName", provinceName);
+                        //    }
+                        //    else
+                        //    {
+                        //        updateBosn.Add("provinceName", provinceName);
+                        //    }
+                        //}
+                        //if (index == 1)
+                        //    updateBosn.Add("similar", index.ToString());//匹配
+                        //updateBosn.Add("key", key);//匹配
+                       // DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBosn, Query = Query.EQ("guid", guid), Name = DataTableKeyWordSearch, Type = StorageType.Update });
                         //DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("cityName", cityName),Query=Query.EQ("guid", guid), Name = DataTableName, Type = StorageType.Update });
                         message += "exists";
                     }
-                    DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isSearched", "1"), Query = Query.EQ("name", key), Name = "QCCEnterprise_XiAn", Type = StorageType.Update });
+                   // DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isSearched", "1"), Query = Query.EQ("name", key), Name = "QCCEnterprise_XiAn", Type = StorageType.Update });
                     ShowMessageInfo(message);
                     index++;
                 }
@@ -1535,6 +2133,86 @@ namespace QCCWebBrowser
                 ShowMessageInfo(ex.Message);
             }
 
+        }
+
+        public void DataReceiveInitialEnterpriseInvent(SimpleCrawler.DataReceivedEventArgs args)
+        {
+            string guid = args.urlInfo.UniqueKey;
+            if (string.IsNullOrEmpty(guid))
+            {
+                this.ShowMessageInfo("传入Key为空", false);
+            }
+            JObject jsonObj = JObject.Parse(args.Html);
+            if (jsonObj != null)
+            {
+                string message = string.Empty;
+                JToken resultObj = jsonObj["Result"];
+                if ((resultObj == null) || !resultObj.ToString().Contains("Node"))
+                {
+                    args.urlInfo.Depth += Settings.MaxReTryTimes / 2;
+                    UrlQueue.Instance.EnQueue(args.urlInfo);
+                }
+                else
+                {
+                    int num;
+                    StorageData data;
+                    StringBuilder SB = new StringBuilder();
+                    int existCount = 0;
+                    int addCount = 0;
+                    BsonDocument curUpdateBson = new BsonDocument {
+                        {
+                            "inventInfo",
+                            resultObj.ToString().Replace("\r\n", "")
+                        }
+                    };
+                    string name = string.Empty;
+                    message = string.Format("详细信息{0}_{1}获取成功剩余url{2} retryUrl:{3}\r", new object[] { guid, name, UrlQueue.Instance.Count, UrlRetryQueue.Instance.Count });
+                    if (curUpdateBson.Count<BsonElement>() > 0)
+                    {
+                        curUpdateBson.Set("isUpdate", "1");
+                    }
+                    if (this.existGuidList.Contains(guid))
+                    {
+                        num = existCount;
+                        existCount = num + 1;
+                    }
+                    else
+                    {
+                        this.existGuidList.Add(guid);
+                        if (!string.IsNullOrEmpty(guid) && !this.ExistGuid(this.DataTableInventInfo, guid))
+                        {
+                            curUpdateBson.Set("guid", guid);
+                            Interlocked.Increment(ref this.AllAddCount);
+                            num = addCount;
+                            addCount = num + 1;
+                            SB.AppendFormat("获得对象{0}\r", guid);
+                            data = new StorageData
+                            {
+                                Document = curUpdateBson,
+                                Name = this.DataTableInventInfo,
+                                Type = StorageType.Insert
+                            };
+                            DBChangeQueue.Instance.EnQueue(data);
+                        }
+                        else
+                        {
+                            num = existCount;
+                            existCount = num + 1;
+                            this.existGuidList.Add(guid);
+                        }
+                    }
+                    data = new StorageData
+                    {
+                        Document = new BsonDocument().Add("isInventUpdate", "4"),
+                        Name = this.curModetailInfoTableName,
+                        Query = Query.EQ("guid", guid),
+                        Type = StorageType.Update
+                    };
+                    DBChangeQueue.Instance.EnQueue(data);
+                    decimal updateCount = decimal.Parse(existCount.ToString()) / 10000000M;
+                    this.ShowMessageInfo(string.Format("总添加：{9}是否建议跳过关键字：{7}_关键字已经添加:{6}| 当前：{5}添加:{0} 已存在:{1}剩余url{4} retryUrl:{8} 详细:{2}当前url:{3}", new object[] { addCount, existCount, SB.ToString(), "", UrlQueue.Instance.Count, "", "", this.needPassKeyWord, UrlRetryQueue.Instance.Count, this.AllAddCount }), false);
+                }
+            }
         }
 
         private void DealInfo(HtmlNode info, ref BsonDocument updateBson)
@@ -1704,7 +2382,7 @@ namespace QCCWebBrowser
                 var tempOldName = oldName.Replace("&NBSP;", "&nbsp;");
                 // oldBsonDocument.Add("isSearched", "1");
                 DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isSearched", "1"), Query = Query.EQ("name", oldName), Name = DataTableNameList, Type = StorageType.Update });
-                ShowMessageInfo(string.Format("当前对象:{0}剩余url{1}", oldName, UrlQueue.Instance.Count));
+                ShowMessageInfo(string.Format("当前对象:{0}剩余url{1}", oldName, UrlQueueCount()));
             }
 
             var searchResult = htmlDoc.DocumentNode.SelectSingleNode("//a[@class='search-result-company-name']");
@@ -1723,7 +2401,7 @@ namespace QCCWebBrowser
             if (!string.IsNullOrEmpty(guid) && !existGuidList.Contains(guid))
             {
                 existGuidList.Add(guid);
-                var message = string.Format("详细信息{0}:{1}获取成功剩余url{2}\r", guid, oldName, UrlQueue.Instance.Count);
+                var message = string.Format("详细信息{0}:{1}获取成功剩余url{2}\r", guid, oldName, UrlQueueCount());
                 ShowMessageInfo(message);
                 DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Type = StorageType.Insert });
 
@@ -1731,7 +2409,7 @@ namespace QCCWebBrowser
             }
             else
             {
-                ShowMessageInfo(string.Format("guid:{0}{1}已存在或者无法添加剩余url{2}\r", guid, oldName, UrlQueue.Instance.Count));
+                ShowMessageInfo(string.Format("guid:{0}{1}已存在或者无法添加剩余url{2}\r", guid, oldName, UrlQueueCount()));
 
             }
             if (!string.IsNullOrEmpty(guid) && !string.IsNullOrEmpty(oldName))
@@ -1795,7 +2473,7 @@ namespace QCCWebBrowser
                         Type = StorageType.Insert
                     });
                 }
-                ShowMessageInfo(string.Format("当前记录:{0}过大进行分支处理剩余url:{1}", firstRecordCount, UrlQueue.Instance.Count));
+                ShowMessageInfo(string.Format("当前记录:{0}过大进行分支处理剩余url:{1}", firstRecordCount, UrlQueueCount()));
                 return;
             }
             else
@@ -1819,7 +2497,7 @@ namespace QCCWebBrowser
             var searchDiv = htmlDoc.DocumentNode.SelectNodes("//tr[@class='table-search-list']");
             if (searchDiv == null)
             {
-                ShowMessageInfo("找不到searchDiv对象" + args.Url + firstRecordCountSpan.InnerText + "剩余url" + UrlQueue.Instance.Count);
+                ShowMessageInfo("找不到searchDiv对象" + args.Url + firstRecordCountSpan.InnerText + "剩余url" + UrlQueueCount());
                 return;
             }
 
@@ -1962,7 +2640,7 @@ namespace QCCWebBrowser
                     if (!string.IsNullOrEmpty(guid) && !ExistGuid(guid))
                     {
 
-                        SB.AppendFormat("获得对象{0}:{1}\r", guid, enterpriseName, UrlQueue.Instance.Count);
+                        SB.AppendFormat("获得对象{0}:{1}\r", guid, enterpriseName, UrlQueueCount());
                         addCount++;
                         DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Type = StorageType.Insert });
                         //DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("status", "1"), Query = Query.EQ("name", enterpriseName), Name = DataTableNameList, Type = StorageType.Update });
@@ -1977,7 +2655,7 @@ namespace QCCWebBrowser
 
             }
             #endregion
-            ShowMessageInfo(string.Format("剩余url{4}当前：{5}添加:{0} 已存在:{1}当前url:{3} 详细:{2}", addCount, existCount, SB.ToString(), HttpUtility.UrlDecode(queryStr), UrlQueue.Instance.Count, firstRecordCount.ToString()));
+            ShowMessageInfo(string.Format("剩余url{4}当前：{5}添加:{0} 已存在:{1}当前url:{3} 详细:{2}", addCount, existCount, SB.ToString(), HttpUtility.UrlDecode(queryStr), UrlQueueCount(), firstRecordCount.ToString()));
             if (hasExistUrl && addCount > 0)//url存在 而且又有新纪录
             {
                 var curUrl = args.Url;
@@ -2217,7 +2895,7 @@ namespace QCCWebBrowser
         {
 
             if (firstRecordCount < 40) return false;
-             //registcapiNew 注册资本//startdateNew 成立日期//statuscodeNew 企业状态 industrycodeNew 行业门类
+            //registcapiNew 注册资本//startdateNew 成立日期//statuscodeNew 企业状态 industrycodeNew 行业门类
             var registCapiBeginParam = GetUrlParam(args.Url, "registCapiBegin");
             var registCapiEndParam = GetUrlParam(args.Url, "registCapiEnd");
             var statusCodeParam = GetUrlParam(args.Url, "statusCode");
@@ -2225,28 +2903,39 @@ namespace QCCWebBrowser
             var startDateEndParam = GetUrlParam(args.Url, "startDateEnd");
             var industryCode = GetUrlParam(args.Url, "industryCode");
             var subIndustryCode = GetUrlParam(args.Url, "subIndustryCode");
+            var countyCode = GetUrlParam(args.Url, "countyCode");//新版城市代码
+            var province= GetUrlParam(args.Url, "province");//新版城市省份代码
+             
             try
             {
-                #region 行业门类大类 可能导致超出url 计算 需要contains去除
-                var industryDataValueList = GetFilterDataValue_App(htmlDoc, "industrycode");
-                if (industryDataValueList.Count() > 0 && string.IsNullOrEmpty(industryCode))
+                int num;
+                #region 使用countyCode进行筛选，当countyCode不为空则获取对应下的区域
+                if ((firstRecordCount > 0x3e8) && (!string.IsNullOrEmpty(countyCode) || !string.IsNullOrEmpty(province)))
                 {
-                    foreach (var dataValueDic in industryDataValueList)//2016
+                    List<string> subCountryList = this.GetSubCountryCodeList(province, countyCode, "2");
+                    if (subCountryList.Count > 0)
                     {
-                        var dataValue = dataValueDic.Key;
-                        var curUrl = args.Url.Replace("&industryCode=", string.Format("&industryCode={0}", dataValue));
-                        if (!urlFilter.Contains(curUrl))//防止重复爬取
+                        int urlAddCount = 0;
+                        foreach (string curCountyCode in subCountryList)
                         {
-                            UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));//添加条件过滤
-                            urlFilter.Add(curUrl);
-                            curAddUrlList.Add(curUrl);
+                            string curUrl = this.ReplaceParam(args.Url, "countyCode", countyCode, curCountyCode);
+                            if (!this.urlFilter.Contains(curUrl))
+                            {
+                                num = urlAddCount;
+                                urlAddCount = num + 1;
+                                UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));
+                                this.urlFilter.Add(curUrl);
+                                this.curAddUrlList.Add(curUrl);
+                            }
+                        }
+                        if (urlAddCount > 0)
+                        {
+                            return true;
                         }
                     }
-                    return true;
-
                 }
-
                 #endregion
+
                 #region 成立日期分支筛选
                 var dateDataValueList = GetFilterDataValue_App(htmlDoc, "startdateyear", firstRecordCount);
                 if (dateDataValueList.Count() > 0 && string.IsNullOrEmpty(startDateBeginParam) && string.IsNullOrEmpty(startDateEndParam))
@@ -2285,7 +2974,8 @@ namespace QCCWebBrowser
                             curUrl = curUrl.Replace("&startDateEnd=", string.Format("&startDateEnd={0}", startDateEnd));
                             if (!urlFilter.Contains(curUrl))//防止重复爬取
                             {
-                                UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));//添加条件过滤
+                                args.urlInfo.UrlString = curUrl;
+                                UrlQueue.Instance.EnQueue(args.urlInfo);//添加条件过滤
                                 urlFilter.Add(curUrl);
                                 curAddUrlList.Add(curUrl);
                             }
@@ -2314,7 +3004,8 @@ namespace QCCWebBrowser
 
                                     if (!urlFilter.Contains(curUrl))//防止重复爬取
                                     {
-                                        UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));//添加条件过滤
+                                        args.urlInfo.UrlString = curUrl;
+                                        UrlQueue.Instance.EnQueue(args.urlInfo);//添加条件过滤
                                         urlFilter.Add(curUrl);
                                         curAddUrlList.Add(curUrl);
                                     }
@@ -2343,7 +3034,8 @@ namespace QCCWebBrowser
                                     curUrl = curUrl.Replace("&startDateEnd=", string.Format("&startDateEnd={0}", startDateEnd));
                                     if (!urlFilter.Contains(curUrl))//防止重复爬取
                                     {
-                                        UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));//添加条件过滤
+                                        args.urlInfo.UrlString = curUrl;
+                                        UrlQueue.Instance.EnQueue(args.urlInfo);//添加条件过滤
                                         urlFilter.Add(curUrl);
                                         curAddUrlList.Add(curUrl);
                                     }
@@ -2458,6 +3150,32 @@ namespace QCCWebBrowser
                 //}
                 #endregion
 
+                if (firstRecordCount>= 3000)//2018.3.20增加更新的时候不进行行业门类过滤
+                {
+                    #region 行业门类大类 可能导致超出url 计算 需要contains去除 使用新的vip2 接口的时候instructorycode可能为空
+                    var industryDataValueList = GetFilterDataValue_App(htmlDoc, "industrycode",0);
+                    if (industryDataValueList.Count() > 0 && string.IsNullOrEmpty(industryCode))
+                    {
+                        foreach (var dataValueDic in industryDataValueList)//2016
+                        {
+
+                            var dataValue = dataValueDic.Key;
+                            if (string.IsNullOrEmpty(dataValue)) continue;
+                            var curUrl = args.Url.Replace("&industryV3=&industryCode=", string.Format("&industryV3={0}&industryCode={0}", dataValue));
+                            if (!urlFilter.Contains(curUrl))//防止重复爬取
+                            {
+                                UrlQueue.Instance.EnQueue(new UrlInfo(curUrl));//添加条件过滤
+                                urlFilter.Add(curUrl);
+                                curAddUrlList.Add(curUrl);
+                            }
+                        }
+                        return true;
+
+                    }
+
+                    #endregion
+                }
+
             }
             catch (Exception ex)
             {
@@ -2476,33 +3194,52 @@ namespace QCCWebBrowser
             else
             {
 
+                if (hitSearchKeyConditionObj.hitCount >= 6)
+                {
+                    return false;
+                }
                 if (hitSearchKeyConditionObj.recordCount == firstRecordCount)
                 {
-                    hitSearchKeyConditionObj.hitCount = hitSearchKeyConditionObj.hitCount + 1;
+                    hitSearchKeyConditionObj.hitCount++;
                 }
                 else
                 {
                     hitSearchKeyConditionObj.recordCount = firstRecordCount;
                 }
             }
-            var _urlSplitMode = urlSplitMode;
-            if (hitSearchKeyConditionObj != null)
+            UrlSpliteMode _urlSplitMode = this.urlSplitMode;
+            DateTime _startDateBegin = DateTime.ParseExact(startDateBeginParam, "yyyyMMdd", null);
+            DateTime _startDateEnd = DateTime.ParseExact(startDateEndParam, "yyyyMMdd", null);
+            TimeSpan span = _startDateEnd - _startDateBegin;
+           
+            if ((span.Days <= 30) || (hitSearchKeyConditionObj.hitCount >= 5))
             {
-                _urlSplitMode = hitSearchKeyConditionObj.mode;//默认
-                if (hitSearchKeyConditionObj.hitCount >= 3)//该模式下连续个数命中个数，表示需要切换分解模式
+                if (registCapiBeginParam != registCapiEndParam)
                 {
-                    _urlSplitMode = GetNextSplitMode(hitSearchKeyConditionObj.mode);
+                    _urlSplitMode = this.GetNextSplitMode(hitSearchKeyConditionObj.mode);
                 }
+                //if (hitSearchKeyConditionObj <= null)
+                //{
+                //    _urlSplitMode = hitSearchKeyConditionObj.mode;
+                //    if (hitSearchKeyConditionObj.hitCount >= 3)
+                //    {
+                //        _urlSplitMode = this.GetNextSplitMode(hitSearchKeyConditionObj.mode);
+                //    }
+                //}
             }
             try
             {
-                var splitStatus = SplitModeActive(_urlSplitMode, args.Url, startDateBeginParam, startDateEndParam, registCapiBeginParam, registCapiEndParam, subIndustryCode, htmlDoc);
-                if (splitStatus == true) { return splitStatus; }
+                bool splitStatus = this.SplitModeActive(_urlSplitMode, args.Url, startDateBeginParam, startDateEndParam, registCapiBeginParam, registCapiEndParam, subIndustryCode, htmlDoc);
+                if (splitStatus)
+                {
+                    return splitStatus;
+                }
             }
             catch (Exception ex)
             {
                 throw new Exception("SplitModeActive" + ex.Message);
             }
+            return true;
             //表示不用vip不能获取 通过升序降序来获得尽可能全的列表
             //sortField = startdate & isSortAsc = true 升序
             //sortField = startdate & isSortAsc = false 降序
@@ -2694,6 +3431,7 @@ namespace QCCWebBrowser
                                     _curUrl = _curUrl.Replace("&startDateEnd=" + startDateEndParam, string.Format("&startDateEnd={0}", tempDate.ToString("yyyyMMdd")));
                                     if (!urlFilter.Contains(_curUrl))//防止重复爬取
                                     {
+                                       
                                         UrlQueue.Instance.EnQueue(new UrlInfo(_curUrl));//添加条件过滤
                                         urlFilter.Add(_curUrl);
                                         curAddUrlList.Add(_curUrl);
@@ -2729,7 +3467,7 @@ namespace QCCWebBrowser
                                         hasAdd = true;
                                     }
                                 }
-                                _startDateBegin = tempCapEnd.AddDays(addPlus);
+                                _startDateBegin = tempCapEnd.AddDays(1);
 
                             }
                         }
@@ -2861,7 +3599,7 @@ namespace QCCWebBrowser
                                 hasAdd = true;
                             }
                         }
-                        _registCapiBegin = tempCapEnd + addPlus;
+                        _registCapiBegin = tempCapEnd + 1;
 
                     }
                 }
@@ -2917,25 +3655,7 @@ namespace QCCWebBrowser
             return false;
             #endregion
         }
-        /// <summary>
-        /// url参数替换替换
-        /// </summary>
-        /// <param name="_curUrl"></param>
-        /// <returns></returns>
-        private string ReplaceUrlParam(string _curUrl, string parameName, string oldValue, string newValue)
-        {
-            var oldOne = string.Format("&{0}={1}", parameName, oldValue);
-            var newOne = string.Format("&{0}={1}", parameName, newValue);
-            if (!string.IsNullOrEmpty(oldOne))
-            {
-                var newUrl = _curUrl.Replace(oldOne, newOne);
-                return newUrl;
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
+        
         /// <summary>
         /// 添加爬取队列
         /// </summary>
@@ -2951,6 +3671,13 @@ namespace QCCWebBrowser
             }
             return false;
         }
+        private bool AddUrlQueue(UrlInfo urlInfo)
+        {
+             
+            UrlQueue.Instance.EnQueue(urlInfo);//添加条件过滤
+            return true;
+        }
+
         /// <summary>
         /// 获取分支条件,模拟资本与 增加注册资本与时间细化
         /// </summary>
@@ -3169,7 +3896,7 @@ namespace QCCWebBrowser
 
             }
             var str = "解析" + HttpUtility.UrlDecode(args.Url) + "\r";
-            ShowMessageInfo(str + string.Format("addCount:{0} updateCount:{1} existCount:{2} 剩余url:{3} ", addCount, updateCount, existCount, UrlQueue.Instance.Count));
+            ShowMessageInfo(str + string.Format("addCount:{0} updateCount:{1} existCount:{2} 剩余url:{3} ", addCount, updateCount, existCount, UrlQueueCount()));
 
 
         }
@@ -3290,7 +4017,7 @@ namespace QCCWebBrowser
 
             }
             var str = "解析" + HttpUtility.UrlDecode(args.Url) + "\r";
-            ShowMessageInfo(str + string.Format("addCount:{0} updateCount:{1} existCount:{2} 剩余url:{3} ", addCount, updateCount, existCount, UrlQueue.Instance.Count));
+            ShowMessageInfo(str + string.Format("addCount:{0} updateCount:{1} existCount:{2} 剩余url:{3} ", addCount, updateCount, existCount, UrlQueueCount()));
 
 
         }
@@ -3303,12 +4030,18 @@ namespace QCCWebBrowser
         public void DataReceiveEnterpriseGuidByKeyWord_APP(DataReceivedEventArgs args)
         {
 
-
+            if (IsMoreDetailInfo)
+            {
+                this.DataReceiveInitialEnterpriseGuidMoreDetailInfo_APP(args);
+                return;
+            }
             var cityName = cityNameStr;
             var hmtl = args.Html;
             if (!args.Html.Contains("成功"))
             {
-                UrlQueue.Instance.EnQueue(new UrlInfo(args.Url) { Depth = args.Depth + 1 });//尝试五次
+                args.urlInfo.Depth = args.Depth + 1;
+                UrlQueue.Instance.EnQueue(args.urlInfo);
+              
             }
 
             JObject jsonObj = JObject.Parse(hmtl);
@@ -3340,12 +4073,14 @@ namespace QCCWebBrowser
             }
             if (firstRecordCount == 0 && args.Depth <= Settings.MaxReTryTimes)//多尝试防止有时候出现为0情况
             {
-                UrlQueue.Instance.EnQueue(new UrlInfo(args.Url) { Depth = args.Depth + Settings.MaxReTryTimes / 2 });
+                UrlRetryQueue.Instance.EnQueue(new UrlInfo(args.Url) { Depth = args.Depth + Settings.MaxReTryTimes / 2 });
             }
             var industryCode = GetUrlParam(args.Url, "industryCode");
             var subIndustryCode = GetUrlParam(args.Url, "subIndustryCode");
             var province = GetUrlParam(args.Url, "province");
             var cityCode = GetUrlParam(args.Url, "cityCode");
+            var countyCode = GetUrlParam(args.Url, "countyCode");//城市代码
+            string urlUniqueKey = GetUrlParam(args.Url, "uniqueKey");
             var urlBson = new BsonDocument();
             urlBson.Add("industryCode", industryCode);
             urlBson.Add("subIndustryCode", subIndustryCode);
@@ -3354,6 +4089,43 @@ namespace QCCWebBrowser
             urlBson.Add("recordCount", firstRecordCount.ToString());
             urlBson.Add("url", args.Url);
             urlBson.Add("isApp", "1");
+
+
+            #region cityCode 条件cityCode过滤
+
+            if (string.IsNullOrEmpty(cityCode))
+            {
+                var cityDataValueList = GetFilterDataValue_App(itemObj, "citycode", 0);
+                if (cityDataValueList.Count() > 0 && string.IsNullOrEmpty(cityCode))
+                {
+                    foreach (var dataValueDic in cityDataValueList) //2016
+                    {
+                     
+                        var dataValue = dataValueDic.Key;
+                        //2017.12.29后续需要删除
+                        //if (province == "FJ" && cityCode == "5") continue;//泉州已爬取过滤泉州
+                        var curUrl = args.Url.Replace("&cityCode=", string.Format("&cityCode={0}", dataValue));
+                        if (!urlFilter.Contains(curUrl)) //防止重复爬取
+                        {
+                            UrlQueue.Instance.EnQueue(new UrlInfo(curUrl)); //添加条件过滤
+                            urlFilter.Add(curUrl);
+                            curAddUrlList.Add(curUrl);
+                        }
+                    }
+                    return;
+
+                }
+            }
+            //cityName重置
+            var curCityObj = cityList.Where(c => c.Text("code") == cityCode && c.Text("provinceCode") == province).FirstOrDefault();
+            if (curCityObj != null)
+            {
+                cityName = curCityObj.Text("name");
+            }
+
+
+            #endregion
+
             //var hasExistUrl = ExistUrl(args.Url);
             var hasExistUrl = false;
             curAddUrlList = new List<string>();
@@ -3372,7 +4144,7 @@ namespace QCCWebBrowser
                         //        Type = StorageType.Insert
                         //    });
                         //}
-                        ShowMessageInfo(string.Format("当前记录:{0}过大进行分支处理剩余url:{1}", firstRecordCount, UrlQueue.Instance.Count));
+                        ShowMessageInfo(string.Format("当前记录:{0}过大进行分支处理剩余url:{1} retryUrl:{2}", firstRecordCount, UrlQueue.Instance.Count,UrlRetryQueue.Instance.Count));
                         //return;
                     }
                     else
@@ -3467,6 +4239,20 @@ namespace QCCWebBrowser
                 var guid = enterpriseObj["KeyNo"].ToString();
                 var name = enterpriseObj["Name"].ToString();
                 var domain = string.Empty;
+                var areaCode= enterpriseObj["AreaCode"].ToString();//4290\t429004;
+                ///根据areaCode进行所在城市获取
+                if (IsProvince)
+                {
+                    var areaCodeArr = areaCode.Split(new string[] { "\t", "" }, StringSplitOptions.RemoveEmptyEntries);
+                    if (areaCodeArr.Length >= 2) {
+                        var curCityCode = allCountyCodeList.Where(c => c.Text("provinceCode") == province && c.Text("code") == areaCodeArr[0]).FirstOrDefault();
+                        if (curCityCode != null)
+                        {
+                            cityName = curCityCode.Text("name");
+                        }
+                     }
+                }
+
 
                 try
                 {
@@ -3486,21 +4272,55 @@ namespace QCCWebBrowser
                 }
                 catch (Exception ex)
                 {
-                    domain = enterpriseObj["Scope"].ToString();
+                    domain = this.FixDocStr(enterpriseObj["Scope"].ToString());
                 }
-                message = string.Format("详细信息{0}_{1}获取成功剩余url{2}\r", guid, name, UrlQueue.Instance.Count);
-                curUpdateBson.Set("domain", domain);
+                message = string.Format("详细信息{0}_{1}获取成功剩余url{2} retryUrl:{3}\r", guid, name, UrlQueue.Instance.Count,UrlRetryQueue.Instance.Count);
+                //curUpdateBson.Set("domain", domain);
+                curUpdateBson.Set("domain", domain.Replace("<em>", "").Replace("</em>", ""));
+                if (cityName.EndsWith("市"))
+                {
+                    cityName = cityName.TrimEnd('市');
+                }
                 //设定所属城市
                 curUpdateBson.Set("cityName", cityName);
-                foreach (var keyMap in EnterpriseInfoMapDic_App)//遍历字段
-                {
 
-                    if (enterpriseObj[keyMap.Key] != null)
+                //foreach (var keyMap in EnterpriseInfoMapDic_App)//遍历字段
+                //{
+
+                //    if (enterpriseObj[keyMap.Key] != null)
+                //    {
+                //        curUpdateBson.Set(keyMap.Value, enterpriseObj[keyMap.Key].ToString());
+                //    }
+                //}
+                
+
+                var entDetail = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(enterpriseObj.ToString());
+                //增加其他字段
+                foreach (var item in entDetail.Elements)
+                {
+                    if (EnterpriseInfoMapDic_App.ContainsKey(item.Name))
                     {
-                        curUpdateBson.Set(keyMap.Value, enterpriseObj[keyMap.Key].ToString());
+                        curUpdateBson.Set(EnterpriseInfoMapDic_App[item.Name], this.FixDocStr(entDetail.Text(item.Name)));
                     }
+                    else
+                    {
+                        curUpdateBson.Set(item.Name, enterpriseObj[item.Name].ToString());
+                    }// 其他字段
                 }
-                if (curUpdateBson.Count() > 0)
+                
+                 
+                curUpdateBson.Set("Industry", "");
+                curUpdateBson.Set("tags", "");
+                string uniqueKey = args.urlInfo.UniqueKey;
+                if (!string.IsNullOrEmpty(uniqueKey))
+                {
+                    curUpdateBson.Set("uniqueKey", uniqueKey);
+                }
+                if (!string.IsNullOrEmpty(urlUniqueKey))
+                {
+                    curUpdateBson.Set("urlUniqueKey", urlUniqueKey);
+                }
+                if (curUpdateBson.Count<BsonElement>() > 0)
                 {
                     curUpdateBson.Set("isUserUpdate", "1");
                 }
@@ -3512,8 +4332,9 @@ namespace QCCWebBrowser
                     existGuidList.Add(guid);
                     if (!string.IsNullOrEmpty(guid) && !ExistGuid(guid))
                     {
+                        Interlocked.Increment(ref AllAddCount);
                         addCount++;
-                        SB.AppendFormat("获得对象{0}:{1}\r", guid, name, UrlQueue.Instance.Count);
+                        SB.AppendFormat("获得对象{0}:{1}\r", guid, name);
                         DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Type = StorageType.Insert });
                     }
                     else
@@ -3527,53 +4348,205 @@ namespace QCCWebBrowser
             }
             #endregion
             var searchKey = GetUrlParam(args.Url, "searchKey");
-            var keyWordStr = Toolslib.Str.Sub(searchKey, "\"scope\":\"", "\"");
+            var keyWordStr = searchKey;
+           if (searchKey.Contains("scope"))
+            {
+                keyWordStr = Toolslib.Str.Sub(searchKey, "\"scope\":\"", "\"");
+            }
             var curKeyWordCount=SetKeyWordHitCount(keyWordStr, addCount);
             decimal updateCount = decimal.Parse(existCount.ToString()) / 10000000;
 
             curKeyWordCount= SetKeyWordHitCount(keyWordStr, updateCount);//设置更新个数
-            ShowMessageInfo(string.Format("关键字已经添加:{6}| 当前：{5}添加:{0} 已存在:{1}剩余url{4} 详细:{2}当前url:{3}", addCount, existCount, SB.ToString(), HttpUtility.UrlDecode(queryStr), UrlQueue.Instance.Count, firstRecordCount.ToString(), curKeyWordCount));
 
 
+            this.ShowMessageInfo(string.Format("总添加：{9} 城市:{10}是否建议跳过关键字：{7}_关键字已经添加:{6}| 当前：{5}添加:{0} 已存在:{1}剩余url{4} retryUrl:{8} 详细:{2}当前url:{3}", new object[] { addCount, existCount, SB.ToString(), HttpUtility.UrlDecode(queryStr), UrlQueue.Instance.Count, firstRecordCount.ToString(), curKeyWordCount, this.needPassKeyWord, UrlRetryQueue.Instance.Count, this.AllAddCount, cityName }), false);
+            curKeyWordStr = keyWordStr;
+            //拆分完后才进行判断
+           // ProcessCanAutoPassKeyWord(curKeyWordCount, keyWordStr);
+            
+        }
+        public string FixDocStr(string str)
+        {
+            str = str.Replace("<em>", "").Replace("</em>", "");
+            return str;
+        }
+
+        public void DataReceiveInitialEnterpriseGuidMoreDetailInfo_APP(SimpleCrawler.DataReceivedEventArgs args)
+        {
+            if (!args.Html.Contains("尝试三次后无数据无法处理"))
+            {
+                string guid = args.urlInfo.UniqueKey;
+                if (string.IsNullOrEmpty(guid))
+                {
+                    this.ShowMessageInfo("传入Key为空", false);
+                }
+                string hmtl = args.Html;
+                JObject jsonObj = JObject.Parse(hmtl);
+                if (jsonObj != null)
+                {
+                    JToken success = jsonObj["message"];
+                    if (success == null)
+                    {
+                        this.ShowMessageInfo("获取失败" + hmtl, false);
+                    }
+                    else
+                    {
+                        string message = string.Empty;
+                        JToken resultObj = jsonObj["result"];
+                        if ((resultObj == null) || !resultObj.ToString().Contains("Nodes"))
+                        {
+                            args.urlInfo.Depth += Settings.MaxReTryTimes / 2;
+                            UrlQueue.Instance.EnQueue(args.urlInfo);
+                        }
+                        else
+                        {
+                            int num;
+                            StorageData data;
+                            StringBuilder SB = new StringBuilder();
+                            int existCount = 0;
+                            int addCount = 0;
+                            BsonDocument curUpdateBson = new BsonDocument {
+                                {
+                                    "moreDetailInfo",
+                                    resultObj.ToString()
+                                }
+                            };
+                            string name = string.Empty;
+                            message = string.Format("详细信息{0}_{1}获取成功剩余url{2} retryUrl:{3}\r", new object[] { guid, name, UrlQueue.Instance.Count, UrlRetryQueue.Instance.Count });
+                            if (curUpdateBson.Count<BsonElement>() > 0)
+                            {
+                                curUpdateBson.Set("isUpdate", "1");
+                            }
+                            if (this.existGuidList.Contains(guid))
+                            {
+                                num = existCount;
+                                existCount = num + 1;
+                            }
+                            else
+                            {
+                                this.existGuidList.Add(guid);
+                                if (!string.IsNullOrEmpty(guid) && !this.ExistGuid(this.DataTableMoreDetailInfo, guid))
+                                {
+                                    curUpdateBson.Set("guid", guid);
+                                    Interlocked.Increment(ref this.AllAddCount);
+                                    num = addCount;
+                                    addCount = num + 1;
+                                    SB.AppendFormat("获得对象{0}\r", guid);
+                                    data = new StorageData
+                                    {
+                                        Document = curUpdateBson,
+                                        Name = this.DataTableMoreDetailInfo,
+                                        Type = StorageType.Insert
+                                    };
+                                    DBChangeQueue.Instance.EnQueue(data);
+                                }
+                                else
+                                {
+                                    num = existCount;
+                                    existCount = num + 1;
+                                    this.existGuidList.Add(guid);
+                                }
+                            }
+                            data = new StorageData
+                            {
+                                Document = new BsonDocument().Add("isUpdate", "2"),
+                                Name = this.curModetailInfoTableName,
+                                Query = Query.EQ("guid", guid),
+                                Type = StorageType.Update
+                            };
+                            DBChangeQueue.Instance.EnQueue(data);
+                            decimal updateCount = decimal.Parse(existCount.ToString()) / 10000000M;
+                            this.ShowMessageInfo(string.Format("总添加：{9}是否建议跳过关键字：{7}_关键字已经添加:{6}| 当前：{5}添加:{0} 已存在:{1}剩余url{4} retryUrl:{8} 详细:{2}当前url:{3}", new object[] { addCount, existCount, SB.ToString(), "", UrlQueue.Instance.Count, "", "", this.needPassKeyWord, UrlRetryQueue.Instance.Count, this.AllAddCount }), false);
+                        }
+                    }
+                }
+            }
         }
         #endregion
         #region 基础方法 
+        public int UrlQueueCount()
+        {
+            return UrlQueue.Instance.Count + UrlRetryQueue.Instance.Count;
+        }
 
         /// <summary>
-        /// 通过关键字生成QCC
+        /// 是否需要自动跳过下一个关键字
         /// </summary>
-        /// <param name="_typeName"></param>
-        /// <param name="province"></param>
-        /// <param name="cityCode"></param>
-        private string InitalQCCAppUrlByKeyWord(string _typeName)
+        /// <returns></returns>
+        private void ProcessCanAutoPassKeyWord(decimal curKeyWordCount,string keyWord)
         {
-            var province = curQCCProvinceCode;
-            var cityCode = curQCCCityCode;
-            var curTypeName = _typeName;
-            if (curTypeName.Length == 1)
+            try
             {
-                curTypeName += "业";
+                var tempStr = curKeyWordCount.ToString();
+                var addCount = int.Parse(Regex.Replace(tempStr, @"(\d+)(\.\d+)?", "$1")); //输出：100 10000 23
+                var existCountStr = Regex.Replace(tempStr, @"(\d+)(\.\d+)?", "$2").Replace(".", "");
+                var existCount = 0;
+                if (!string.IsNullOrEmpty(existCountStr))
+                {
+                    int.TryParse(existCountStr, out existCount); //输出：100 10000 23
+                }
+                if (CanAutoPassKeyWord(addCount, existCount, UrlQueueCount(), StringQueue.Instance.Count))
+                {
+                    needPassKeyWord = true;
+                    if (autoPassKeyWordChk.Checked == true)
+                    {
+                        autoPassKeyWordChk.BeginInvoke(new Action(() =>
+                        {
+
+                            PassKeyWord();
+                        }));
+                    }
+                }
+                else
+                {
+                    needPassKeyWord = false;
+                }
             }
-            //DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("name", curTypeName), Name = DataTableScopeKeyWord, Type = StorageType.Insert  });
-            //需要限制住大类防止url爬取过多，因为如房地产会导致其他大类里面有很多，只要限制住大类即可，其他的由其他的关键字爬取
-            //优化爬取效率
-            var _curTypeName = string.Format("\"scope\":\"{0}\",", curTypeName);
-            _curTypeName += string.Format("\"opername\":\"{0}\",", curTypeName);
-            _curTypeName += string.Format("\"featurelist\":\"{0}\",", curTypeName);
-            _curTypeName += string.Format("\"address\":\"{0}\",", curTypeName);
-            _curTypeName += string.Format("\"name\":\"{0}\"", curTypeName);
-            curTypeName = "{" + HttpUtility.UrlEncode(_curTypeName) + "}";
+            catch (Exception ex)
+            {
+                ShowMessageInfo(ex.Message);
+            }
+        }
+        /// <summary>
+        /// 是否需要自动跳过下一个关键字
+        /// 当关键字小于700 并且 增加个数
+        /// 使用机器学习应用 下一个关键字如何进行使用
+        ///计入 每个关键字运行10秒后开始进行判断防止刚开始数量较少
+        /// </summary>
+        /// <param name="addCount"></param>
+        /// <param name="existCount"></param>
+        /// <param name="instanceCount"></param>
+        /// <param name="curKeyWordCount"></param>
+        /// <returns></returns>
+        private bool CanAutoPassKeyWord(int addCount, int existCount, int instanceCount, int curKeyWordCount)
+        {
+            if (curKeyWordCount >= 700) return false;//保证前面的能完全过滤
+            if (instanceCount <= 200) return false;//数量少可以进行pass 
 
+           
+            var hitFilter = PassKeyWordFilterCondition.Where(c => addCount <= c.Int("addCount")).FirstOrDefault();
+            if (hitFilter == null) return false;
+            var maxExistCount = hitFilter.Int("existCount");
+            if (existCount >= maxExistCount)
+            {
+                return true;
+            }
+            return false;
 
-            //{% 22scope % 22:% 22taobao % 22,
-            //% 22opername % 22:% 22taobao % 22,
-            //% 22featurelist % 22:% 22taobao % 22,
-            //% 22address % 22:% 22taobao % 22,
-            //% 22name % 22:% 22taobao % 22}
-            // var url = string.Format("https://app.qichacha.net/app/v1/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&cityCode={2}&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&startDateBegin=&startDateEnd=&industryCode={3}&subIndustryCode={4}&timestamp={5}&sign={6}&p=1", curTypeName, province, cityCode, industryCode, "", Settings.timestamp, Settings.sign);
-            //按时间逆序
-            var url = string.Format("https://app.qichacha.net/app/v1/base/advancedSearch?searchKey={0}&searchIndex=multicondition&province={1}&cityCode={2}&statusCode=&registCapiBegin=&registCapiEnd=&isSortAsc=false&sortField=startdate&startDateBegin=&startDateEnd=&industryCode={3}&subIndustryCode={4}&p=1", curTypeName, province, cityCode, "", "");
-            return url;
+        }
+
+        private string ReplaceParam(string url, string paramName, string oldValue, string newValue)
+        {
+            if (url.Contains(paramName))
+            {
+                return url.Replace(string.Format("&{0}={1}", paramName, oldValue), string.Format("&{0}={1}", paramName, newValue));
+            }
+            return (url + string.Format("&{0}={1}", paramName, newValue));
+        }
+
+        private string ReplaceUrlParam(string _curUrl, string parameName, string oldValue, string newValue)
+        {
+            return this.ReplaceParam(_curUrl, parameName, oldValue, newValue);
         }
 
         /// <summary>
@@ -3581,7 +4554,8 @@ namespace QCCWebBrowser
         /// </summary>
         private void SaveKeyWordHitCount()
         {
-            try
+            if (string.IsNullOrEmpty(this.cityNameStr)) return;
+           try
             {
                 foreach (var keyWordDic in keyWordCountDic)
                 {
@@ -3634,16 +4608,19 @@ namespace QCCWebBrowser
         private void InitKeyWordHitCount(string cityNameStr)
         {
             #region 关键字匹配
-             keyWordHitCountList = dataop.FindAllByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", cityNameStr)).ToList();
-            foreach (var _keyWordDoc in keyWordHitCountList)
+            if (!string.IsNullOrEmpty(cityNameStr))
             {
-                if (keyWordCountDic.ContainsKey(_keyWordDoc.Text("keyWord")))
+                keyWordHitCountList = dataop.FindAllByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", cityNameStr)).ToList();
+                foreach (var _keyWordDoc in keyWordHitCountList)
                 {
-                    keyWordCountDic[_keyWordDoc.Text("keyWord")] = _keyWordDoc.Decimal("count");
-                }
-                else
-                {
-                    keyWordCountDic.TryAdd(_keyWordDoc.Text("keyWord"), _keyWordDoc.Decimal("count"));
+                    if (keyWordCountDic.ContainsKey(_keyWordDoc.Text("keyWord")))
+                    {
+                        keyWordCountDic[_keyWordDoc.Text("keyWord")] = _keyWordDoc.Decimal("count");
+                    }
+                    else
+                    {
+                        keyWordCountDic.TryAdd(_keyWordDoc.Text("keyWord"), _keyWordDoc.Decimal("count"));
+                    }
                 }
             }
             #endregion
@@ -3680,7 +4657,6 @@ namespace QCCWebBrowser
         /// <param name="_enterpriseIp"></param>
         private void SetEnterpriseDataOP(string _enterpriseIp)
         {
-           
             enterpriseIp = _enterpriseIp;
             enterpriseConnStr = string.Format("mongodb://MZsa:MZdba@{0}:{1}/SimpleCrawler", _enterpriseIp,port);
             enterpriseDataop = new DataOperation(new MongoOperation(enterpriseConnStr));//主数据库
@@ -3691,6 +4667,17 @@ namespace QCCWebBrowser
         {
             return enterpriseDataop.FindCount(DataTableName, Query.EQ("guid", guid)) > 0;
         }
+
+        private bool ExistGuid(string tableName, string guid)
+        {
+            return (enterpriseDataop.FindCount(tableName, Query.EQ("guid", guid)) > 0);
+        }
+        private bool ExistKeyWordSearchGuid(string guid)
+        {
+            return enterpriseDataop.FindCount(DataTableKeyWordSearch, Query.EQ("guid", guid)) > 0;
+        }
+        
+
         private bool ExistUrl(string url,bool forceQuery=false)
         {
             if (!NEEDRECORDURL&& forceQuery==false)
@@ -3709,7 +4696,8 @@ namespace QCCWebBrowser
             this.comboBox1.Items.Clear();
             var tempAccountList = new List<BsonDocument>();
             var takeCount = 100;
-            var query = Query.And(Query.NE("isInvalid", "1"), Query.NE("isBusy", "1"), Query.NE("status", "1"));
+            //,Query.EQ("deviceId", "zv5RzAxD9JlrlLCgjAbuevrh"),最后一个可用
+            var query = Query.And(Query.NE("isInvalid", "1"), Query.Exists("EnterpriseGuidByKeyWord_App", false));//,Query.NE("isInvalid", "1") Query.NE("isBusy", "1"), Query.NE("status", "1")
             var totalCount = dataop.FindCount(DataTableAccount, query);
             var rand = new Random();
             var count = rand.Next(0, totalCount);
@@ -3747,16 +4735,24 @@ namespace QCCWebBrowser
                 this.comboBox1.Items.Add(accountName);
             }
 
+           
+             var deviceTotalCount = dataop.FindCount(QCCDeviceAccount, query);
+              rand = new Random();
+              count = rand.Next(0, totalCount);
+            if (count <= 100)
+            {
+                count = 0;
+            }
             ///获取设备列表
             // allDeviceAccountList = dataop.FindAllByQuery(QCCDeviceAccount, Query.And(Query.NE("isValid", "1"), Query.NE("status", "1"), Query.NE("isUse", "1"), Query.NE("isBusy", "1"))).Where(c => c.Int("EnterpriseGuidByKeyWord_APP") <= Settings.MaxAccountCrawlerCount / 2).OrderBy(c => c.Int("EnterpriseGuidByKeyWordApp")).ThenBy(c => c.Date("updateDate")).ToList();
-            allDeviceAccountList = dataop.FindAllByQuery(QCCDeviceAccount, Query.And(Query.NE("isInvalid", "1"),Query.NE("status","1"))).OrderBy(c => c.Int("EnterpriseGuidByKeyWordApp")).ThenBy(c => c.Date("updateDate")).ToList();
+            allDeviceAccountList = dataop.FindLimitByQuery(QCCDeviceAccount, query, new SortByDocument() { { "EnterpriseGuidByKeyWord_APP", 1 },{ "createDate", -1 } }, count, takeCount).OrderBy(c => c.Int("EnterpriseGuidByKeyWord_APP")).ThenBy(c => c.Date("updateDate")).ToList();
         }
         private void ShowAccountInfo(BsonDocument curLoginAccountObj)
         {
             Type searchTypeEnum = typeof(SearchType);
             var sb = new StringBuilder();
             // foreach (string _searchType in Enum.GetNames(searchTypeEnum))
-            {
+           
                 var _searchType = searchType.ToString();
                 //Console.WriteLine("{0,-11}= {1}", s, Enum.Format(searchTypeEnum, Enum.Parse(searchTypeEnum, s), "s"));
                 var addColumnName = string.Format("{0}_add", _searchType);
@@ -3775,11 +4771,16 @@ namespace QCCWebBrowser
                         sb.AppendFormat("{0}:{1}【add:{2}_{3}】 ", _searchType, initial, curAddional, all);
                     }
                 }
-            }
+        
             accountInfoTxt.BeginInvoke(new Action(() =>
             {
                 this.accountInfoTxt.Text = sb.ToString();
             }));
+            //if (AccountMaxAddional!=0&&curAddional >= AccountMaxAddional)
+            //{
+            //      ShowMessageInfo("达到最大账号可爬取数量正在自动切换账号");
+            //      AutoChangeAccount();
+            //}
         }
         private void ShowAccountInfo()
         {
@@ -3977,7 +4978,7 @@ namespace QCCWebBrowser
         public bool UrlContentLimit(string html, string url = "", int depth = 3)
         {
           
-            if (html.StartsWith("<script>"))
+            if (html.StartsWith("<script>")|| html.StartsWith("<html>") )
             {
                 return true;
                 //todo:AccountBusy
@@ -4049,7 +5050,18 @@ namespace QCCWebBrowser
             {
                 try
                 {
-
+                    if (args.Html.StartsWith("<html>"))
+                    {
+                        ShowMessageInfo(args.Html);
+                        //timerStop();
+                        if (AutoChangeIp.Checked==true)
+                        {
+                            ChangeIp();
+                        }
+                       // timerStart();
+                        return true;
+                        
+                    }
                     //出错次数过多肯呢个到职被异常
                     if (searchType != SearchType.EnterpriseGuidByKeyWord_APP)
                     {
@@ -4084,7 +5096,7 @@ namespace QCCWebBrowser
                         try
                         {
                             // this.webBrowser.Refresh();
-                            this.webBrowser.Navigate(addCredsToUri(curUri));
+                            //this.webBrowser.Navigate(addCredsToUri(curUri));
                         }
                         catch (Exception ex)
                         {
@@ -4098,7 +5110,7 @@ namespace QCCWebBrowser
                         //this.richTextBoxInfo.AppendText("正在检测是否自动验证!");
                         if (Settings.neeedChangeAccount)
                         {
-                            this.richTextBoxInfo.Text += string.Format("账号爬取达到上限{0},请切换账号", Settings.MaxAccountCrawlerCount);
+                            ShowMessageInfo(string.Format("账号爬取达到上限{0},请切换账号", Settings.MaxAccountCrawlerCount));
                             AutoChangeAccount();
                         }
                         else
@@ -4112,12 +5124,13 @@ namespace QCCWebBrowser
                             else
                             {
                                 //ShowMessageInfo("正在刷新浏览器，请点击重新爬取", true);
-                                this.richTextBoxInfo.Text += "正在刷新浏览器，请点击重新爬取";
+                               
+                                ShowMessageInfo("正在刷新浏览器，请点击重新爬取", true);
                                 waitBrowerMouseUpResponse = true;
                                 ///是否获得焦点
                                 if (this.checkBox.Checked)
                                 {
-                                    this.Activate();
+                                    //this.Activate();
                                 }
                             }
 
@@ -4141,7 +5154,8 @@ namespace QCCWebBrowser
            
             if (Settings.neeedChangeAccount)
             {
-                this.richTextBoxInfo.Text += string.Format("账号爬取达到上限{0},请切换账号", Settings.MaxAccountCrawlerCount);
+                //this.richTextBoxInfo.Text +=;
+                ShowMessageInfo(string.Format("账号爬取达到上限{0},请切换账号", Settings.MaxAccountCrawlerCount));
                 AutoChangeAccount();
             }
             Settings.LastAvaiableTime = DateTime.Now;
@@ -4158,8 +5172,10 @@ namespace QCCWebBrowser
                 {
                     this.richTextBoxInfo.Clear();
                 }
-               this.richTextBoxInfo.AppendText(proxyUser+ enterpriseIp + " 剩余更新队列：" + DBChangeQueue.Instance.Count+"剩余关键字:"+StringQueue.Instance.Count+" ");
-               this.richTextBoxInfo.AppendText( str);
+                string preText = string.Format("{0}_{1}", this.proxyIpDetail, enterpriseIp);
+                var messageInfo = string.Format("{0} 剩余更新：{1} 剩余关键字: {2}", preText, DBChangeQueue.Instance.Count, StringQueue.Instance.Count);
+                this.richTextBoxInfo.AppendText(messageInfo);
+               this.richTextBoxInfo.AppendText(str);
 
             })
            );
@@ -4215,7 +5231,7 @@ namespace QCCWebBrowser
             {
                 limitCount = 20;
             }
-            if (UrlQueue.Instance.Count >= 10 && DBChangeQueue.Instance.Count < limitCount) return;
+            if (UrlQueueCount() >= 10 && DBChangeQueue.Instance.Count < limitCount) return;
             var curDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             var result = new InvokeResult();
             List<StorageData> updateList = new List<StorageData>();
@@ -4227,10 +5243,11 @@ namespace QCCWebBrowser
                 {
                     var insertDoc = temp.Document;
                     var curMongoDBOP = _mongoDBOp;
-                    if (temp.Name == DataTableName)//企业实体
-                    {
-                        curMongoDBOP = _enterpriseMongoDBOp;
-                    }
+                    //if (temp.Name == DataTableName)//企业实体
+                    //{
+                    //    curMongoDBOP = _enterpriseMongoDBOp;
+                    //}
+                    curMongoDBOP = _enterpriseMongoDBOp;
                     switch (temp.Type)
                     {
                         case StorageType.Insert:
@@ -4273,35 +5290,38 @@ namespace QCCWebBrowser
             }
         }
 
+        /// <summary>
+        /// 获取当前timer interval
+        /// </summary>
+        /// <returns></returns>
+        private double GetCurInterval()
+        {
+            var curElapse = 1000;
 
-
+            if (!string.IsNullOrEmpty(curTimerElapse))
+            {
+                int.TryParse(curTimerElapse.Trim(), out curElapse);
+            }
+            var rand = new Random();
+            //var minElapse = 1000;
+            var curInterVal = 1000;
+            if (curElapse <= 1000)
+            {
+                curInterVal = curElapse;
+            }
+            else
+            {
+                curInterVal = rand.Next(curElapse / 2, curElapse);
+            }
+            return curInterVal;
+        }
         private void timerStart()
         {
 
             if (aTimer.Enabled == false)
             {
 
-                var curElapse = 1000;
-
-                if (!string.IsNullOrEmpty(curTimerElapse))
-                {
-                    int.TryParse(curTimerElapse.Trim(), out curElapse);
-                }
-                var rand = new Random();
-                //var minElapse = 1000;
-                var curInterVal = 1000;
-                if (curElapse <= 1000)
-                {
-                    curInterVal = curElapse;
-                }
-                else
-                {
-                    curInterVal = rand.Next(curElapse / 2, curElapse);
-                }
-
-
-
-
+                var curInterVal = GetCurInterval();
                 aTimer.Interval = curInterVal;
                 aTimer.Enabled = true;
                 aTimer.Start();
@@ -4332,15 +5352,43 @@ namespace QCCWebBrowser
         {
             if (aTimer.Enabled == true)
             {
-
+               
                 aTimer.Stop();
                 aTimer.Enabled = false;
                 waitBrowerMouseUpResponse = true;
                 ShowMessageInfo("计时器结束", true);
-
+               
             }
 
         }
+        private bool timerHasSlow = false;
+        /// <summary>
+        /// 减慢timer速度
+        /// </summary>
+        private void TimerSlow()
+        {
+
+            // ShowMessageInfo("减慢timer速度");
+            aTimer.Interval = 1000;
+            timerHasSlow = true;
+
+        }
+        /// <summary>
+        /// 回复timer速度
+        /// </summary>
+        private void TimerReset()
+        {
+            if (timerHasSlow)
+            {
+                aTimer.Interval = GetCurInterval();
+                timerHasSlow = false;
+                if (aTimer.Enabled == false)
+                {
+                    aTimer.Start();
+                }
+            }
+        }
+
 
         #region 浏览器方法
         public static void FillField(object doc, string id, string value)
@@ -4738,7 +5786,7 @@ namespace QCCWebBrowser
             if (hitHashObj != null)
             {
                 hashPwd = hitHashObj.Text("hash");
-                var _url = new UrlInfo("https://app.qichacha.net/app/v1/admin/login");
+                var _url = new UrlInfo("https://appv2.qichacha.net/app/v1/admin/login");
                 _url.PostData = string.Format("loginType=2&accountType=1&account={0}&password={1}&identifyCode=&key=&token=&timestamp={2}&sign={3}", phoneNum, hashPwd, Settings.timestamp, Settings.sign);
                 var result = GetPostDataAPP(_url);
                 if (result.StatusCode == HttpStatusCode.OK && result.Html.Contains("成功"))
@@ -4779,7 +5827,7 @@ namespace QCCWebBrowser
         public string ForceChangeProxy()
         {
             ShowMessageInfo("正在进行IP切换");
-            var result = GetHttpHtml(new UrlInfo("http://proxy.abuyun.com/switch-ip"));
+            var result = GetHttpHtml(new UrlInfo(proxyHost+"/switch-ip"));
             if (result.StatusCode == HttpStatusCode.OK)
             {
                 ShowMessageInfo("切换ip为" + result.Html, true);
@@ -4917,7 +5965,10 @@ namespace QCCWebBrowser
         /// </summary>
         public void AutoChangeDeviceAccount()
         {
-
+            if (USEWEBPROXY)
+            {
+                ChangeIp();
+            }
             autoChangeAccountCHK.Invoke(new Action(() =>
             {
 
@@ -4957,6 +6008,7 @@ namespace QCCWebBrowser
                                 ReloadLoginAccount();//放在后面进行账号读取，防止账号获得数据但是没有进行其获取 的数据被重置
                                                      //GeetestChartAutoLoin();
                                 timerStart();
+                                ShowMessageInfo("启用新账号");
                             }
 
                         }
@@ -4980,7 +6032,7 @@ namespace QCCWebBrowser
         {
             //lock (lockChangeAccount)//2017.1.11可能导致死锁，或者同时进去
             {
-                if (!ContinueMethodByBusyGear("AutoChangeAccount",2)) {
+                if (!ContinueMethodByBusyGear("AutoChangeAccount",10)) {
                    
                    return;
                 }
@@ -5109,7 +6161,11 @@ namespace QCCWebBrowser
             http = new SimpleCrawler.HttpHelper();
             if (searchType == SearchType.EnterpriseGuidByKeyWord_APP)
             {
-                return GetPostDataAPP(curUrlObj);
+                return GetPostDataAPP(curUrlObj, false);
+            }
+            if (searchType == SearchType.EnterpriseGuidByKeyWordEnhence)
+            {
+                return GetPostDataKeyWordEnhence(curUrlObj, "", true);
             }
             //创建Httphelper参数对象
             HttpItem item = new HttpItem()
@@ -5152,6 +6208,51 @@ namespace QCCWebBrowser
             return result;
         }
         /// <summary>
+        /// enhence获取关键字guid
+        /// </summary>
+        /// <param name="curUrlObj"></param>
+        /// <param name="refer"></param>
+        /// <param name="useProxy"></param>
+        /// <returns></returns>
+        public HttpResult GetPostDataKeyWordEnhence(UrlInfo curUrlObj, string refer = "", bool useProxy = true)
+        {
+            //创建Httphelper参数对象
+
+            //curUrlObj.PostData = string.Format("key=安徽省合肥市荣事达大道568号511室 程华&type=undefined");
+            HttpItem item = new HttpItem()
+            {
+                URL = curUrlObj.UrlString,//URL     必需项    
+
+                ContentType = "application/x-www-form-urlencoded; charset=UTF-8",//返回类型    可选项有默认值 
+
+                Timeout = 1500,
+                Accept = "*/*",
+                Encoding = null,//编码格式（utf-8,gb2312,gbk）     可选项 默认类会自动识别
+                                //Encoding = Encoding.Default,
+                Method = "post",//URL     可选项 默认为Get
+                                //Timeout = 100000,//连接超时时间     可选项默认为100000
+                                //ReadWriteTimeout = 30000,//写入Post数据超时时间     可选项默认为30000
+                                //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
+                                //Cookie = "",//字符串Cookie     可选项
+                UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36",//用户的浏览器类型，版本，操作系统     可选项有默认值
+                Referer = "http://www.qichacha.com/",//来源URL     可选项
+                Postdata = curUrlObj.PostData,
+                Allowautoredirect = true,
+                Cookie = Settings.SimulateCookies, KeepAlive=true, 
+                
+            };
+            //item.WebProxy = GetWebProxy();
+            item.PostEncoding = System.Text.Encoding.GetEncoding("utf-8");
+            var result = http.GetHtml(item);
+            if (string.IsNullOrEmpty(result.Html))
+            {
+
+            }
+            return result;
+        }
+        
+
+        /// <summary>
         /// app post获取
         /// </summary>
         /// <param name="curUrlObj"></param>
@@ -5183,9 +6284,9 @@ namespace QCCWebBrowser
 
             //string.Format("refreshToken=f128619e442a6efe44c1544b4c926824&timestamp=1473757386869&appId=80c9ef0fb86369cd25f90af27ef53a9e&sign=a5ae576bcddcba5df634f041995e45cd54b255e6");
             hi.Url = curUrlObj.UrlString.ToString();
-            //hi.Refer = "http://app.qichacha.net";
+            //hi.Refer = "https://appv2.qichacha.net";
             hi.PostData = curUrlObj.PostData;
-            hi.UserAgent = "okhttp/3.2.0";
+            hi.UserAgent = "okhttp/3.6.0";
             hi.HeaderSet("Content-Type", "application/x-www-form-urlencoded");
             // hi.HeaderSet("Content-Length","154");
             // hi.HeaderSet("Connection","Keep-Alive");
@@ -5213,7 +6314,7 @@ namespace QCCWebBrowser
                             StartDBChangeProcessQuick();
                         }
                         
-                        if (autoChangeAccountCHK.Checked)
+                            if (autoChangeAccountCHK.Checked)
                             {
                                 AutoChangeAccount();
                             }
@@ -5293,6 +6394,17 @@ namespace QCCWebBrowser
             }
             return true;
         }
+
+        private DateTime GetContinueMethodByBusyGear(string key)
+        {
+            if (MehodBusyGearList.ContainsKey(key))
+            {
+                var DateTime = MehodBusyGearList[key];
+                return DateTime;
+            }
+            return DateTime.Now;
+        }
+
 
         /// <summary>
         /// 修复Url,此处因为其curl的timestamp 与sign值 每个账号需要的只不一样，因此需要进行替换,才会不限制
@@ -5402,6 +6514,24 @@ namespace QCCWebBrowser
 
         public HttpResult GetHttpHtmlAPP(UrlInfo curUrlObj, bool tryAgain = false)
         {
+            //刚切换账号前N个url 加入备用队列
+            if (IsMoreDetailInfo)
+            {
+                MZ.Mongo.QCCEnterpriseHelper qccHelper = new MZ.Mongo.QCCEnterpriseHelper();
+                MZ.Mongo.DeviceInfo info = new MZ.Mongo.DeviceInfo
+                {
+                    accessToken = Settings.AccessToken,
+                    appId = Settings.AppId,
+                    deviceId = Settings.DeviceId,
+                    refreshToken = Settings.RefleshToken,
+                    sign = Settings.sign,
+                    timestamp = Settings.timestamp
+                };
+                qccHelper.curDeviceInfo = info;
+                qccHelper.webProxy = this.GetWebProxy();
+                return qccHelper.GetEnterpriseBackDetailInfo(curUrlObj.UniqueKey);
+            }
+
             http = new SimpleCrawler.HttpHelper();
             var url = FixUrlSignStr(curUrlObj);
             var item = new SimpleCrawler.HttpItem()
@@ -5409,7 +6539,7 @@ namespace QCCWebBrowser
                 URL = url,
                 Method = "get",//URL     可选项 默认为Get   
                                // ContentType = "text/html",//返回类型    可选项有默认值 
-                UserAgent = "okhttp/3.2.0",
+                UserAgent = "okhttp/3.6.0",
                 ContentType = "application/x-www-form-urlencoded",
             };
 
@@ -5435,17 +6565,19 @@ namespace QCCWebBrowser
                     if (IsSameUrlSign(url) == false)//只尝试一次
                     {
                         ShowMessageInfo("当前url与settings.sign不一致 进行重试");
+
                         return GetHttpHtmlAPP(curUrlObj);
                     }
                     timerStop();//防止重复
                     ShowMessageInfo(result.Html, true);
                     DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isInvalid", "1"), Query = Query.EQ("deviceId", Settings.DeviceId), Name = QCCDeviceAccount, Type = StorageType.Update });
+                   
                     StartDBChangeProcessQuick();
                     if (autoChangeAccountCHK.Checked)
                     {
-                        
-                           AutoChangeAccount();
-                       
+                        //ChangeIp();//更换IP后进行
+                        AutoChangeAccount();
+
                     }
                     else
                     {
@@ -5465,6 +6597,12 @@ namespace QCCWebBrowser
                         timerStart();
                     }
                 }
+                //else if (result.Html.Contains("<html><script>"))
+                //{
+                //    timerStop();
+                //    ChangeIp();
+                //    timerStart();
+                //}
             }
 
             //return new HttpResult() { StatusCode = HttpStatusCode.OK, Html = result.Html };
@@ -5472,11 +6610,90 @@ namespace QCCWebBrowser
             //return GetPostDataFix(curUrlObj);
 
         }
+
+        public void GetInventRelation(BsonDocument doc, string rootGuid = "", string parentGuid = "")
+        {
+            string tableName = "QCCEnterpriseKeyInventInfoRelation";
+            string name = doc.Text("name");
+            string guid = doc.Text("KeyNo");
+            string Level = doc.Text("Level");
+            string Category = doc.Text("Category");
+            string FundedAmount = doc.Text("FundedAmount");
+            string FundedRate = doc.Text("FundedRate");
+            string ShortName = doc.Text("ShortName");
+            string Count = doc.Text("Count");
+            if (name != "股东")
+            {
+                if (string.IsNullOrEmpty(rootGuid) || (rootGuid == "BsonNull"))
+                {
+                    rootGuid = guid;
+                }
+                if (string.IsNullOrEmpty(parentGuid) || (parentGuid == "BsonNull"))
+                {
+                    parentGuid = rootGuid;
+                }
+                BsonDocument updateDoc = new BsonDocument {
+                    {
+                        "guid",
+                        guid
+                    },
+                    {
+                        "level",
+                        Level
+                    },
+                    {
+                        "name",
+                        name
+                    },
+                    {
+                        "ShortName",
+                        ShortName
+                    },
+                    {
+                        "Category",
+                        Category
+                    }
+                };
+                if (FundedAmount != "BsonNull")
+                {
+                    updateDoc.Add("FundedAmount", FundedAmount);
+                }
+                if (FundedRate != "BsonNull")
+                {
+                    updateDoc.Add("FundedRate", FundedRate);
+                }
+                updateDoc.Add("Count", Count);
+                updateDoc.Add("nodePid", parentGuid);
+                updateDoc.Add("primaryGuid", rootGuid);
+                if (!string.IsNullOrEmpty(guid) && (guid != "BsonNull"))
+                {
+                    StorageData target = new StorageData
+                    {
+                        Name = tableName,
+                        Document = updateDoc,
+                        Type = StorageType.Insert
+                    };
+                    DBChangeQueue.Instance.EnQueue(target);
+                }
+                if (doc["children"] != null)
+                {
+                    List<BsonDocument> children = doc.GetBsonDocumentList("children");
+                    if (children != null)
+                    {
+                        foreach (BsonDocument node in children)
+                        {
+                            this.GetInventRelation(node, rootGuid, guid);
+                        }
+                    }
+                }
+            }
+        }
+
         public HttpResult GetPostDataLogin(UrlInfo curUrlObj, string refer = "", bool useProxy = true)
         {
             if (searchType == SearchType.EnterpriseGuidByKeyWord_APP)
             {
-                return GetPostDataAPP(curUrlObj);
+                return GetPostDataAPP(curUrlObj,false);
             }
             //创建Httphelper参数对象
             HttpItem item = new HttpItem()
@@ -5654,10 +6871,22 @@ namespace QCCWebBrowser
             this.comboBox.Items.Add("企业城市分类关键字Guid");////4http://www.qichacha.com/search?key=%E5%8C%97%E4%BA%AC++%E9%A3%9F%E5%93%81%E6%B7%BB%E5%8A%A0%E5%89%82&type=enterprise&source=&isGlobal=Y
             this.comboBox.Items.Add("APP破解城市分类关键字Guid_APP");//6
              //var cityNameStr = "地块企业,佛山,北京,西安,烟台,上海,深圳,成都,福州,广州,杭州,黄山,济南,龙岩,南昌,南京,宁波,泉州,苏州,武汉,厦门,大连,长沙,合肥,镇江,宁波,中山,郑州,昆明,江苏,重庆";
-            var cityNameStr = "太原,兰州,长春,海口,北海,南宁,保定,南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,北京,上海,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照,南宁,武汉,长沙,合肥,济南,郑州,南昌,天津,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,漳州,莆田,三明,南平,龙岩,宁德市,宁德地区,东莞,重庆,嘉兴,惠州,珠海,汕头,中山,湛江,泉州,龙岩,南通,常州,镇江,连云港,舟山,黄山,烟台,";
-           // var cityNameStr = "广州,韶关,深圳,珠海,汕头,佛山,江门,湛江,茂名,肇庆,惠州,梅州,汕尾,河源,阳江,清远,东莞,中山,潮州,揭阳,云浮";
-
-            foreach (var cityName in cityNameStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+            var cityNameStr = "仙桃,宁波,扬州,泸州,江阴,马鞍山,太原,兰州,长春,海口,北海,南宁,保定,南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,北京,上海,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照,南宁,武汉,长沙,合肥,济南,郑州,南昌,天津,杭州,兰州,长春,海口,西宁,石家庄,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,漳州,莆田,三明,南平,龙岩,宁德市,宁德地区,东莞,重庆,嘉兴,惠州,珠海,汕头,中山,湛江,泉州,龙岩,南通,常州,镇江,连云港,舟山,黄山,烟台,";
+            // var cityNameStr = "广州,韶关,深圳,珠海,汕头,佛山,江门,湛江,茂名,肇庆,惠州,梅州,汕尾,河源,阳江,清远,东莞,中山,潮州,揭阳,云浮";
+            var provinceCityList = new List<string>();
+            var provinceCode = textBox.Text;
+            provinceCityList = dataop.FindAllByQuery(DataTableCity,
+                Query.And(Query.EQ("provinceCode", provinceCode), Query.EQ("type", "1"))).Select(c=>c.Text("name")).ToList();
+            var cityNames = new List<string>();
+            if (provinceCityList.Count > 0)
+            {
+                cityNames = provinceCityList;
+            }
+            else
+            {
+                cityNames = cityNameStr.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+            foreach (var cityName in cityNames)
             {
                 this.comboBox2.Items.Add(cityName);
             }
@@ -5696,7 +6925,6 @@ namespace QCCWebBrowser
             EnterpriseInfoMapDic_App.Add("OperName", "oper_name");
             EnterpriseInfoMapDic_App.Add("RegistCapi", "reg_capi_desc");
             //EnterpriseInfoMapDic_App.Add("所属行业", "domain");//所属行业需要解析
-
             EnterpriseInfoMapDic_App.Add("BelongOrg", "registrar");
             EnterpriseInfoMapDic_App.Add("Address", "address");
             EnterpriseInfoMapDic_App.Add("Scope", "operationDomain");
@@ -5706,13 +6934,66 @@ namespace QCCWebBrowser
             EnterpriseInfoMapDic_App.Add("WebSite", "webSite");
             EnterpriseInfoMapDic_App.Add("ImageUrl", "imgUrl");
             EnterpriseInfoMapDic_App.Add("EnglishName", "engName");
+            EnterpriseInfoMapDic_App.Add("X", "x");
+            EnterpriseInfoMapDic_App.Add("Y", "y");
+            EnterpriseInfoMapDic_App.Add("TaxNo", "taxNo");
+            ///更新时间与数据库中的更新时间不同
+            EnterpriseInfoMapDic_App.Add("UpdatedDate", "companyUpdatedDate");
+            EnterpriseInfoMapDic_App.Add("HitReason", "HitReason");
             #endregion
 
             Settings.MaxReTryTimes = 100;//尝试最大个数
 
             ReloadLoginAccount();
+            ///用于判断是否过滤关键字
+            PassKeyWordFilterCondition.Add(new BsonDocument().Add("addCount", 10).Add("existCount", 2000));
+            PassKeyWordFilterCondition.Add(new BsonDocument().Add("addCount", 100).Add("existCount", 4000));
+            PassKeyWordFilterCondition.Add(new BsonDocument().Add("addCount", 200).Add("existCount", 10000));
+            PassKeyWordFilterCondition.Add(new BsonDocument().Add("addCount", 300).Add("existCount", 30000));
+            PassKeyWordFilterCondition.Add(new BsonDocument().Add("addCount", 400).Add("existCount", 40000));
+            PassKeyWordtimer.Enabled = true;
+            PassKeyWordtimer.Start();
+            InitInitLimitIpList();
+            InitialCountyCodeList();
+            InitialProxyList();
         }
+        List<BsonDocument> proxyList = new List<BsonDocument>();
+        /// <summary>
+        /// 初始化代理
+        /// </summary>
+        private void InitialProxyList()
+        {
+           
+            proxyList.Add(new BsonDocument().Add("name","经典版")
+                .Add("proxyUser", "H283EZ4CP1YFQCRC").Add("proxyPass", "2BAB4571505B4807")
+                .Add("proxyHost", "http://http-cla.abuyun.com").Add("proxyPort", "9030"));
 
+            proxyList.Add(new BsonDocument().Add("name", "专业版本")
+              .Add("proxyUser", "H1538UM3D6R2133P").Add("proxyPass", "511AF06ABED1E7AE")
+              .Add("proxyHost", "http://http-pro.abuyun.com").Add("proxyPort", "9010"));
+
+            this.proxyListCB.Items.Add("请选择");
+            foreach (var proxyItem in proxyList)
+            {
+                this.proxyListCB.Items.Add(proxyItem.Text("proxyUser"));//0
+
+            }
+            this.proxyListCB.SelectedIndex = proxyList.Count() - 1;
+        }
+        private void InitialCountyCodeList()
+        {
+            allCountyCodeList= dataop.FindAll(DataTableCountyCode).ToList();
+        }
+        private void InitInitLimitIpList()
+        {
+            var LimitIpPoorList = dataop.FindAll(LimitIpPoor).ToList();
+            foreach (var ipObj in LimitIpPoorList)
+            {
+                if(!ipLimitFilter.Contains(ipObj.Text("ip").Trim()))
+                ipLimitFilter.Add(ipObj.Text("ip").Trim());
+            }
+
+        }
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             var passResult = geetestHelper.GetLastPoint(hi);
@@ -5833,10 +7114,11 @@ namespace QCCWebBrowser
                         Application.Exit();
                     }
                 }
-                if (UrlQueue.Instance.Count > 0)
+                if (UrlQueueCount() > 0)
                 {
                     var maxRetryTimes = Settings.MaxReTryTimes != 0 ? Settings.MaxReTryTimes : 3;
-                    var curUrlObj = UrlQueue.Instance.DeQueue();
+                    //优先错误尝试列表中的数据
+                    UrlInfo curUrlObj= UrlRetryQueue.Instance.Count > 0? UrlRetryQueue.Instance.DeQueue() : UrlQueue.Instance.DeQueue();
                     if (curUrlObj != null&&!string.IsNullOrEmpty(curUrlObj.UrlString))
                     {
                         Settings.CurUrl = curUrlObj.UrlString;
@@ -5895,8 +7177,9 @@ namespace QCCWebBrowser
                         var curUrl=ClearUrlSignStr(curUrlObj);
                         var args = new DataReceivedEventArgs() { Depth = curUrlObj.Depth, Html = result.Html, IpProx = null, Url = curUrl,urlInfo= curUrlObj };
 
-                        if (result.StatusCode == HttpStatusCode.OK && !result.Html.Contains("Service Unavailable") && !IPLimitProcess(args))
+                        if (result!=null&&result.StatusCode == HttpStatusCode.OK && !result.Html.Contains("Service Unavailable") && !IPLimitProcess(args))
                         {
+                            TimerReset();
                             DataReceive(args);
                             StartDBChangeProcessQuick();
                             //AutoChangeAccount();
@@ -5905,8 +7188,12 @@ namespace QCCWebBrowser
                         }
                         else
                         {
+                            if (result.Html.Contains("异常"))
+                            {
+                                TimerSlow();
+                            }
                             curUrlObj.Depth = curUrlObj.Depth + 1;
-                            UrlQueue.Instance.EnQueue(curUrlObj);//重试
+                            UrlRetryQueue.Instance.EnQueue(curUrlObj);//重试
                         }
 
 
@@ -5918,7 +7205,7 @@ namespace QCCWebBrowser
                   
                    
                     ShowMessageInfo("正在尝试提取关键字");
-                    if (StringQueue.Instance.Count > 0&& UrlQueue.Instance.Count<=0)
+                    if (StringQueue.Instance.Count > 0&& (UrlQueueCount() <= 0))
                     {
                         ///5秒内只能执行一次防止重复太多
                         if (ContinueMethodByBusyGear("InitalQCCAppUrlByKeyWord",2))
@@ -5942,7 +7229,7 @@ namespace QCCWebBrowser
                     {
                       
                         waitBrowerMouseUpResponse = false;
-                        ShowMessageInfo("当前数据更新结束，请单击crawler重新获取");
+                        ShowMessageInfo(string.Format("当前数据更新结束，请单击crawler重新当前操作已获取{0}", AllAddCount.ToString()));
                         if (checkBoxGuard.Checked && searchType == SearchType.UpdateEnterpriseInfo)
                         {
                             startCrawlerBtn.Invoke(new Action(() => { startCrawlerBtn_Click(source, e); }));
@@ -6162,7 +7449,7 @@ namespace QCCWebBrowser
             }
             siteIndexUrl = validUrl;
             curUri = new Uri(siteIndexUrl);
-            if (UrlQueue.Instance.Count <= 0)
+            if (UrlQueueCount() <= 0)
             {
                 this.webBrowser.Navigate(addCredsToUri(validUrl));
 
@@ -6269,7 +7556,7 @@ namespace QCCWebBrowser
                 if (UserProxyChk.Checked)
                 {
                     ShowMessageInfo("开始切换ip");
-                    var result = GetHttpHtml(new UrlInfo("http://proxy.abuyun.com/switch-ip"));
+                    var result = GetHttpHtml(new UrlInfo(proxyHost+"/switch-ip"));
                 }
             }
         }
@@ -6283,66 +7570,47 @@ namespace QCCWebBrowser
             }
             else
             {
-
+               
                 guardTimer.Enabled = false;
                 guardTimer.Stop();
+                if (GetAccessRetryTimes <= 0)
+                {
+                    //发送错误通知邮件
+                    SendErrorMessage("getAccessToken 出错");
+                }
             }
         }
-
+        /// <summary>
+        /// 发送错误通知邮件
+        /// </summary>
+        /// <param name="message"></param>
+        private void SendErrorMessage(string message)
+        {
+            try
+            {
+                var msgHelper = new MessagePushQueueHelper();
+                msgHelper.PushMessage(new MessagePushEntity() { arrivedUserIds = "1", title = "企查查爬虫", content = message, type = "0", sendDate = DateTime.Now.AddMinutes(5).ToString("yyyy-MM-dd mm:ss"), sendType = "0" });
+            }
+            catch (Exception ex)
+            {
+                ShowMessageInfo(ex.Message);
+            }
+        }
         private void button2_Click(object sender, EventArgs e)
         {
-            
+            // https://appv2.qichacha.net/app/v3/base/advancedSearch?searchKey=%E9%94%80%E5%94%AE%E4%BA%BA&searchIndex=default&pageIndex=1&isSortAsc=false&industryV3=&industryCode=&subIndustryCode=&searchType=&timestamp=1522237017283&sign=2e0c2b3399fce4e59f2d2252cc7a1193c1632bc4 
+            //refreshToken =  & timestamp = 1522239816711 & appId = 80c9ef0fb86369cd25f90af27ef53a9e & sign = 8809e3521002bc6b84d7259ae6b4b43d11a08f67
+            //Settings.RefleshToken = "c9fd048ba06439fce7fbd1f0b06a386b";
+            //Settings.timestamp = "1522239816711";
+            //Settings.AppId = "80c9ef0fb86369cd25f90af27ef53a9e";
+            //Settings.sign = "8809e3521002bc6b84d7259ae6b4b43d11a08f67";
+            //Settings.timestamp = "1522239816711";
+            //Settings.AccessToken = "MTE1NzVhNDgtMjgxMy00ZTJkLWI3YzctMDcwZDEzZjQ1ZjAw";
             //JObject jsonObj = JObject.Parse(this.EnterpriseKeySuffixTxt.Text);
-
-            //return;
-            var allBusyAccountList = dataop.FindAllByQuery(DataTableAccount, Query.And(Query.EQ("isBusy", "1"), Query.NE("isInvalid", "1"))).OrderBy(c => c.Int("isUsed") + c.Int("isBusy")).ThenBy(c => c.Int("UpdateEnterpriseInfo")).ThenBy(c => c.Date("updateDate")).ToList();
-            var curTestUrl = "http://www.qichacha.com/company_getinfos?unique=2fc830656f9b1e6078a8e52983c128cc&companyname=%E9%9D%92%E5%B2%9B%E5%A4%A9%E8%AF%9A%E8%81%94%E5%90%88%E5%88%9B%E6%84%8F%E6%96%87%E5%8C%96%E9%9B%86%E5%9B%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&tab=base";
-            this.curUri = new Uri(curTestUrl);
-            searchType = SearchType.UpdateEnterpriseInfo;
-            var index = 1;
-            foreach (var account in allBusyAccountList)
-            {
-                index++;
-                this.textBox1.Text = account.Text("name");
-                this.textBox2.Text = account.Text("password");
-                //模拟登陆
-                if (GeetestChartAutoLoin())
-                {
-
-                    var result = GetHttpHtml(new UrlInfo(curTestUrl));
-                    if (result.StatusCode == HttpStatusCode.OK && !result.Html.Contains("Service Unavailable"))
-                    {
-                        if (!UrlContentLimit(result.Html))
-                        {
-                            //无限制
-                            DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isBusy", "0"), Query = Query.EQ("name", account.Text("name")), Name = DataTableAccount, Type = StorageType.Update });
-                            StartDBChangeProcessQuick();
-                        }
-                        else
-                        {
-                            //continue;
-                            //过验证码
-                            if (PassEnterpriseInfoGeetestChart(true))
-                            {
-                                //无限制
-                                DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isBusy", "0"), Query = Query.EQ("name", account.Text("name")), Name = DataTableAccount, Type = StorageType.Update });
-                                StartDBChangeProcessQuick();
-                            }
-                            else
-                            {
-
-                                //无限制
-                                // DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isInvalid", "1"), Query = Query.EQ("name", account.Text("name")), Name = DataTableAccount, Type = StorageType.Update });
-                                // StartDBChangeProcessQuick();
-                            }
-
-                        }
-                    }
-                }
-
-            }
-
-
+            var url = "https://appv2.qichacha.net/app/v3/base/advancedSearch?searchKey=%E9%94%80%E5%94%AE&searchIndex=default&province=JS&pageIndex=1&isSortAsc=false&industryV3=&industryCode=&subIndustryCode=&searchType=&countyCode=321000&timestamp=1522236501864&sign=63424dfba4529edb541f9f4659834dfd20808aa6";
+            var result = GetHttpHtml(new UrlInfo(url));
+            ShowMessageInfo(result.Html);   
+ 
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -6852,7 +8120,7 @@ namespace QCCWebBrowser
             var passResult = new GeetestResult() { Status = false };
             if (true)
             {
-                var _url = new UrlInfo("https://app.qichacha.net/app/v1/admin/sendValidateToken");
+                var _url = new UrlInfo("https://appv2.qichacha.net/app/v1/admin/sendValidateToken");
                 _url.PostData = string.Format("account={0}&timestamp={1}&sign={2}", phoneNum, Settings.timestamp, Settings.sign);
                 var result = GetPostDataAPP(_url);
                 if (result.StatusCode == HttpStatusCode.OK && result.Html.Contains("请查收"))
@@ -6929,7 +8197,7 @@ namespace QCCWebBrowser
             if (passResult.Status)
             {
 
-                var _url = new UrlInfo("https://app.qichacha.net/app/v1/admin/register");
+                var _url = new UrlInfo("https://appv2.qichacha.net/app/v1/admin/register");
                 _url.PostData = string.Format("account={0}&password=b412a4532991798fcddf698e31125c03&identifyCode={1}&timestamp={2}&sign={3}", phone, mobilecode, Settings.timestamp, Settings.sign);
                 var result = GetPostDataAPP(_url);
                 if (result.StatusCode == HttpStatusCode.OK && result.Html.Contains("成功"))
@@ -7022,11 +8290,15 @@ namespace QCCWebBrowser
                 }
                 ShowMessageInfo("开始进行RefreshToken", true);
 
-                hi.Url = "https://app.qichacha.net/app/v1/admin/refreshToken";
-                //hi.Refer = "http://app.qichacha.net";
+                hi.Url = "https://appv2.qichacha.net/app/v1/admin/refreshToken";
+                //hi.Refer = "https://appv2.qichacha.net";
                 hi.PostData = string.Format("refreshToken={0}&timestamp={1}&appId={2}&sign={3}", Settings.RefleshToken, Settings.timestamp, Settings.AppId, Settings.sign); ;
-                hi.UserAgent = "okhttp/3.2.0";
+                hi.UserAgent = "okhttp/3.6.0";
                 hi.HeaderSet("Content-Type", "application/x-www-form-urlencoded");
+                if (USEWEBPROXY)
+                {
+                    hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, GetWebProxyString());
+                }
                 // hi.HeaderSet("Content-Length","154");
                 // hi.HeaderSet("Connection","Keep-Alive");
                 hi.HeaderSet("Accept-Encoding", "gzip");
@@ -7060,15 +8332,20 @@ namespace QCCWebBrowser
         public string GetAccessToken()
         {
 
-            hi.Url = "https://app.qichacha.net/app/v1/admin/getAccessToken";
-            //hi.Refer = "http://app.qichacha.net";
-            hi.PostData = string.Format("appId={0}&deviceId={1}&version=9.2.0&deviceType=android&os=&timestamp={2}&sign={3}", Settings.AppId, Settings.DeviceId, Settings.timestamp, Settings.sign);
-            hi.UserAgent = "okhttp/3.2.0";
+            hi.Url = "https://appv2.qichacha.net/app/v1/admin/getAccessToken";
+            //hi.Refer = "https://appv2.qichacha.net";
+            hi.PostData = string.Format("appId={0}&deviceId={1}&version=10.0.4&deviceType=android&os=&timestamp={2}&sign={3}", Settings.AppId, Settings.DeviceId, Settings.timestamp, Settings.sign);
+            
+            hi.UserAgent = "okhttp/3.6.0";
             hi.HeaderSet("Content-Type", "application/x-www-form-urlencoded");
             // hi.HeaderSet("Content-Length","154");
             // hi.HeaderSet("Connection","Keep-Alive");
             hi.HeaderSet("Accept-Encoding", "gzip");
             hi.HeaderSet("Authorization", string.Format("Bearer {0}", Settings.AccessToken));
+            if (USEWEBPROXY)
+            {
+                hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, GetWebProxyString());
+            }
             var ho = LibCurlNet.HttpManager.Instance.ProcessRequest(hi);
             if (ho.IsOK && ho.TxtData.Contains("成功"))
             {
@@ -7087,7 +8364,7 @@ namespace QCCWebBrowser
             {
                 this.checkBoxGuard.Checked = false;
                 guardTimer.Stop();
-                GetAccessRetryTimes = 4;
+                GetAccessRetryTimes = 10;
             }
             else
             {
@@ -7104,7 +8381,7 @@ namespace QCCWebBrowser
         /// <returns></returns>
         public string GetAccessToken_abort()
         {
-            var url = "https://app.qichacha.net/app/v1/admin/getAccessToken";
+            var url = "https://appv2.qichacha.net/app/v1/admin/getAccessToken";
             var postData = string.Format("appId={0}&deviceId={1}&version=9.2.0&deviceType=android&os=&timestamp={2}&sign={3}", Settings.AppId, Settings.DeviceId, Settings.timestamp, Settings.sign); ;
             //var result = GetPostData(new UrlInfo(url) { PostData = postData });
             SimpleCrawler.HttpItem item = new SimpleCrawler.HttpItem()
@@ -7122,7 +8399,7 @@ namespace QCCWebBrowser
                                 //ReadWriteTimeout = 30000,//写入Post数据超时时间     可选项默认为30000
                                 //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
                                 //Cookie = "",//字符串Cookie     可选项
-                UserAgent = "okhttp/3.2.0",//用户的浏览器类型，版本，操作系统     可选项有默认值
+                UserAgent = "okhttp/3.6.0",//用户的浏览器类型，版本，操作系统     可选项有默认值
                                            //Referer = "app.qichacha.net",//来源URL     可选项
                 Postdata = postData,
                 // Allowautoredirect = true,
@@ -7186,8 +8463,8 @@ namespace QCCWebBrowser
                 }
                 ShowMessageInfo("开始进行RefreshToken", true);
 
-               var url = "https://app.qichacha.net/app/v1/admin/refreshToken";
-                //hi.Refer = "http://app.qichacha.net";
+               var url = "https://appv2.qichacha.net/app/v1/admin/refreshToken";
+                //hi.Refer = "https://appv2.qichacha.net";
                var postData = string.Format("refreshToken={0}&timestamp={1}&appId={2}&sign={3}", Settings.RefleshToken, Settings.timestamp, Settings.AppId, Settings.sign); ;
 
                 SimpleCrawler.HttpItem item = new SimpleCrawler.HttpItem()
@@ -7205,7 +8482,7 @@ namespace QCCWebBrowser
                                     //ReadWriteTimeout = 30000,//写入Post数据超时时间     可选项默认为30000
                                     //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
                                     //Cookie = "",//字符串Cookie     可选项
-                    UserAgent = "okhttp/3.2.0",//用户的浏览器类型，版本，操作系统     可选项有默认值
+                    UserAgent = "okhttp/3.6.0",//用户的浏览器类型，版本，操作系统     可选项有默认值
                                                //Referer = "app.qichacha.net",//来源URL     可选项
                     Postdata = postData,
                     // Allowautoredirect = true,
@@ -7318,6 +8595,10 @@ namespace QCCWebBrowser
                     searchType = SearchType.EnterpriseGuidByKeyWord_APP;
                     validUrl = "http://www.qichacha.com/firm_ZJ_c29fb59a50a8d6f0cab90a2dac54cbf8.shtml";
                     break;
+                case (int)SearchType.EnterpriseInvent:
+                    searchType = SearchType.EnterpriseInvent;
+                    validUrl = "http://www.qichacha.com/firm_ZJ_c29fb59a50a8d6f0cab90a2dac54cbf8.shtml";
+                    break;
                 case (int)SearchType.UpdateEnterpriseInfo:
                 default:
                     validUrl = "http://www.qichacha.com/firm_ZJ_c29fb59a50a8d6f0cab90a2dac54cbf8.shtml";
@@ -7331,9 +8612,9 @@ namespace QCCWebBrowser
         private void button7_Click(object sender, EventArgs e)
         {
             List<string> QueueList = new List<string>();
-            if (UrlQueue.Instance.Count > 0)
+            if (UrlQueueCount() > 0)
             {
-                while (UrlQueue.Instance.Count > 0)
+                while (UrlQueueCount() > 0)
                 {
                     QueueList.Add(UrlQueue.Instance.DeQueue().UrlString);
                 }
@@ -7384,7 +8665,7 @@ namespace QCCWebBrowser
             {
                 StringQueue.Instance.EnQueue(keyWord);
             }
-            MessageBox.Show("url:{0}keyWord:{1}",UrlQueue.Instance.Count.ToString());
+            MessageBox.Show("url:{0}keyWord:{1}", UrlQueueCount().ToString());
         }
 
         private void ipChangeTimer_Tick(object sender, EventArgs e)
@@ -7396,40 +8677,70 @@ namespace QCCWebBrowser
 
             }
         }
+        /// <summary>
+        /// 判断ip区域是否有效
+        /// </summary>
+        /// <returns></returns>
+        private bool IpValid(string html)
+        {
+            var validWordStr = "山西,陕西,湖北,湖南,揭阳,舟山,辽宁，鞍山，铜陵，衢州，滨州，,台州，荆州，南通，黄冈，宿迁";
+            var validWords = validWordStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            return validWords.Any(d => html.Contains(d));
+        }
+
         private void ChangeIp()
         {
-            SimpleCrawler.HttpResult result = new SimpleCrawler.HttpResult();
-            try
+            
+            var result = ExecChangeIp();
+            //while(!IpValid(result))
+            //{
+            //    Thread.Sleep(500);
+            //    ChangeIp();
+            //}
+            
+        }
+
+        private string ExecChangeIp()
+        {
+            proxyIpDetail = string.Empty;
+            while (string.IsNullOrEmpty(proxyIpDetail) || ipLimitFilter.Contains(proxyIpDetail))
             {
-                var item = new SimpleCrawler.HttpItem()
+                SimpleCrawler.HttpResult result = new SimpleCrawler.HttpResult();
+                try
                 {
-                    URL = "http://proxy.abuyun.com/switch-ip",
-                    Method = "get",//URL     可选项 默认为Get   
-                    // ContentType = "text/html",//返回类型    可选项有默认值 
-                    UserAgent = "okhttp/3.2.0",
-                    ContentType = "application/x-www-form-urlencoded",
-                };
+                    var item = new SimpleCrawler.HttpItem()
+                    {
+                        URL = proxyHost + "/switch-ip",
+                        Method = "get",//URL     可选项 默认为Get   
+                                       // ContentType = "text/html",//返回类型    可选项有默认值 
+                        UserAgent = "okhttp/3.6.0",
+                        ContentType = "application/x-www-form-urlencoded",
+                    };
 
-                // item.Header.Add("Content-Type", "application/x-www-form-urlencoded");
-                // hi.HeaderSet("Content-Length","154");
-                // hi.HeaderSet("Connection","Keep-Alive");
-                item.Header.Add("Proxy-Switch-Ip", "yes");
-                item.WebProxy = GetWebProxy();
-                result = http.GetHtml(item);
-               // ShowMessageInfo(result.Html);
-            }
-            catch (WebException ex)
-            {
+                    // item.Header.Add("Content-Type", "application/x-www-form-urlencoded");
+                    // hi.HeaderSet("Content-Length","154");
+                    // hi.HeaderSet("Connection","Keep-Alive");
+                    item.Header.Add("Proxy-Switch-Ip", "yes");
+                    item.WebProxy = GetWebProxy();
+                    result = http.GetHtml(item);
+                    proxyIpDetail = result.Html.Trim();
+                    // ShowMessageInfo(result.Html);
+                    return result.Html;
+                }
+                catch (WebException ex)
+                {
 
-            }
-            catch (TimeoutException ex)
-            {
+                }
+                catch (TimeoutException ex)
+                {
 
-            }
-            catch (Exception ex)
-            {
+                }
+                catch (Exception ex)
+                {
 
+                }
             }
+            return string.Empty;
         }
 
         private void autoChangeAccountCHK_CheckedChanged(object sender, EventArgs e)
@@ -7463,7 +8774,24 @@ namespace QCCWebBrowser
 
         private void button11_Click(object sender, EventArgs e)
         {
-            LandFangSendPhoneCode("17080371218");
+            var provinceCode = textBox.Text;
+            var provinceCityList = dataop.FindAllByQuery(DataTableCity,
+                Query.And(Query.EQ("provinceCode", provinceCode), Query.EQ("type", "1"))).Select(c => c.Text("name")).ToList();
+            var cityNames = new List<string>();
+            if (provinceCityList.Count > 0)
+            {
+                cityNames = provinceCityList;
+            }
+            else
+            {
+                cityNames = cityNameStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+            this.comboBox2.Items.Clear();
+            foreach (var cityName in cityNames)
+            {
+                this.comboBox2.Items.Add(cityName);
+            }
+            // LandFangSendPhoneCode("17080371218");
             return;
             accountRegisterType = AccountRegisterType.LandFang;
             if (documentText != null && documentText.Body != null && documentText.Body.InnerHtml.Contains("退出"))
@@ -7487,24 +8815,86 @@ namespace QCCWebBrowser
 
         private void button12_Click(object sender, EventArgs e)
         {
+
+            PassKeyWord();
+        }
+        /// <summary>
+        /// 跳过下一个关键字
+        /// </summary>
+        private void PassKeyWord()
+        {
+
             timerStop();
-            while (UrlQueue.Instance.Count > 0)
+            var setUrlCount = 0;
+            if (int.TryParse(textBox3.Text.Trim(), out setUrlCount))
+            {
+
+            }
+            while (UrlQueue.Instance.Count > setUrlCount)
             {
                  UrlQueue.Instance.DeQueue();
             }
+ 
             if (StringQueue.Instance.Count > 0)
             {
                 ShowMessageInfo("正在尝试提取关键字");
-                var curKeyWord = StringQueue.Instance.DeQueue();
-                var url = InitalQCCAppUrlByKeyWord(curKeyWord);
-                if (!urlFilter.Contains(url))
+                var leftCount = 1;
+                if (singalKeyWordCHK.Checked == true)
                 {
-                    UrlQueue.Instance.EnQueue(new UrlInfo(url));
-                    timerStart();
+                    leftCount = StringQueue.Instance.Count - 1;
+                }
+                else
+                {
+                    leftCount = 0;
                 }
 
-            }
+                while (StringQueue.Instance.Count > leftCount)
+                {
+                    var curKeyWord = StringQueue.Instance.DeQueue();
+                    var url = InitalQCCAppUrlByKeyWord(curKeyWord);
+                    if (!urlFilter.Contains(url))
+                    {
+                        UrlQueue.Instance.EnQueue(new UrlInfo(url));
 
+                    }
+                }
+                timerStart();
+             }
+        }
+
+        private void PassKeyWordtimer_Tick(object sender, EventArgs e)
+        {
+            var curKeyWordCount = SetKeyWordHitCount(curKeyWordStr, 0);//设置更新个数
+            ProcessCanAutoPassKeyWord(curKeyWordCount, curKeyWordStr);
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(proxyIpDetail))
+            {
+                DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("ip", proxyIpDetail), Name = LimitIpPoor, Type = StorageType.Insert });
+                if (!ipLimitFilter.Contains(proxyIpDetail) && !string.IsNullOrEmpty(proxyIpDetail))
+                {
+                    ipLimitFilter.Add(proxyIpDetail);
+                }
+                StartDBChangeProcessQuick();
+            }
+        }
+
+        private void proxyListCB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string text = (sender as ComboBox).SelectedItem as string;
+            if (text == null) return;
+            var hitProxy = proxyList.Where(c => c.Text("proxyUser") == text).FirstOrDefault();
+            if (hitProxy != null)
+            {
+                  proxyHost = hitProxy.Text("proxyHost");
+                  proxyPort = hitProxy.Text("proxyPort");
+                  proxyUser = hitProxy.Text("proxyUser");
+                  proxyPass = hitProxy.Text("proxyPass");
+                  ShowMessageInfo("切换代理成功");
+            }
+           
         }
     }
 }

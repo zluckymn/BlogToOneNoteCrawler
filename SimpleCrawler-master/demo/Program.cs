@@ -30,6 +30,7 @@ namespace SimpleCrawler.Demo
     using System.Collections;
     using System.Threading.Tasks;
     using System.Runtime.InteropServices;
+    using System.Threading;
 
     /// <summary>
     /// The program.
@@ -41,10 +42,13 @@ namespace SimpleCrawler.Demo
         /// <summary>
         /// The settings.
         /// </summary>
-     
-        //static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
-       private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/SimpleCrawler";
-        private static string crawlerClassName = "SoHuBuildingDetailCrawler";
+
+         private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/SimpleCrawler";
+      // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        //private static string connStr = "mongodb://MZsa:MZdba@59.61.72.38:37088/SimpleCrawler";
+       // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
+        private static string crawlerClassName = "SiMuListCrawler";//MHDetailCrawler
+
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
@@ -74,13 +78,13 @@ namespace SimpleCrawler.Demo
         {
             // 设置代理服务器
             var proxy = new WebProxy();
-            proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
-            proxy.Credentials = new NetworkCredential("HE0X2CG05WM7953P", "544B04D565F22D97");
+            proxy.Address = new Uri(string.Format("{0}:{1}", "http://http-pro.abuyun.com", "9010"));
+            proxy.Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE");
             return proxy;
         }
         static string GetWebProxyString()
         {
-            return string.Format("{0}:{1}@{2}:{3}", "HE0X2CG05WM7953P", "544B04D565F22D97", "proxy.abuyun.com", "9010");
+            return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "http-pro.abuyun.com", "9010");
         }
 
         /// <summary>
@@ -123,6 +127,7 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void Main(string[] args)
         {
+           
             if (args.Count() > 0)
             {
 
@@ -171,8 +176,8 @@ namespace SimpleCrawler.Demo
             // 例如：mail.pzcast.com 和 www.pzcast.com
             Settings.LockHost = false;
             //是否启用代理
-            Settings.CurWebProxy = GetWebProxy();
-            Settings.CurWebProxyString = GetWebProxyString();
+             //Settings.CurWebProxy = GetWebProxy();
+             //Settings.CurWebProxyString = GetWebProxyString();
 
 
             // 设置请求的 User-Agent HTTP 标头的值
@@ -262,12 +267,20 @@ namespace SimpleCrawler.Demo
                     StartDBChangeProcess();
                 }
 
-                if (UrlQueue.Instance.Count <= 0)
-                {
-                    
-                    Console.WriteLine("处理完毕");
-                      
-                    Environment.Exit(0);
+                if (UrlQueue.Instance.Count <= 0) {
+
+                    while (DBChangeQueue.Instance.Count > 0)
+                    {
+                        Console.WriteLine("正在等待保存数据库");
+                        Thread.Sleep(1000);
+                    }
+                    if (DBChangeQueue.Instance.Count <= 0)
+                    {
+                        Console.WriteLine("处理完毕,5秒后退出");
+                        Thread.Sleep(5000);
+                        Environment.Exit(0);
+                    }
+                       
                 }
                 //YunFengBlogReceive(args);
                 // fang99DataReceive(args);

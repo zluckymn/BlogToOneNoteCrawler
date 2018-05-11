@@ -132,7 +132,7 @@ namespace SimpleCrawler.Demo
 
             Console.WriteLine("正在获取已存在的url数据");
             var partName = "所在地";
-             landUrlList = dataop.FindAllByQuery(DataTableName,Query.NE("isUpdated","1")).ToList();//土地url
+             landUrlList = dataop.FindAllByQuery(DataTableName,Query.NE("isUpdated","2")).ToList();//土地url
             //var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
             Console.WriteLine("待处理数据{0}个", landUrlList.Count);
 
@@ -194,7 +194,7 @@ namespace SimpleCrawler.Demo
             var cityId = GetUrlParam(args.Url, "cityId");
             if (string.IsNullOrEmpty(cityId)) return;
             updateBson.Add("detailInfo", args.Html);
-            updateBson.Add("isUpdated", "1");//更新了数据
+            updateBson.Add("isUpdated", "2");//更新了数据
             Console.WriteLine(string.Format("{0}更新",  cityId));
             //updateBson.Set("url", hitUrl);
             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Query = Query.EQ("cityId", cityId), Type = StorageType.Update });

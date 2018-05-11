@@ -136,9 +136,9 @@
       <Project>{09b5bb08-c041-466f-8aaa-0e4c49747b6b}</Project>
       <Name>Yinhe.ProcessingCenter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\demo\SimpleCrawler.Demo.csproj">
-      <Project>{e958d4bd-ac93-439c-90c1-7093969d9ef2}</Project>
-      <Name>SimpleCrawler.Demo</Name>
+    <ProjectReference Include="..\..\..\SiteHealthDiagnoses\SiteHealthDiagnoses\Helper\Helper.csproj">
+      <Project>{8937de29-3c6d-45b0-9692-68bf585dfc0a}</Project>
+      <Name>Helper</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\SimpleCrawler.csproj">
       <Project>{67f07677-22a9-4176-b549-28f1448b0448}</Project>

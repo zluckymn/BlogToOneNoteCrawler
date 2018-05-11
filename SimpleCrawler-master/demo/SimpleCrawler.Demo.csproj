@@ -73,7 +73,6 @@
     <Compile Include="AccountQueue.cs" />
     <Compile Include="Cookie\FullWebBrowserCookie.cs" />
     <Compile Include="Cookie\INativeMethods.cs" />
-    <Compile Include="DBChangeQueue.cs" />
     <Compile Include="DistrictLeader\DistrictLeaderCrawler.cs" />
     <Compile Include="Fang99\Fang99Crawler.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDoctorListAPPCrawler.cs" />
@@ -82,11 +81,15 @@
     <Compile Include="GoodDoctor\DoctorHospitalAPPCrawler.cs" />
     <Compile Include="HuiCaiMaterial\HuiCongMaterialDetailAPPCrawler.cs" />
     <Compile Include="HuiCaiMaterial\HuiCongMaterialAPPCrawler.cs" />
+    <Compile Include="HuXiu\HuXiuDetailCrawler.cs" />
+    <Compile Include="HuXiu\HuXiuListCrawler.cs" />
     <Compile Include="IPProxyHelper.cs" />
     <Compile Include="JGJUserInfo\JGJProjectAPPCrawler.cs" />
     <Compile Include="JGJUserInfo\JGJUserAPPCrawler.cs" />
     <Compile Include="JGJUserInfo\JGJUserDetailAppCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionCityUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangCityRegionEXCrawler.cs" />
+    <Compile Include="LandFang\LandFangCityRegionFullUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangCityRegionUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangUserUpdateAPPCrawler.cs" />
     <Compile Include="LandFang\LandFangVipUserUpdateCrawler.cs" />
@@ -99,7 +102,9 @@
     <Compile Include="ISimpleCrawler.cs" />
     <Compile Include="csdnProcess.cs" />
     <Compile Include="fang99Process.cs" />
-    <Compile Include="HttpCookieHelper.cs" />
+    <Compile Include="ManHua\MHDetailCrawler.cs" />
+    <Compile Include="ManHua\MHListCrawler.cs" />
+    <Compile Include="MapBar\MapBarPoiListCrawler.cs" />
     <Compile Include="MeiTu\MeiTuCityBusinessDistinctAPPCrawler.cs" />
     <Compile Include="MeiTu\MeiTuCityBusinessEnterpriseAPPCrawler.cs" />
     <Compile Include="MeiTu\MeiTuCityBusinessCategoryAppCrawler.cs" />
@@ -123,6 +128,8 @@
     <Compile Include="School\SchoolDetailCrawler.cs" />
     <Compile Include="School\SchoolListCrawler.cs" />
     <Compile Include="School\SchoolRegionCrawler.cs" />
+    <Compile Include="SiMu\SiMuDetailCrawler.cs" />
+    <Compile Include="SiMu\SiMuListCrawler.cs" />
     <Compile Include="SoHu\SoHuBuildingDetailCrawler.cs" />
     <Compile Include="SoHu\SoHuBuildingListCrawler.cs" />
     <Compile Include="WeiXin\WeiXinUrlDetailCrawler.cs" />
@@ -136,6 +143,10 @@
     <ProjectReference Include="..\..\..\..\115Box\A3\Yinhe.WebReference\Yinhe.WebReference.csproj">
       <Project>{8d2934a3-8ce8-4943-a8a3-3353f8df030b}</Project>
       <Name>Yinhe.WebReference</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\SiteHealthDiagnoses\SiteHealthDiagnoses\Helper\Helper.csproj">
+      <Project>{8937de29-3c6d-45b0-9692-68bf585dfc0a}</Project>
+      <Name>Helper</Name>
     </ProjectReference>
     <ProjectReference Include="..\src\SimpleCrawler.csproj">
       <Project>{67f07677-22a9-4176-b549-28f1448b0448}</Project>

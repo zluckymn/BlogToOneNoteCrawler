@@ -80,6 +80,19 @@
             this.singalKeyWordCHK = new System.Windows.Forms.CheckBox();
             this.button12 = new System.Windows.Forms.Button();
             this.splitLimitChk = new System.Windows.Forms.CheckBox();
+            this.autoPassKeyWordChk = new System.Windows.Forms.CheckBox();
+            this.PassKeyWordtimer = new System.Windows.Forms.Timer(this.components);
+            this.AutoChangeIp = new System.Windows.Forms.CheckBox();
+            this.button13 = new System.Windows.Forms.Button();
+            this.KeyWordFilterTextBox = new System.Windows.Forms.TextBox();
+            this.KeyWordFilterlabel = new System.Windows.Forms.Label();
+            this.updateDateTxt = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.proxyListCB = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.keyWordSourceCHK = new System.Windows.Forms.CheckBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.MaxAccountCrawlerCountTxt = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // webBrowser
@@ -503,11 +516,11 @@
             // 
             // button11
             // 
-            this.button11.Location = new System.Drawing.Point(1063, 660);
+            this.button11.Location = new System.Drawing.Point(1121, 592);
             this.button11.Name = "button11";
             this.button11.Size = new System.Drawing.Size(91, 23);
             this.button11.TabIndex = 34;
-            this.button11.Text = "LandFang账号注册";
+            this.button11.Text = "LoadCity";
             this.button11.UseVisualStyleBackColor = true;
             this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
@@ -517,6 +530,7 @@
             this.EnterpriseKeySuffixTxt.Name = "EnterpriseKeySuffixTxt";
             this.EnterpriseKeySuffixTxt.Size = new System.Drawing.Size(100, 21);
             this.EnterpriseKeySuffixTxt.TabIndex = 35;
+            this.EnterpriseKeySuffixTxt.Text = "test";
             // 
             // singalKeyWordCHK
             // 
@@ -543,18 +557,147 @@
             // splitLimitChk
             // 
             this.splitLimitChk.AutoSize = true;
-            this.splitLimitChk.Location = new System.Drawing.Point(989, 52);
+            this.splitLimitChk.Location = new System.Drawing.Point(885, 52);
             this.splitLimitChk.Name = "splitLimitChk";
             this.splitLimitChk.Size = new System.Drawing.Size(102, 16);
             this.splitLimitChk.TabIndex = 38;
             this.splitLimitChk.Text = "限制split次数";
             this.splitLimitChk.UseVisualStyleBackColor = true;
             // 
+            // autoPassKeyWordChk
+            // 
+            this.autoPassKeyWordChk.AutoSize = true;
+            this.autoPassKeyWordChk.Checked = true;
+            this.autoPassKeyWordChk.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoPassKeyWordChk.Location = new System.Drawing.Point(985, 49);
+            this.autoPassKeyWordChk.Name = "autoPassKeyWordChk";
+            this.autoPassKeyWordChk.Size = new System.Drawing.Size(108, 16);
+            this.autoPassKeyWordChk.TabIndex = 39;
+            this.autoPassKeyWordChk.Text = "自动跳过关键字";
+            this.autoPassKeyWordChk.UseVisualStyleBackColor = true;
+            // 
+            // PassKeyWordtimer
+            // 
+            this.PassKeyWordtimer.Enabled = true;
+            this.PassKeyWordtimer.Interval = 10000;
+            this.PassKeyWordtimer.Tick += new System.EventHandler(this.PassKeyWordtimer_Tick);
+            // 
+            // AutoChangeIp
+            // 
+            this.AutoChangeIp.AutoSize = true;
+            this.AutoChangeIp.Checked = true;
+            this.AutoChangeIp.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AutoChangeIp.Location = new System.Drawing.Point(651, 50);
+            this.AutoChangeIp.Name = "AutoChangeIp";
+            this.AutoChangeIp.Size = new System.Drawing.Size(96, 16);
+            this.AutoChangeIp.TabIndex = 12;
+            this.AutoChangeIp.Text = "autoChangeIp";
+            this.AutoChangeIp.UseVisualStyleBackColor = true;
+            // 
+            // button13
+            // 
+            this.button13.Location = new System.Drawing.Point(454, 631);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(75, 23);
+            this.button13.TabIndex = 40;
+            this.button13.Text = "添加异常iP";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.button13_Click);
+            // 
+            // KeyWordFilterTextBox
+            // 
+            this.KeyWordFilterTextBox.Location = new System.Drawing.Point(558, 47);
+            this.KeyWordFilterTextBox.Name = "KeyWordFilterTextBox";
+            this.KeyWordFilterTextBox.Size = new System.Drawing.Size(87, 21);
+            this.KeyWordFilterTextBox.TabIndex = 41;
+            // 
+            // KeyWordFilterlabel
+            // 
+            this.KeyWordFilterlabel.AutoSize = true;
+            this.KeyWordFilterlabel.Location = new System.Drawing.Point(452, 56);
+            this.KeyWordFilterlabel.Name = "KeyWordFilterlabel";
+            this.KeyWordFilterlabel.Size = new System.Drawing.Size(101, 12);
+            this.KeyWordFilterlabel.TabIndex = 8;
+            this.KeyWordFilterlabel.Text = "开始关键字个数：";
+            // 
+            // updateDateTxt
+            // 
+            this.updateDateTxt.Location = new System.Drawing.Point(74, 48);
+            this.updateDateTxt.Name = "updateDateTxt";
+            this.updateDateTxt.Size = new System.Drawing.Size(60, 21);
+            this.updateDateTxt.TabIndex = 42;
+            this.updateDateTxt.Text = "20171222";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(3, 51);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(65, 12);
+            this.label8.TabIndex = 43;
+            this.label8.Text = "更新日期：";
+            // 
+            // proxyListCB
+            // 
+            this.proxyListCB.FormattingEnabled = true;
+            this.proxyListCB.Location = new System.Drawing.Point(187, 49);
+            this.proxyListCB.Name = "proxyListCB";
+            this.proxyListCB.Size = new System.Drawing.Size(126, 20);
+            this.proxyListCB.TabIndex = 44;
+            this.proxyListCB.SelectedIndexChanged += new System.EventHandler(this.proxyListCB_SelectedIndexChanged);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(140, 54);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(41, 12);
+            this.label9.TabIndex = 45;
+            this.label9.Text = "代理：";
+            // 
+            // keyWordSourceCHK
+            // 
+            this.keyWordSourceCHK.AutoSize = true;
+            this.keyWordSourceCHK.Checked = true;
+            this.keyWordSourceCHK.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.keyWordSourceCHK.Location = new System.Drawing.Point(330, 53);
+            this.keyWordSourceCHK.Name = "keyWordSourceCHK";
+            this.keyWordSourceCHK.Size = new System.Drawing.Size(120, 16);
+            this.keyWordSourceCHK.TabIndex = 47;
+            this.keyWordSourceCHK.Text = "是否使用企业分类";
+            this.keyWordSourceCHK.UseVisualStyleBackColor = true;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(753, 52);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(65, 12);
+            this.label10.TabIndex = 8;
+            this.label10.Text = "个数限制：";
+            // 
+            // MaxAccountCrawlerCountTxt
+            // 
+            this.MaxAccountCrawlerCountTxt.Location = new System.Drawing.Point(823, 47);
+            this.MaxAccountCrawlerCountTxt.Name = "MaxAccountCrawlerCountTxt";
+            this.MaxAccountCrawlerCountTxt.Size = new System.Drawing.Size(61, 21);
+            this.MaxAccountCrawlerCountTxt.TabIndex = 48;
+            this.MaxAccountCrawlerCountTxt.Text = "200";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 742);
+            this.Controls.Add(this.MaxAccountCrawlerCountTxt);
+            this.Controls.Add(this.keyWordSourceCHK);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.proxyListCB);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.updateDateTxt);
+            this.Controls.Add(this.KeyWordFilterTextBox);
+            this.Controls.Add(this.button13);
+            this.Controls.Add(this.autoPassKeyWordChk);
             this.Controls.Add(this.splitLimitChk);
             this.Controls.Add(this.button12);
             this.Controls.Add(this.singalKeyWordCHK);
@@ -581,6 +724,7 @@
             this.Controls.Add(this.textBox5);
             this.Controls.Add(this.comboBox2);
             this.Controls.Add(this.comboBox);
+            this.Controls.Add(this.AutoChangeIp);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.checkBox);
             this.Controls.Add(this.startCrawlerBtn);
@@ -590,6 +734,8 @@
             this.Controls.Add(this.textBox4);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.KeyWordFilterlabel);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label1);
@@ -665,6 +811,19 @@
         private System.Windows.Forms.CheckBox singalKeyWordCHK;
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.CheckBox splitLimitChk;
+        private System.Windows.Forms.CheckBox autoPassKeyWordChk;
+        private System.Windows.Forms.Timer PassKeyWordtimer;
+        private System.Windows.Forms.CheckBox AutoChangeIp;
+        private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.TextBox KeyWordFilterTextBox;
+        private System.Windows.Forms.Label KeyWordFilterlabel;
+        private System.Windows.Forms.TextBox updateDateTxt;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox proxyListCB;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox keyWordSourceCHK;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox MaxAccountCrawlerCountTxt;
     }
 }
 

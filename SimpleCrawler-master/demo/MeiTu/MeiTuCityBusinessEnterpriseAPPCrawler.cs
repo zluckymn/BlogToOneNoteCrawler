@@ -204,7 +204,7 @@ namespace SimpleCrawler.Demo
             Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
             Settings.UseSuperWebClient = true;
-            Settings.MaxReTryTimes = 10;
+            Settings.MaxReTryTimes = 20;
             //Settings.CurWebProxy = GetWebProxy();
             Settings.ContentType = "application/x-www-form-urlencoded";
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
@@ -230,7 +230,7 @@ namespace SimpleCrawler.Demo
              
             Console.WriteLine("正在获取城市数据");
             //rank 为S A B C D (wancheng) E F G
-            allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.EQ("rank", "E")).SetFields("cityId", "rank", "name").ToList();
+            allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.Or(Query.EQ("rank", "C"),Query.EQ("rank", "D"), Query.EQ("rank", "E"), Query.EQ("rank", "F"), Query.EQ("rank", "G"))).SetFields("cityId", "rank", "name").ToList();
             // _DataTableName = "CityEnterpriseInfo_D_MT";
             // allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             Console.WriteLine("待处理数据{0}个", allHitCityList.Count);

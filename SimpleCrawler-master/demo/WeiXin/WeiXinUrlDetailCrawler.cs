@@ -97,9 +97,9 @@ namespace SimpleCrawler.Demo
             Settings.ThreadCount = 1;
             Console.WriteLine("正在获取已存在的url数据");
 
-
+            Settings.CurWebProxy =null;
             //布隆url初始化,防止重复读取url
-            allLandUrlList = dataop.FindAllByQuery(DataTableNameURL, Query.NE("isUpdate", "1")).ToList();//城市url
+            allLandUrlList = dataop.FindAllByQuery(DataTableNameURL, Query.NE("isUpdate", "2")).ToList();//城市url
 
             //这里只提取去有县市区域的url 没有县市url的需要手动在执行一次
             foreach (var cityUrl in allLandUrlList.Distinct())//
@@ -167,8 +167,8 @@ namespace SimpleCrawler.Demo
                     ext = "png";
                 }
                 var imgFileName = string.Format("{0}.{1}", imgPath.GetHashCode().ToString(), ext);//保存的图片文件名
-                var imgPhyFilePath = string.Format("D:/WeiXin/{0}", imgFileName);
-                var imgSitFilePath = string.Format("/UploadFiles/WeiXin/{0}", imgFileName);
+                var imgPhyFilePath = string.Format("D:/WeiXin/{1}/{0}", imgFileName,DateTime.Now.ToString("yyyyMMdd"));
+                var imgSitFilePath = string.Format("/UploadFiles/WeiXinNew/{1}/{0}", imgFileName, DateTime.Now.ToString("yyyyMMdd"));
                 //对内容中的图片进行下载
                 if (!File.Exists(imgPhyFilePath))
                 {
@@ -193,6 +193,12 @@ namespace SimpleCrawler.Demo
         private static void ImgSave(string imgUrl, string imgPath)
         {
             WebClient mywebclient = new WebClient();
+            var fileInfo = new FileInfo(imgPath);
+            if (!Directory.Exists(fileInfo.Directory.FullName))
+            {
+               
+                Directory.CreateDirectory(fileInfo.Directory.FullName);
+            }
             mywebclient.DownloadFile(imgUrl, imgPath);
         }
 

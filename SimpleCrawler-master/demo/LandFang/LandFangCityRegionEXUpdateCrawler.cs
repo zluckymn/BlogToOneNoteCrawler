@@ -106,8 +106,8 @@ namespace SimpleCrawler.Demo
             cityUrlList = dataop.FindAll(DataTableNameCity).ToList();//城市url
 
             //仙桃潜江天门神农架林区
-            var typeValue =1;//0地区，1所在地
-            var cityName = "东莞";//苏州 郑州 合肥  武汉  天津 佛山 
+            var typeValue = 1;//0地区，1所在地
+            var cityName = "上海";//苏州 郑州 合肥  武汉  天津 佛山 
             cityName = Console.ReadLine();
             var placeType = string.Empty;
             var codeType = string.Empty;

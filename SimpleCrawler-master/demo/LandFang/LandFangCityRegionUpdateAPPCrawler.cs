@@ -256,6 +256,7 @@ namespace SimpleCrawler.Demo
                 {
                     var provinceObj = cityList.Where(c => c.Int("type") == 0 && c.Text("provinceCode") == hitCity.Text("provinceCode")).FirstOrDefault();
                     if (provinceObj != null)
+
                     {
                         provinceName = provinceObj.Text("name");
                     }
@@ -263,8 +264,16 @@ namespace SimpleCrawler.Demo
                 var url = string.Format("http://land.fang.com/market/{0}.html", guid.ToLower());
                 if (string.IsNullOrEmpty(provinceName))
                 {
-                    Console.WriteLine("省份不存在");
-                    continue;
+                    var provinceObj = cityList.Where(c => c.Int("type") == 0 && c.Text("name") == "未知").FirstOrDefault();
+                    if (provinceObj != null)
+                    {
+                        provinceName = provinceObj.Text("name");
+                    }
+                    if (string.IsNullOrEmpty(provinceName))
+                    {
+                        Console.WriteLine("省份不存在" + cityName);
+                        continue;
+                    }
                 }
                 
                

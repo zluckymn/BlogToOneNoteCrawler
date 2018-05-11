@@ -102,15 +102,16 @@ namespace SimpleCrawler.Demo
             //布隆url初始化,防止重复读取url
             Console.WriteLine("正在初始化选择url队列");
             
-            var allNeedDataList = dataop.FindAllByQuery(DataTableName,Query.EQ("isNeedUpdate","1")).ToList();
+            //var allNeedDataList = dataop.FindAllByQuery(DataTableName,Query.Exists("priceText", false)).ToList();
+            var allNeedDataList = dataop.FindAllByQuery(DataTableName, Query.NE("isUpdate", "2")).SetFields("detailUrl", "projId","cityGuid").ToList();
             foreach (var data in allNeedDataList)
             {
                 var indexUrl = data.Text("detailUrl");
                 var detailUrl = indexUrl.Replace(".html", "/xiangqing.html");
-                if (!filter.Contains(indexUrl))//详情添加
-                {
-                    UrlQueue.Instance.EnQueue(new UrlInfo(indexUrl) { Depth = 1 , Authorization=data.Text("projId")});
-                }
+                //if (!filter.Contains(indexUrl))//详情添加
+                //{
+                //    UrlQueue.Instance.EnQueue(new UrlInfo(indexUrl) { Depth = 1 , Authorization=data.Text("projId")});
+                //}
                 if (!filter.Contains(detailUrl))//详情添加
                 {
                     UrlQueue.Instance.EnQueue(new UrlInfo(detailUrl) { Depth = 1, Authorization = data.Text("projId") });
@@ -180,7 +181,7 @@ namespace SimpleCrawler.Demo
             if (args.Url.Contains("xiangqing"))
             {
                 var newDetailDoc = new BsonDocument();
-                newDetailDoc.Add("projId", args.urlInfo.Authorization);
+                newDetailDoc.Add("projId", projId);
                 ParseProjectDetailPage(args.Html, newDetailDoc);
             }
             else
@@ -204,13 +205,13 @@ namespace SimpleCrawler.Demo
                     updateBson.Add("salePhoneNum", hitDivTxt);
                 }
                 //获取
-                if (hasExistObj(args.urlInfo.Authorization))
+                if (hasExistObj(projId))
                 {
-                    DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = updateBson, Query = Query.EQ("projId", projId), Type = StorageType.Update });
+                   DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = updateBson, Query = Query.EQ("projId", projId), Type = StorageType.Update });
                 }
                 else
                 {
-                    DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = updateBson, Type = StorageType.Insert });
+                    //DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = updateBson, Type = StorageType.Insert });
                 }
             }
        }
@@ -252,6 +253,24 @@ namespace SimpleCrawler.Demo
         }
         #endregion
         #region 楼盘详情
+
+        /// <summary>
+        /// 文字价格转换
+        /// </summary>
+        /// <returns></returns>
+        private int PriceParseToInt(string priceText)
+        {
+            var price = 0;
+            priceText = priceText.Replace("￥", "").Replace("元/㎡", "").Replace(",", "").Replace("\"", "");
+            if (int.TryParse(priceText, out price))
+            {
+                return price;
+            }
+            else
+            {
+                return 0;
+            }
+        }
         /// <summary>
         /// 解析项目详情
         /// </summary>
@@ -318,7 +337,7 @@ namespace SimpleCrawler.Demo
             ///获取销售基本信息
             doc = InitialBuildingDoc(saleinfoTableNode, doc);
 
-            HtmlNode preSaleTableNode = rootNode.SelectSingleNode("//div[@class='table-wrapper saleLicense']/div[@class='table-body']/table");
+            HtmlNode preSaleTableNode = rootNode.SelectSingleNode("//div[@class='table-wrapper saleLicense']/div[@class='table-body']/div/table");
             if (preSaleTableNode != null)
             {
                 List<HtmlNode> trPreSales = preSaleTableNode.SelectNodes("tbody/tr").ToList();
@@ -350,7 +369,7 @@ namespace SimpleCrawler.Demo
             #endregion
 
             #region 提取价格
-            HtmlNode priceTable = rootNode.SelectSingleNode("//div[@class='table-wrapper charge-info']/div[@class='table-body']/table");
+            HtmlNode priceTable = rootNode.SelectSingleNode("//div[@class='table-wrapper charge-info']/div[@class='table-body']/div/table");
             if (priceTable != null)
             {
                 List<HtmlNode> trPrices = priceTable.SelectNodes("tbody/tr").ToList();
@@ -368,6 +387,41 @@ namespace SimpleCrawler.Demo
                             priceDoc.Add("avgPrice", tdNodes[2].InnerText.Trim());
                             priceDoc.Add("minPrice", tdNodes[3].InnerText.Trim());
                             //priceDoc.Add("minTotalPrice", tdNodes[4].InnerText.Trim());
+                            var maxPrice = 0;
+                            var avgPrice = 0;
+                            var minPrice = 0;
+                            if (priceDoc.Text("maxPrice").Contains("元/㎡"))
+                            {
+
+                                maxPrice = PriceParseToInt(priceDoc.Text("maxPrice"));
+                            }
+                            if (priceDoc.Text("avgPrice").Contains("元/㎡"))
+                            {
+                                avgPrice = PriceParseToInt(priceDoc.Text("avgPrice"));
+                            }
+                            if (priceDoc.Text("minPrice").Contains("元/㎡"))
+                            {
+                                minPrice = PriceParseToInt(priceDoc.Text("minPrice"));
+                            }
+                            if (avgPrice == 0)
+                            {
+                                if (maxPrice != 0 && minPrice != 0)
+                                {
+                                    avgPrice = ((maxPrice + minPrice) / 2) / 100 * 100;//百位清零
+                                }
+                                if (maxPrice != 0 && minPrice == 0)
+                                {
+                                    avgPrice = maxPrice;
+                                }
+                                if (maxPrice == 0 && minPrice != 0)
+                                {
+                                    avgPrice = minPrice;
+                                }
+                            }
+                            if (avgPrice != 0)
+                            {
+                                priceDoc.Add("price", avgPrice.ToString());
+                            }
                             priceDoc.Add("remark", tdNodes[4].InnerText.Trim());
                         }
                         if (priceDoc.Elements.Count() > 0)
@@ -448,13 +502,15 @@ namespace SimpleCrawler.Demo
                     #region 新增
                    /// dataop.Insert(ProjectDetail, detailDoc);
                     DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = doc, Type = StorageType.Insert });
-                
+                    DBChangeQueue.Instance.EnQueue(new StorageData() { Name = DataTableName, Document = new BsonDocument().Add("isUpdate","2"),Query= projQuery, Type = StorageType.Update });
+                    Console.WriteLine("新增detail");
                     #endregion
                 }
                 else
                 {
-                    DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = doc, Query=Query.EQ("projId", doc["projId"].AsString), Type = StorageType.Update });
+                   DBChangeQueue.Instance.EnQueue(new StorageData() { Name = ProjectDetail, Document = doc, Query=Query.EQ("projId", doc["projId"].AsString), Type = StorageType.Update });
                     //更新 未处理
+                    DBChangeQueue.Instance.EnQueue(new StorageData() { Name = DataTableName, Document = new BsonDocument().Add("isUpdate", "2"), Query = projQuery, Type = StorageType.Update });
                 }
                  
                 
@@ -483,7 +539,7 @@ namespace SimpleCrawler.Demo
                     dataop.Delete(PreSaleTable, projQuery);
                     foreach (var preSaleDoc in preSaleDocs)
                     {
-                        DBChangeQueue.Instance.EnQueue(new StorageData() { Name = PreSaleTable, Document = preSaleDoc, Type = StorageType.Insert });
+                       DBChangeQueue.Instance.EnQueue(new StorageData() { Name = PreSaleTable, Document = preSaleDoc, Type = StorageType.Insert });
                     }
 
                 }

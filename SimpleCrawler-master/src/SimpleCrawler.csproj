@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Selenium.WebDriverBackedSelenium">
+      <HintPath>..\packages\无头浏览器\Selenium.WebDriverBackedSelenium.dll</HintPath>
+    </Reference>
     <Reference Include="SuperWebClient">
       <HintPath>..\demo\library\SuperWebClient.dll</HintPath>
     </Reference>
@@ -42,13 +45,24 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ThoughtWorks.Selenium.Core">
+      <HintPath>..\packages\无头浏览器\ThoughtWorks.Selenium.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Toolslib">
       <HintPath>..\demo\library\Toolslib.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver">
+      <HintPath>..\packages\无头浏览器\WebDriver.dll</HintPath>
+    </Reference>
+    <Reference Include="WebDriver.Support">
+      <HintPath>..\packages\无头浏览器\WebDriver.Support.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddUrlEventArgs.cs" />
     <Compile Include="BloomFilter.cs" />
+    <Compile Include="Cookie\FullWebBrowserCookie.cs" />
+    <Compile Include="Cookie\INativeMethods.cs" />
     <Compile Include="CrawlErrorEventArgs.cs" />
     <Compile Include="CrawlExtension.cs" />
     <Compile Include="CrawlMaster.cs" />
@@ -58,9 +72,13 @@
     <Compile Include="HttpHelper.cs" />
     <Compile Include="JGJAppHelper.cs" />
     <Compile Include="HuiCongAppHelper.cs" />
-    <Compile Include="StringQueue.cs" />
-    <Compile Include="WenShuAppHelper.cs" />
     <Compile Include="LandFangAppHelper.cs" />
+    <Compile Include="QCCEnterpriseHelper.cs" />
+    <Compile Include="SeleniumScript.cs" />
+    <Compile Include="StringQueue.cs" />
+    <Compile Include="SeleniumOperation.cs" />
+    <Compile Include="UrlRetryQueue.cs" />
+    <Compile Include="WenShuAppHelper.cs" />
     <Compile Include="LoginAccount.cs" />
     <Compile Include="PassGeetestHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -45,8 +45,8 @@ namespace SimpleCrawler.Demo
         /// </summary>
         private BloomFilter<string> filter;
         private BloomFilter<string> guidFilter;
-        private   string _DataTableName = "Material_HuiCong";//存储的数据库表明
-       
+        private   string _DataTableName = "Material_HuiCong_WLM";//存储的数据库表明
+        private string _GuidDataTableName = "Material_HuiCong_Guid";//存储的数据库表明
 
         /// <summary>
         /// 返回
@@ -119,7 +119,7 @@ namespace SimpleCrawler.Demo
         int pageBeginNum = 1;
        // string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&w={0}&v=59&e={1}&c=供应信息&n={2}&m=2&H=1&bt=0";
       //  string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&e={1}&c=供应信息&a=13&n={2}&m=2&H=1&fc=0&bt=0&w={0}&v=60&t=1";
-        string materialUrl = "http://z.hc360.com/getmmtlast.cgi?sys=yidonghulian&bus=phone_ios&m=2&c=%E4%BE%9B%E5%BA%94%E4%BF%A1%E6%81%AF&bt=0&dt=1&w={0}&e={1}&v=59&n={2}&H=1";
+        string materialUrl = "http://s.hc360.com/getmmtlast.cgi?sys=yidonghulian&bus=phone_ios&m=2&c=%E4%BE%9B%E5%BA%94%E4%BF%A1%E6%81%AF&bt=0&dt=1&w={0}&e={1}&v=59&n={2}&H=1";
         //将z.hc360改成 s.hc360 可用
         HuiCongAppHelper appHelper = new HuiCongAppHelper();
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
@@ -136,8 +136,8 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreSucceedUrlToDB = true;
             Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
-            Settings.UseSuperWebClient = true;
-            Settings.MaxReTryTimes = 10;
+           
+            Settings.MaxReTryTimes = 20;
             Settings.IgnoreFailUrl = true;
             Settings.AutoSpeedLimit = true;
             Settings.AutoSpeedLimitMaxMSecond = 2000;
@@ -145,12 +145,13 @@ namespace SimpleCrawler.Demo
             //Settings.CurWebProxy = GetWebProxy();
             Settings.ContentType = "application/x-www-form-urlencoded";
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
+            Settings.UseSuperWebClient = true;
             Settings.hi = new HttpInput();
             HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
-            if (!string.IsNullOrEmpty(Settings.CurWebProxyString))
-            {
-                Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
-            }
+            //if (!string.IsNullOrEmpty(Settings.CurWebProxyString))
+            //{
+            //    Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
+            //}
             var headSetDic = new Dictionary<string, string>();
             // Settings.hi.HeaderSet("Authorization", authorizationCode);
             headSetDic.Add("If-Modified-Since", "0");
@@ -162,21 +163,32 @@ namespace SimpleCrawler.Demo
           
             Console.WriteLine("请输入关键字以逗号隔开");
 
+           
             var keyWordStr = Console.ReadLine();
             //防水涂料50000中断开始
             //var keyWordStr =   "钢木入户门,木质入户门,木质防火门,钢质防火门,弹性面漆,非弹性面漆,防水涂料,外墙隔热面漆,外墙弹性中层涂料,外墙浮雕中层,水性外墙底漆,水性外墙底漆（弹性专用）,外墙柔性腻子,真石漆,质感涂料,多彩漆,罩面清漆,外墙面砖,铝包木复合门窗,断桥铝门窗,铁艺栏杆,玻璃栏杆,百叶,耐力板组装式雨棚,铝合金雨棚,PC板材(阳光板、耐力板)雨棚,全钢结构雨棚,玻璃钢结构雨棚,EPS构件,GRC构件,挤塑板,模压型聚苯乙烯泡沫塑料,泡沫玻璃,泡沫混凝土,聚苯颗粒保温砂浆,无机保温砂浆,硬泡聚氨酯保温板" ;
            // var keyWordStr = "玻化砖,微晶石,釉面砖,大理石,人造石,花岗岩,玄关柜";//,
                                    //水性外墙底漆,百叶,,,,,,,,,,,GRC构件,挤塑板,模压型聚苯乙烯泡沫塑料,泡沫玻璃,泡沫混凝土,聚苯颗粒保温砂浆,无机保温砂浆,硬泡聚氨酯保温板
                                    //,衣柜,橱柜,浴室柜,踢脚线,洗手盆,洗衣盆,浴缸,坐便器,小便斗,拖把池,厨卫龙头,台盆龙头,洗衣机龙头,浴缸龙头,拖把池龙头,厨盆,花洒,淋浴柱,地漏,毛巾架,置物架,淋浴屏,PVC墙纸,软包,无纺布,纯纸,墙布,排气扇,吸顶灯,射灯,筒灯,水晶吊灯,灯管,条形铝扣板,方形铝扣板,实木复合木地板,实木地板,金刚板,抽油烟机,燃气灶,消毒柜,热水器,微波炉,空调,浴霸,正压式新风系统,负压式新风系统,可视对讲,室内涂料,光纤入户箱,户内配电箱,开关插座,内墙涂料,功能内墙涂料,内墙弹性涂料,内墙底漆,内墙耐水腻子
-            var keyWordList = keyWordStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            var keyWordList = keyWordStr.Split(new string[] { ",", "、" }, StringSplitOptions.RemoveEmptyEntries);
            
             foreach (var keyWord in keyWordList)
             {
                 var curUrl = string.Format(materialUrl, keyWord, pageSize, pageBeginNum);
                 var authorization = appHelper.GetHuiCongAuthorizationCode(curUrl);
                 UrlQueue.Instance.EnQueue(new UrlInfo(curUrl) { Depth = 1, Authorization= authorization });
-            }
 
+                //if (keyWord.Contains("景观"))
+                //{
+                //   var TkeyWord=keyWord.Replace("景观", "小区");
+                //    curUrl = string.Format(materialUrl, TkeyWord, pageSize, pageBeginNum);
+                //    authorization = appHelper.GetHuiCongAuthorizationCode(curUrl);
+                //    UrlQueue.Instance.EnQueue(new UrlInfo(curUrl) { Depth = 1, Authorization = authorization });
+
+                //}
+            }
+            
+           
 
             //var testUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&w=外墙面砖&v=59&e=100&c=供应信息&n=3101&m=2&H=1&bt=0";
             //var testAuthorization = appHelper.GetHuiCongAuthorizationCode(testUrl);
@@ -208,6 +220,7 @@ namespace SimpleCrawler.Demo
         }
         private bool hasExistObj(string guid)
         {
+            // return  dataop.FindCount(_GuidDataTableName, Query.EQ("guid", guid)) > 0;
             return dataop.FindCount(DataTableName, Query.EQ("guid", guid)) > 0;
         }
         private string TrimStr(string str)
@@ -266,19 +279,21 @@ namespace SimpleCrawler.Demo
                         insert++;
                         guidFilter.Add(guid);
                         DBChangeQueue.Instance.EnQueue(new StorageData() { Document = document, Name = DataTableName, Type = StorageType.Insert });
+                        ///添加到guid表
+                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("guid", guid).Add("type", DataTableName), Name = _GuidDataTableName, Type = StorageType.Insert });
                     }
                     else
                     {
-                        var curObj = GetObj(guid);
-                        if (curObj != null)
-                        {
-                            if (!curObj.Text("catName").Contains(catName))
-                            {
-                                var updateBson = new BsonDocument();
-                                updateBson.Add("catName", curObj.Text("catName") + "," + catName);
-                                DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Type = StorageType.Update,Query=Query.EQ("guid",guid) });
-                            }
-                        }
+                        //var curObj = GetObj(guid);
+                        //if (curObj != null)
+                        //{
+                        //    if (!curObj.Text("catName").Contains(catName))
+                        //    {
+                        //        var updateBson = new BsonDocument();
+                        //        updateBson.Add("catName", curObj.Text("catName") + "," + catName);
+                        //        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Type = StorageType.Update,Query=Query.EQ("guid",guid) });
+                        //    }
+                        //}
                         update++;
                     }
                 }

@@ -27,7 +27,13 @@ namespace SimpleCrawler.Demo
     ///  authoration D1A4976615B875529F63090417A286C9";
     /// http://openapi.m.hc360.com/openapi/v1/productDetail/getSameProduct/621618969?page=1&pagesize=9相似产品
     /// http://openapi.m.hc360.com/openapi/v1/company/getInfo/wbz8 供应商信息 联系人电话所在城市
-    /// 
+    /// http://detail.b2b.hc360.com/detail/turbine/template/moblie,vmoblie,getcredit_files.html?username=wxjinpeng&callback=jQuery17109421258288211527_1504584128563&_=1504584128681
+    ///{"companyName":"宜兴市金鹏印铁包装制品有限公司","creditTitle":"信用档案","memberInfo":{"age":"11","creditStar":"5","level":"银牌会员",
+    /// "levelSign":"6","mmtIndex":"381"},"memberTypeId":"6","mmtAge":"11","mmtlevel":"银牌会员","nodeIp":"10.7.3.28","registerInfo":
+    /// {"certification":"邓白氏","certificationField":[{"name":"经营地址","value":"江苏省宜兴市万石镇工业园区"},{"name":"成立时间","value":"2001-04-18"},
+    /// {"name":"邓氏编码","value":"545537912"},{"name":"联 系 人","value":"周建华"},{"name":"部门职位","value":"总经理"},
+    /// {"name":"认证时间","value":"2006年10月16日"}]},"userid":"2783201"})
+    ///  http://wxjinpeng.b2b.hc360.com/shop/mmtdocs.html  买卖通会员档案信息
     ///  </summary>
     public class HuiCongMaterialDetailAPPCrawler : ISimpleCrawler
     {
@@ -46,7 +52,7 @@ namespace SimpleCrawler.Demo
         private BloomFilter<string> filter;
         private BloomFilter<string> companyGuidFilter;
         private BloomFilter<string> materialGuidFilter;
-        private   string _DataTableName = "Material_HuiCong";//存储的数据库表明
+        private   string _DataTableName = "Material_HuiCong_WLM";//存储的数据库表明
       
 
         /// <summary>
@@ -62,7 +68,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public string DataTableNameDetail
         {
-            get { return "MaterialDetail_HuiCong"; }
+            get { return "MaterialDetail_HuiCong_WLM"; }
 
         }
         /// <summary>
@@ -190,7 +196,7 @@ namespace SimpleCrawler.Demo
             Console.WriteLine("待处理个数:{0}", allCount);
             var random = new Random();
 
-            if (allCount >= 10000)
+            if (allCount > 1000)
             {
                 skipCount = random.Next(1000, allCount);
             }
@@ -200,7 +206,7 @@ namespace SimpleCrawler.Demo
             }
             //注意 后续需要对为空的在轮询一次因为之前可能有几个有值但被设置为空，需要过滤个人企业
             var materialList = dataop.FindLimitByQuery(DataTableName, query, new MongoDB.Driver.SortByDocument(), skipCount, takeCount).SetFields("searchResultfoId").ToList();
-
+           
            // var materialList = dataop.FindAllByQuery(_DataTableName, Query.NE("isUpdate", "2")).SetFields("searchResultfoId").Take(10000).ToList();
             foreach (var material in materialList)
             {
@@ -220,7 +226,7 @@ namespace SimpleCrawler.Demo
             //Settings.IPProxyList =IPProxyHelper.GetIpProxyList("0");//获取代理ip列表
             //Console.WriteLine("获得ip:{0}", Settings.IPProxyList.Count);
             Settings.IgnoreSucceedUrlToDB = true;
-            Settings.ThreadCount =10;
+            Settings.ThreadCount =1;
             Settings.DBSaveCountLimit = 1;
             //Settings.UseSuperWebClient = true;
             Settings.MaxReTryTimes = 10;
@@ -352,8 +358,9 @@ namespace SimpleCrawler.Demo
                     DBChangeQueue.Instance.EnQueue(new StorageData() { Name = DataTableName, Document = updateBson, Type = StorageType.Update, Query = Query.EQ("searchResultfoId", searchResultfoId) });
                     return;
                 }
+                 
 
-                var materialDetail = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(args.Html);
+                 var materialDetail = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(args.Html);
 
                 //保存公司信息MaterialCompany_HuiCong
                 var companyBson = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(materialDetail["companyInfo"].AsBsonDocument);
@@ -393,7 +400,7 @@ namespace SimpleCrawler.Demo
                 {
                     Console.Write("当前材料已存在:{0}", searchResultfoId);
                 }
-                var updateMaterialDoc = new BsonDocument().Add("isUpdate", "2").Add("noImg", "1");
+                var updateMaterialDoc = new BsonDocument().Add("isUpdate", "2").Add("noImg", "1").Add("isNew", "1");
                 DBChangeQueue.Instance.EnQueue(new StorageData() { Name = DataTableName, Document = updateMaterialDoc, Type = StorageType.Update, Query = Query.EQ("searchResultfoId", searchResultfoId) });
                 Console.WriteLine("更新{0}成功剩余：{1}", searchResultfoId,UrlQueue.Instance.Count);
 

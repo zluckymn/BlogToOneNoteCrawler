@@ -70,7 +70,10 @@ namespace SimpleCrawler
         /// </summary>
         public string Authorization { get; set; }
 
-
+        /// <summary>
+        /// Gets the url string.
+        /// </summary>
+        public string UniqueKey { get; set; }
         /// <summary>
         ///通过urlsplit次数 通过限制个数节约key的用量
         /// </summary>
@@ -81,6 +84,16 @@ namespace SimpleCrawler
         /// </summary>
         public CrawlStatus Status { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the script..配合PhantomJs使用
+        /// </summary>
+        public SeleniumScript script { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operation.配合PhantomJs使用
+        /// </summary>
+        public SeleniumOperation operation { get; set; }
         #endregion
     }
 }

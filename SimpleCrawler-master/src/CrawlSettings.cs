@@ -9,12 +9,27 @@
 
 namespace SimpleCrawler
 {
+    using OpenQA.Selenium.PhantomJS;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
     using System.Text;
-
+    public enum EnumCrawlMode
+    {
+        /// <summary>
+        /// httpHelper
+        /// </summary>
+        HttpHelper=0,
+        /// <summary>
+        /// supperWebClient
+        /// </summary>
+        SuperWebClient=1,
+        /// <summary>
+        /// Selenium通信PhantomJs
+        /// </summary>
+        PhantomJsViaSelenium =2
+    }
     /// <summary>
     /// The crawl settings.
     /// </summary>
@@ -76,6 +91,8 @@ namespace SimpleCrawler
         #endregion
 
         #region Public Properties
+
+        public EnumCrawlMode CrawlMode { get; set; }
         /// <summary>
         /// ipProxy list
         /// </summary>
@@ -397,6 +414,43 @@ namespace SimpleCrawler
                 return null;
             }
         }
+        #region 无头浏览器组件对象
+        public PhantomJSOptions _options { get; set; }//定义PhantomJS内核参数
+        public PhantomJSDriverService _service { get; set; }//定义Selenium驱动配置
+        public SeleniumScript script { get; set; }
+        /// <summary>
+        /// Gets or sets the operation.配合PhantomJs使用
+        /// </summary>
+        public SeleniumOperation operation { get; set; }
+        /// <summary>
+        /// 调用前初始化
+        /// </summary>
+        public void InitPhantomJs()
+        {
+            this._options = new PhantomJSOptions();//定义PhantomJS的参数配置对象
+            this._service = PhantomJSDriverService.CreateDefaultService(Environment.CurrentDirectory);//初始化Selenium配置，传入存放phantomjs.exe文件的目录
+            _service.IgnoreSslErrors = true;//忽略证书错误
+            _service.WebSecurity = false;//禁用网页安全
+            _service.HideCommandPromptWindow = true;//隐藏弹出窗口
+            _service.LoadImages = false;//禁止加载图片
+            _service.LocalToRemoteUrlAccess = true;//允许使用本地资源响应远程 URL
+            var defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36";
+            if (!string.IsNullOrEmpty(UserAgent))
+            {
+                defaultUserAgent = UserAgent;
+            }
+            _options.AddAdditionalCapability(@"phantomjs.page.settings.userAgent", defaultUserAgent);
+            if (!string.IsNullOrEmpty(CurWebProxyString))
+            { 
+                _service.ProxyType = "HTTP";//使用HTTP代理 {
+                _service.Proxy = CurWebProxyString;//代理IP及端口
+            }
+            else
+            {
+                _service.ProxyType = "none";//不使用代理
+            }
+}
+        #endregion
 
         #endregion
     }

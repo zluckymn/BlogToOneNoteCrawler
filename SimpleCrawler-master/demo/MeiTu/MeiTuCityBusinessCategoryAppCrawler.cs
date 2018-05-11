@@ -25,7 +25,7 @@ namespace SimpleCrawler.Demo
     /// 获取美团商圈poi商家
     /// 类别 var url = "http://api.meituan.com/group/v1/poi/cates/showlist?cityId=57&utm_source=qqcpd&utm_medium=android&utm_term=254&version_name=5.5.4&utm_content=864394010401414&utm_campaign=AgroupBgroupC0E0Gmerchant&ci=57&uuid=D0CA57CF673B1DF3B9D10A36C085A74C7B924190117AF510F9B7717FD432FEE2&msid=8643940104014141484816456943&__skck=09474a920b2f4c8092f3aaed9cf3d218&__skts=1484816498195&__skua=6c2f598f00063de23b4f9a091ab28e75&__skno=a44a95c4-b6f0-4786-9ae7-c8148dc6173b&__skcy=G8p1ahRd5ESh0nFAWLXcEc3bZos%3D";
     ///  分类商家详细数据var url = "http://api.meituan.com/group/v1/poi/select/cate/227?cityId=1&mypos=27.99765739075955,104.5658485649246&sort=smart&coupon=all&mpt_cate1=1&mpt_cate2=227&offset=0&limit=20&fields=phone,markNumbers,cityId,addr,lng,hasGroup,subwayStationId,cates,frontImg,chooseSitting,wifi,avgPrice,style,featureMenus,avgScore,name,parkingInfo,lat,cateId,introduction,showType,areaId,districtId,preferent,lowestPrice,cateName,areaName,zlSourceType,campaignTag,mallName,mallId,brandId,ktv,geo,historyCouponCount,recommendation,iUrl,isQueuing,payInfo,sourceType,abstracts,groupInfo,isSuperVoucher,discount&utm_source=qqcpd&utm_medium=android&utm_term=254&version_name=5.5.4&utm_content=864394010401414&utm_campaign=AgroupBgroupC504526522539939072_c0_e05f42bd28d2adba3eecf05d1ecaecbb5E7277946828438499584_c0Gmerchant&ci=1&uuid=D0CA57CF673B1DF3B9D10A36C085A74C7B924190117AF510F9B7717FD432FEE2&msid=8643940104014141484120580913&__skck=09474a920b2f4c8092f3aaed9cf3d218&__skts=1484122421711&__skua=6c2f598f00063de23b4f9a091ab28e75&__skno=40e3290e-2ece-4633-9f79-52c12b99859d&__skcy=AweFcpRBGJTcmneDmhDwDsCXpGM=";
-    /// 
+    /// 商家 http://api.meituan.com/group/v1/deal/poi/875575?onsale=1&mpt_poiid=875575&offset=0&limit=200&fields=id%2Cslug%2Ccate%2Csubcate%2Cdtype%2Cctype%2Cmlls%2Csolds%2Cstatus%2Crange%2Cstart%2Cend%2Cimgurl%2Csquareimgurl%2Ctitle%2Chotelroomname%2Cprice%2Cvalue%2Cmname%2Cbrandname%2Crating%2Crate-count%2Csatisfaction%2Cmealcount%2Cnobooking%2CattrJson%2ChotelExt%2Ccampaigns%2Cterms%2Crecreason%2Cshowtype%2Cdeposit%2Csecurityinfo%2Coptionalattrs%2Cbookinginfo%2Cpricecalendar%2Cisappointonline%2Ccouponbegintime%2Ccouponendtime%2Crdploc%2Crdcount%2Cdigestion%2CisAvailableToday&client=android&utm_source=qqcpd&utm_medium=android&utm_term=254&version_name=5.5.4&utm_content=864394011605716&utm_campaign=AgroupBgroupC0E877070845972013056_c1Gmerchant&ci=62&uuid=D0CA57CF673B1DF3B9D10A36C085A74C6015FE2FD5D9B1BD74C44F92DF1B9293&msid=8643940116057161513766238616&__skck=09474a920b2f4c8092f3aaed9cf3d218&__skts=1513766861481&__skua=5e4ea32ce0e126b28acd2d6923eb0ff4&__skno=a0e37f9d-0ac0-487a-9ef8-491b8cd16dd8&__skcy=BrThNxubbsMxalCBRTWigIhJjgo%3D 
     ///  </summary>
     public class MeiTuCityBusinessCategoryAppCrawler : ISimpleCrawler
     {
@@ -231,7 +231,7 @@ namespace SimpleCrawler.Demo
             Console.WriteLine("正在获取城市数据");
             //rank 为S A B C D E F G
             //allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.EQ("rank", "S")).SetFields("cityId", "rank", "name").ToList();
-           allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
+            allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             Console.WriteLine("待处理数据{0}个", allHitCityList.Count);
 
             foreach (var cityObj in allHitCityList)
