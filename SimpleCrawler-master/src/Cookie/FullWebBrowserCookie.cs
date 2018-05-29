@@ -58,7 +58,7 @@ namespace SimpleCrawler.Demo
         [SecurityCritical]
         public static string GetCookieInternal(Uri uri, bool throwIfNoCookie)
         {
-            Console.WriteLine("GetCookieInternal");
+            //Console.WriteLine("GetCookieInternal");
 
             uint pchCookieData = 0;
             string url = UriToString(uri);

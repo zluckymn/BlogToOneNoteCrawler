@@ -682,7 +682,7 @@
             this.MaxAccountCrawlerCountTxt.Name = "MaxAccountCrawlerCountTxt";
             this.MaxAccountCrawlerCountTxt.Size = new System.Drawing.Size(61, 21);
             this.MaxAccountCrawlerCountTxt.TabIndex = 48;
-            this.MaxAccountCrawlerCountTxt.Text = "200";
+            this.MaxAccountCrawlerCountTxt.Text = "150";
             // 
             // Form1
             // 

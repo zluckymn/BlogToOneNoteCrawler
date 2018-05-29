@@ -58,8 +58,8 @@
                 else
                 {
                     string str = bsonDoc.Text("catName");
-                    int num = 0;
-                    int num2 = 0;
+                    int addCount = 0;
+                    int updateCount = 0;
                     if (args.Url.Contains("poi.mapbar.com"))
                     {
                         HtmlNodeCollection nodes = documentNode.SelectNodes("//div[@class='sortC']/dl/dd/a");
@@ -74,28 +74,36 @@
                                 }
                                 else
                                 {
+
                                     string innerText = node2.InnerText;
-                                    BsonDocument document4 = new BsonDocument().Add("name", innerText.Trim());
-                                    document4.Add("url", str2);
-                                    string str4 = str2.GetHashCode().ToString();
-                                    document4.Add("guid", str4);
-                                    document4.Add("cityCode", cityCode);
-                                    document4.Add("catCode", catCode);
+                                    BsonDocument addDoc = new BsonDocument().Add("name", innerText.Trim());
+                                    addDoc.Add("url", str2);
+                                    string guid = str2.GetHashCode().ToString();
+                                    addDoc.Add("guid", guid);
+                                    addDoc.Add("cityCode", cityCode);
+                                    addDoc.Add("catCode", catCode);
                                     Console.WriteLine(innerText);
-                                    int num3 = num;
-                                    num = num3 + 1;
-                                    this.idFilter.Add(str4);
-                                    StorageData target = new StorageData {
-                                        Document = document4,
-                                        Name = this.DataTableName,
-                                        Type = StorageType.Insert
-                                    };
-                                    DBChangeQueue.Instance.EnQueue(target);
+                                    addCount++;
+                                    if (!idFilter.Contains(guid) && hasExistObj(guid, "guid"))
+                                    {
+                                        this.idFilter.Add(guid);
+                                        StorageData target = new StorageData
+                                        {
+                                            Document = addDoc,
+                                            Name = this.DataTableName,
+                                            Type = StorageType.Insert
+                                        };
+                                        DBChangeQueue.Instance.EnQueue(target);
+                                    }
+                                    else
+                                    {
+                                        updateCount++;
+                                    }
                                 }
                             }
                         }
                     }
-                    Console.WriteLine("{0}添加{1}更新", num, num2);
+                    Console.WriteLine("{0}添加{1}更新", addCount, updateCount);
                 }
             }
         }
@@ -163,7 +171,7 @@
             this.Settings.ThreadCount = 1;
             Console.WriteLine("正在获取已存在的url数据");
             Console.WriteLine("正在初始化选择url队列");
-            this.allCityList = this.dataop.FindAllByQuery(this.DataTableNameCity, Query.NE("isUpdate", 1)).ToList<BsonDocument>();
+            this.allCityList = this.dataop.FindAllByQuery(this.DataTableNameCity, Query.NE("isUpdate", 1)).Where(c => c.Text("cityCode") == "shanghai").ToList<BsonDocument>();
             this.allCategoryList = this.dataop.FindAll(this.DataTableNameCategory).ToList<BsonDocument>();
             foreach (BsonDocument document in this.allCityList)
             {
