@@ -8,7 +8,7 @@ using System.Net;
 using LibCurlNet;
 
 
-namespace MZ.Mongo
+namespace SimpleCrawler
 {
     public class DeviceInfo
     {
@@ -194,16 +194,17 @@ namespace MZ.Mongo
                 //ReadWriteTimeout = 30000,//写入Post数据超时时间     可选项默认为30000
                 //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
                 //Cookie = "",//字符串Cookie     可选项
-                UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36",//用户的浏览器类型，版本，操作系统     可选项有默认值
-                Referer = "http://www.qichacha.com/",//来源URL     可选项
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36",//用户的浏览器类型，版本，操作系统     可选项有默认值
+                Referer = "https://www.qichacha.com/",//来源URL     可选项
                 Postdata = curUrlObj.PostData,
                 Allowautoredirect = true,
-                Cookie = globalCookie,
-                KeepAlive = true,
+                Cookie = globalCookie, 
+                KeepAlive = true,  
 
             };
+          
             //item.WebProxy = GetWebProxy();
-            item.PostEncoding = System.Text.Encoding.GetEncoding("utf-8");
+             item.PostEncoding = System.Text.Encoding.GetEncoding("utf-8");
             var result = http.GetHtml(item);
             if (string.IsNullOrEmpty(result.Html))
             {

@@ -220,12 +220,14 @@ namespace SimpleCrawler.Demo
             }
             //var orQuery = Query.In("地区", " ");deleteStatus
             var takeCount = 10000;
-            var allCount = dataop.FindCount(DataTableName, Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.Exists("竞得方", false), Query.EQ("竞得方", "******"))));
+            var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("needUpdate","1"),Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
+           
+            var allCount = dataop.FindCount(DataTableName, query);
             if (allCount <= 100000)
             {
                 takeCount = allCount;
             }
-            landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"),specialUrlQuery,  Query.Or(Query.Exists("竞得方", false), Query.EQ("竞得方", "******")))).Take(takeCount).ToList();//土地url
+            landUrlList = dataop.FindAllByQuery(DataTableName, query).Take(takeCount).ToList();//土地url
             
             //未更新的地块
             //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.EQ("竞得方", "")))).Take(10000).ToList();//土地url

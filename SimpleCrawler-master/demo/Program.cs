@@ -43,11 +43,12 @@ namespace SimpleCrawler.Demo
         /// The settings.
         /// </summary>
 
-         private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-      // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        //private static string connStr = "mongodb://MZsa:MZdba@59.61.72.38:37088/SimpleCrawler";
-       // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        private static string crawlerClassName = "MapBarPoiListCrawler";//MHDetailCrawler
+        //  private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        
+        // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
+        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/SimpleCrawler";
+        private static string crawlerClassName = "MeiTuCityBusinessEnterpriseAPPCrawler";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
@@ -127,7 +128,8 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void Main(string[] args)
         {
-           
+          
+
             if (args.Count() > 0)
             {
 

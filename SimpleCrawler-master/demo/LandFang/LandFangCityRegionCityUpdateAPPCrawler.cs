@@ -17,7 +17,9 @@
     using System.Web;
     using Yinhe.ProcessingCenter;
     using Yinhe.ProcessingCenter.DataRule;
-
+    /// <summary>
+    /// 更新所有区县的地块
+    /// </summary>
     public class LandFangCityRegionCityUpdateAPPCrawler : ISimpleCrawler
     {
         private DataOperation dataop = null;
@@ -46,6 +48,56 @@
         public bool CanAddUrl(AddUrlEventArgs args)
         {
             return true;
+        }
+        private void InitialUrl()
+        {
+            this.allAppCityList = this.dataop.FindAll(this.DataTableNameAPPCity).ToList<BsonDocument>();
+            List<BsonDocument> list = (from c in this.allAppCityList
+                                       where c.Text("Level") == "3"
+                                       select c).ToList<BsonDocument>();
+            List<BsonDocument> list2 = (from c in this.allAppCityList
+                                        where c.Text("Level") == "2"
+                                        select c).ToList<BsonDocument>();
+            // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
+            var filterCity = new string[] { "无锡" };
+            foreach (BsonDocument document in list)
+            {
+                string str = document.Text("ProvinceName");
+                string str2 = document.Text("CityName");
+                if (!filterCity.Any(c=>str2.Contains(c))) continue;
+                string item = this.appHelper.InitCityFormatUrl(this.UrlEncode(str2), this.pageSize.ToString(), "1");
+                if (!this.urlFilter.Contains(item))
+                {
+                    UrlInfo target = new UrlInfo(item)
+                    {
+                        Depth = 1
+                    };
+                    UrlQueue.Instance.EnQueue(target);
+                    this.urlFilter.Add(item);
+                }
+            }
+        }
+
+        private void InitNextUrl(string url, string keyWord, int allRecordCount, int pageIndex, int pageSize)
+        {
+            int num4;
+            int num = (allRecordCount / pageSize) + 1;
+            int num2 = (num > this.pageCount) ? num : this.pageCount;
+            for (int i = 2; i <= this.pageCount; i = num4 + 1)
+            {
+                string item = url.Replace("&pindex=1&", string.Format("&pindex={0}&", i));
+                if (!this.urlFilter.Contains(item))
+                {
+                    UrlInfo target = new UrlInfo(item)
+                    {
+                        Depth = 1,
+                        Authorization = keyWord
+                    };
+                    UrlQueue.Instance.EnQueue(target);
+                    this.urlFilter.Add(item);
+                }
+                num4 = i;
+            }
         }
 
         public void DataReceive(DataReceivedEventArgs args)
@@ -113,14 +165,21 @@
                 {
                     if (!regionName.Contains("本级"))
                     {
-                        Console.WriteLine("县市不存在" + regionName);
-                        document3 = (from c in this.cityList
-                            where ((c.Int("type") == 2) && c.Text("name").Contains("其他")) && (c.Text("provinceCode") == hitCity.Text("provinceCode"))
-                            select c).FirstOrDefault<BsonDocument>();
-                        this.NeedFixRegion(cityName, provinceName, regionName, "县市");
-                        return;
+                        var hitRegionList = cityList.Where(d=> d.Text("cityCode") == hitCity.Text("cityCode")).ToList();
+                        document3 = hitRegionList.Where(c => (c.Int("type") == 2) && c.Text("name").Contains("其它")).FirstOrDefault();
+ 
+                        if (document3 == null)
+                        {
+                            this.NeedFixRegion(cityName, provinceName, regionName, "县市");
+                            Console.WriteLine("县市不存在" + regionName);
+                            continue;
+                        }
+                        else
+                        {
+                            regionName = document3.Text("name");
+                        }
                     }
-                    regionName = "";
+                  
                 }
                 else
                 {
@@ -267,52 +326,7 @@
             return builder.ToString();
         }
 
-        private void InitialUrl()
-        {
-            this.allAppCityList = this.dataop.FindAll(this.DataTableNameAPPCity).ToList<BsonDocument>();
-            List<BsonDocument> list = (from c in this.allAppCityList
-                where c.Text("Level") == "3"
-                select c).ToList<BsonDocument>();
-            List<BsonDocument> list2 = (from c in this.allAppCityList
-                where c.Text("Level") == "2"
-                select c).ToList<BsonDocument>();
-            foreach (BsonDocument document in list)
-            {
-                string str = document.Text("ProvinceName");
-                string str2 = document.Text("CityName");
-                string item = this.appHelper.InitCityFormatUrl(this.UrlEncode(str2), this.pageSize.ToString(), "1");
-                if (!this.urlFilter.Contains(item))
-                {
-                    UrlInfo target = new UrlInfo(item) {
-                        Depth = 1
-                    };
-                    UrlQueue.Instance.EnQueue(target);
-                    this.urlFilter.Add(item);
-                }
-            }
-        }
-
-        private void InitNextUrl(string url, string keyWord, int allRecordCount, int pageIndex, int pageSize)
-        {
-            int num4;
-            int num = (allRecordCount / pageSize) + 1;
-            int num2 = (num > this.pageCount) ? num : this.pageCount;
-            for (int i = 2; i <= this.pageCount; i = num4 + 1)
-            {
-                string item = url.Replace("&pindex=1&", string.Format("&pindex={0}&", i));
-                if (!this.urlFilter.Contains(item))
-                {
-                    UrlInfo target = new UrlInfo(item) {
-                        Depth = 1,
-                        Authorization = keyWord
-                    };
-                    UrlQueue.Instance.EnQueue(target);
-                    this.urlFilter.Add(item);
-                }
-                num4 = i;
-            }
-        }
-
+       
         private void IPInvalidProcess(IPProxy ipproxy)
         {
         }
@@ -325,13 +339,16 @@
             }
             return true;
         }
+        List<string> addRegionList = new List<string>(); 
 
         public void NeedFixRegion(string cityName, string provinceName, string regionName, string type)
         {
-            if (!this.updateCityNameList.Contains(cityName) && (this.dataop.FindCount(this.DataTableUpdateCity, Query.EQ("cityName", cityName)) <= 0))
+            var key = string.Format("{0}{1}", cityName, regionName);
+            var hitCount = this.dataop.FindCount(this.DataTableUpdateCity, Query.And(Query.EQ("cityName", cityName), Query.EQ("regionName", regionName)));
+            if (!addRegionList.Contains(key)&&hitCount <= 0)
             {
                 Console.WriteLine("城市不存在" + cityName);
-                this.updateCityNameList.Add(cityName);
+                //this.updateCityNameList.Add(cityName);
                 BsonDocument document = new BsonDocument {
                     { 
                         "cityName",
@@ -354,6 +371,7 @@
                         DateTime.Now.ToString("yyyy-MM-dd")
                     }
                 };
+                addRegionList.Add(key);
                 Console.WriteLine("检测到新城市,输入1进行添加");
                 StorageData target = new StorageData {
                     Document = document,

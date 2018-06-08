@@ -608,6 +608,16 @@ namespace QCCWebBrowser
             return cityName;
         }
 
+        private string GetSpeicalProvinceCode(string provinceName)
+        {
+            var hitProvince = allCountyCodeList.Where(c => c.Text("name").Contains(provinceName)).FirstOrDefault();
+            if (hitProvince != null)
+            {
+                return hitProvince.Text("code");
+            }
+            return string.Empty;
+        }
+
         /// <summary>
         /// 根据城市名获取城市代码
         /// </summary>
@@ -762,26 +772,40 @@ namespace QCCWebBrowser
             else
             {
                 province = this.GetCountryCode(_cityName, "0");
+                if (string.IsNullOrEmpty(province) && this.specialCity.Any<string>(c => c.Contains(_cityName)))
+                {
+                    province = GetSpeicalProvinceCode(_cityName);
+                }
             }
+
             if ((countyCode == "") && (province == ""))
             {
                 this.ShowMessageInfo(string.Format("{0}的代码为null", this.cityNameStr), false);
                 //return string.Empty;
             }
             string url = string.Format(this.qccUrl + "/base/advancedSearch?searchKey={0}&searchIndex=default&province=&pageIndex=1&isSortAsc=false&startDateBegin=&startDateEnd=&registCapiBegin=&registCapiEnd=&industryV3=&industryCode=&subIndustryCode=&searchType=&countyCode=", new object[] { curTypeName });
+            if (!string.IsNullOrEmpty(province))
+            {
+                url = this.ReplaceParam(url, "province", "", province);
+            }
             if (IsProvince)
             {
                 url = string.Format(this.qccUrl + "/base/advancedSearch?searchKey={0}&searchIndex=default&province={1}&pageIndex=1&isSortAsc=false&startDateBegin=&startDateEnd=&registCapiBegin=&registCapiEnd=&industryV3=&industryCode=&subIndustryCode=&searchType=&countyCode=", curTypeName, province);
+            }
+            else {
+                if ((!string.IsNullOrEmpty(countyCode)) && this.qccUrl.Contains("v3"))
+            {
+                    url = this.ReplaceParam(url, "countyCode", "", countyCode);
+                }
             }
             if (!string.IsNullOrEmpty(GRegistCapiBegin) || !string.IsNullOrEmpty(GRegistCapiEnd))
             {
                 url = this.ReplaceParam(url, "registCapiBegin", "", GRegistCapiBegin);
                 url = this.ReplaceParam(url, "registCapiEnd", "", GRegistCapiEnd);
             }
-            if ((!IsProvince && !string.IsNullOrEmpty(countyCode)) && this.qccUrl.Contains("v3"))
-            {
-                url = this.ReplaceParam(url, "countyCode", "", countyCode);
-            }
+           
+
+           
             if (url.Contains("{"))
             {
                 url = this.ReplaceParam(url, "searchIndex", "default", "multicondition");
@@ -872,23 +896,26 @@ namespace QCCWebBrowser
             if (this.splitLimitChk.Checked == true)
             {
                 typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWord, null, new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 0).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
+                typeNameList.AddRange(new string[] { "零售", "塑料", "设备","金属" });
             }
             else
             {
-                var cityNameQueryList = new List<string>() { "南昌", "沈阳", "大连", "上海", "深圳", "广州" };
+                var cityNameQueryList = new List<string>() { "重庆", "南京", "天津", "北京", "上海", "深圳", "广州" };
                 // typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", "广州"), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 20).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
                 typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c => (BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 100).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
+                var needAddKeyWords = new string[] { "房地产", "贸易", "交通", "轻工", "食品", "医药", "公用", "金属", "电子", "建筑材料", "化工", "金融" };
+                typeNameList.AddRange(needAddKeyWords);
             }
+            
             InitKeyWordHitCount(cityNameStr);
             // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
             if (keyWordSourceCHK.Checked == true)
             { //是否使用关键字数据源
                 typeNameList = typeNameList.Take(10).ToList();
-
+                
                 var tempTypeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
                 typeNameList.AddRange(tempTypeNameList);
-                var needAddKeyWords = new string[] { "房地产", "贸易", "交通", "设备", "轻工", "食品", "医药", "公用", "金属", "电子", "建筑材料", "化工", "金融" };
-                typeNameList.AddRange(needAddKeyWords);
+               
             }
             // typeNameList.Add("母婴");
             var fetchKeyWorldCount = 0;
@@ -2083,7 +2110,7 @@ namespace QCCWebBrowser
                     else
                     {
                         existCount++;
-                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
+                        //DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curUpdateBson, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
                         existGuidList.Add(guid);
 
                     }
@@ -6135,6 +6162,10 @@ namespace QCCWebBrowser
         /// </summary>
         private void PassKeyWord()
         {
+            if (!ContinueMethodByBusyGear("ProcessCanAutoPassKeyWord", 5))
+            {
+                return;
+            }
             try { 
             timerStop();
             var setUrlCount = 0;

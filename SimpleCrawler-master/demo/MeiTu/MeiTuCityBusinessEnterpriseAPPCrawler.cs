@@ -43,7 +43,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         private BloomFilter<string> filter;
         private BloomFilter<string> guidFilter;
-        private   string _DataTableName = "CityEnterpriseInfo_MT";//存储的数据库表明
+        private   string _DataTableName = "CityEnterpriseInfo_MT_20180603";//存储的数据库表明
        
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public string DataTableNameCityCategory
         {
-            get { return "CityCategoryInfo_MT"; }
+            get { return "CityCategoryInfo_MT_20180603"; }
 
         }
         /// <summary>
@@ -230,7 +230,7 @@ namespace SimpleCrawler.Demo
              
             Console.WriteLine("正在获取城市数据");
             //rank 为S A B C D (wancheng) E F G
-            allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.Or(Query.EQ("rank", "C"),Query.EQ("rank", "D"), Query.EQ("rank", "E"), Query.EQ("rank", "F"), Query.EQ("rank", "G"))).SetFields("cityId", "rank", "name").ToList();
+            allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.Or(Query.EQ("rank", "S"),Query.EQ("rank", "A"), Query.EQ("rank", "B"))).SetFields("cityId", "rank", "name").ToList();
             // _DataTableName = "CityEnterpriseInfo_D_MT";
             // allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             Console.WriteLine("待处理数据{0}个", allHitCityList.Count);

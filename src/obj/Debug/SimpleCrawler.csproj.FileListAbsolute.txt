@@ -1,5 +1,0 @@
-F:\MN测试Project\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.dll
-F:\MN测试Project\SimpleCrawler-master\src\bin\Debug\SimpleCrawler.pdb
-F:\MN测试Project\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.csprojResolveAssemblyReference.cache
-F:\MN测试Project\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.dll
-F:\MN测试Project\SimpleCrawler-master\src\obj\Debug\SimpleCrawler.pdb

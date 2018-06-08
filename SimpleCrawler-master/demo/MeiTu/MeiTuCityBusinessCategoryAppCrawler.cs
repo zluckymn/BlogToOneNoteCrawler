@@ -43,7 +43,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         private BloomFilter<string> filter;
 
-        private const string _DataTableName = "CityEnterpriseInfo_MT";//存储的数据库表明
+        private const string _DataTableName = "CityEnterpriseInfo_MT_20180603";//存储的数据库表明
         List<BsonDocument> landUrlList = new List<BsonDocument>();
 
         /// <summary>
@@ -80,7 +80,15 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public string DataTableNameCityCategory
         {
-            get { return "CityCategoryInfo_MT"; }
+            get { return "CityCategoryInfo_MT_20180603"; }
+
+        }
+        /// <summary>
+        /// 城市信息
+        /// </summary>
+        public string DataTableNameCityCategoryName
+        {
+            get { return "CityCategoryName_MT"; }
 
         }
         /// <summary>
@@ -188,9 +196,12 @@ namespace SimpleCrawler.Demo
             return false;
         }
         List<BsonDocument> allHitCityList = new List<BsonDocument>();
+        List<BsonDocument> allCityCategoryNameList = new List<BsonDocument>();
+     
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
 
+            allCityCategoryNameList = dataop.FindAll(DataTableNameCityCategoryName).ToList();
             //种子地址需要加布隆过滤
 
             //Settings.Depth = 4;
@@ -354,6 +365,14 @@ namespace SimpleCrawler.Demo
                 var hitCount = dataop.FindCount(DataTableNameCityCategory, query);
                 if (hitCount <= 0)
                 {
+                    if (catDoc.Text("name").Contains("?"))
+                    {
+                        var hitCatObj = allCityCategoryNameList.Where(c => c.Text("id") == catDoc.Text("id")).FirstOrDefault();
+                        if (hitCatObj != null)
+                        {
+                            catDoc.Set("name", hitCatObj.Text("name"));
+                        }
+                    }
                     DBChangeQueue.Instance.EnQueue(new StorageData() { Document = catDoc, Name = DataTableNameCityCategory, Query = query, Type = StorageType.Insert });
                 }
                 else

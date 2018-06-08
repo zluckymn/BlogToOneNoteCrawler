@@ -75,6 +75,9 @@
     <Compile Include="Cookie\INativeMethods.cs" />
     <Compile Include="DistrictLeader\DistrictLeaderCrawler.cs" />
     <Compile Include="Fang99\Fang99Crawler.cs" />
+    <Compile Include="FangGuanJu\FangProjectDetailCrawler_JiangYin.cs" />
+    <Compile Include="FangGuanJu\FangDetailCrawler_JiangYin.cs" />
+    <Compile Include="FangGuanJu\FangListCrawler_JiangYin.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDoctorListAPPCrawler.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDoctorSheduleAPPCrawler.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDetailAPPCrawler.cs" />

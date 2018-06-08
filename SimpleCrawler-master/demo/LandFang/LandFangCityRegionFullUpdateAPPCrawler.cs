@@ -45,6 +45,73 @@
             return true;
         }
 
+
+        public void SettingInit()
+        {
+            this.Settings.IPProxyList = new List<IPProxy>();
+            this.Settings.IgnoreSucceedUrlToDB = true;
+            this.Settings.ThreadCount = 1;
+            this.Settings.DBSaveCountLimit = 1;
+            this.Settings.MaxReTryTimes = 30;
+            this.Settings.UserAgent = "android_tudi%7EGT-P5210%7E4.2.2";
+            Dictionary<string, string> dictionary = new Dictionary<string, string> {
+                {
+                    "imei",
+                    "133524413725754"
+                },
+                {
+                    "version",
+                    "2.5.0"
+                },
+                {
+                    "ispos",
+                    "1"
+                },
+                {
+                    "app_name",
+                    "android_tudi"
+                },
+                {
+                    "iscard",
+                    "1"
+                },
+                {
+                    "connmode",
+                    "Wifi"
+                },
+                {
+                    "model",
+                    "GT-P5210"
+                },
+                {
+                    "posmode",
+                    "gps%2Cwifi"
+                },
+                {
+                    "company",
+                    "-10000"
+                }
+            };
+            this.Settings.HeadSetDic = dictionary;
+            Console.WriteLine("正在获取已存在的url数据");
+            Console.WriteLine("正在处理城市全库更新");
+            string[] fields = new string[] { "name", "cityCode", "type", "provinceCode" };
+            this.cityList = this.dataop.FindAll("LandFangCityEXURL").SetFields(fields).ToList<BsonDocument>();
+            LandFangAppHelper helper = new LandFangAppHelper();
+            string urlString = this.appHelper.InitCityFormatUrl("", this.pageSize.ToString(), "1");
+            UrlInfo target = new UrlInfo(urlString)
+            {
+                Depth = 1
+            };
+            UrlQueue.Instance.EnQueue(target);
+            Console.WriteLine("正在加载账号数据");
+            this.Settings.RegularFilterExpressions.Add("luckymnXXXXXXXXXXXXXXXXXX");
+            if (!this.SimulateLogin())
+            {
+                Console.WriteLine("模拟登陆失败");
+            }
+        }
+
         public void DataReceive(DataReceivedEventArgs args)
         {
             if (this.userCrawlerCountHashTable.ContainsKey(this.Settings.LandFangIUserId))
@@ -331,70 +398,6 @@
             }
         }
 
-        public void SettingInit()
-        {
-            this.Settings.IPProxyList = new List<IPProxy>();
-            this.Settings.IgnoreSucceedUrlToDB = true;
-            this.Settings.ThreadCount = 5;
-            this.Settings.DBSaveCountLimit = 1;
-            this.Settings.MaxReTryTimes = 30;
-            this.Settings.UserAgent = "android_tudi%7EGT-P5210%7E4.2.2";
-            Dictionary<string, string> dictionary = new Dictionary<string, string> {
-                { 
-                    "imei",
-                    "133524413725754"
-                },
-                { 
-                    "version",
-                    "2.5.0"
-                },
-                { 
-                    "ispos",
-                    "1"
-                },
-                { 
-                    "app_name",
-                    "android_tudi"
-                },
-                { 
-                    "iscard",
-                    "1"
-                },
-                { 
-                    "connmode",
-                    "Wifi"
-                },
-                { 
-                    "model",
-                    "GT-P5210"
-                },
-                { 
-                    "posmode",
-                    "gps%2Cwifi"
-                },
-                { 
-                    "company",
-                    "-10000"
-                }
-            };
-            this.Settings.HeadSetDic = dictionary;
-            Console.WriteLine("正在获取已存在的url数据");
-            Console.WriteLine("正在处理城市全库更新");
-            string[] fields = new string[] { "name", "cityCode", "type", "provinceCode" };
-            this.cityList = this.dataop.FindAll("LandFangCityEXURL").SetFields(fields).ToList<BsonDocument>();
-            LandFangAppHelper helper = new LandFangAppHelper();
-            string urlString = this.appHelper.InitCityFormatUrl("", this.pageSize.ToString(), "1");
-            UrlInfo target = new UrlInfo(urlString) {
-                Depth = 1
-            };
-            UrlQueue.Instance.EnQueue(target);
-            Console.WriteLine("正在加载账号数据");
-            this.Settings.RegularFilterExpressions.Add("luckymnXXXXXXXXXXXXXXXXXX");
-            if (!this.SimulateLogin())
-            {
-                Console.WriteLine("模拟登陆失败");
-            }
-        }
 
         public bool SimulateLogin()
         {
