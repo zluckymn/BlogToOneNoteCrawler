@@ -41,9 +41,9 @@ namespace SimpleCrawler.Demo
         /// The filter.
         /// 关于使用 Bloom 算法去除重复 URL：http://www.cnblogs.com/heaad/archive/2011/01/02/1924195.html
         /// </summary>
-        private BloomFilter<string> filter;
-        private BloomFilter<string> guidFilter;
-        private   string _DataTableName = "CityEnterpriseInfo_MT_20180603";//存储的数据库表明
+        private static BloomFilter<string> filter;
+        private static BloomFilter<string> guidFilter;
+        private   string _DataTableName = "CityEnterpriseInfo_MT_20180612";//存储的数据库表明
        
 
         /// <summary>
@@ -201,52 +201,63 @@ namespace SimpleCrawler.Demo
             // Settings.IPProxyList.AddRange(ipProxyList.Select(c => new IPProxy(c.Text("ip"))).Distinct());
             // Settings.IPProxyList.Add(new IPProxy("1.209.188.180:8080"));
             Settings.IgnoreSucceedUrlToDB = true;
-            Settings.ThreadCount = 1;
+            Settings.ThreadCount = 3;
             Settings.DBSaveCountLimit = 1;
-            Settings.UseSuperWebClient = true;
+           // Settings.UseSuperWebClient = true;
             Settings.MaxReTryTimes = 20;
             //Settings.CurWebProxy = GetWebProxy();
             Settings.ContentType = "application/x-www-form-urlencoded";
             this.Settings.UserAgent = "AiMeiTuan /samsung-4.4.2-GT-I9300-900x1440-320-5.5.4-254-864394010401414-qqcpd";
-            Settings.hi = new HttpInput();
-            HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
-            if(!string.IsNullOrEmpty(Settings.CurWebProxyString))
-            Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
+           // Settings.hi = new HttpInput();
+           // HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
+            //if(!string.IsNullOrEmpty(Settings.CurWebProxyString))
+           // Settings.hi.CurlObject.SetOpt(LibCurlNet.CURLoption.CURLOPT_PROXY, Settings.CurWebProxyString);
             var headSetDic = new Dictionary<string, string>();
             __skcy="CSJl8p2O4tbR2VGkjdZ3Kxs2Igo=";
             __skua = "4eb0ecaa0317917e9556ee7cc8082100";
             __skno = "ed144add-29a8-4fac-bec9-5bce189c29ed";
             __skck = "09474a920b2f4c8092f3aaed9cf3d218";
             __skts = "1484303621395";
-            Settings.hi.HeaderSet("Accept-Encoding", "gzip");
-            Settings.hi.HeaderSet("__skcy", __skcy);
-            Settings.hi.HeaderSet("__skua", __skua);
-            Settings.hi.HeaderSet("__skno", __skno);
-            Settings.hi.HeaderSet("__skck", __skck);
-            Settings.hi.HeaderSet("__skts", __skts);
+            headSetDic.Add("Accept-Encoding", "gzip");
+            headSetDic.Add("__skcy", __skcy);
+            headSetDic.Add("__skua", __skua);
+            headSetDic.Add("__skno", __skno);
+            headSetDic.Add("__skck", __skck);
+            headSetDic.Add("__skts", __skts);
             //Settings.SimulateCookies = "JSESSIONID=1jzs29iilbldmqq0hye30umzj";
             Settings.HeadSetDic = headSetDic;
             //date=&end_date=&title=&content=&key=%E5%85%AC%E5%8F%B8&database=saic&search_field=all&search_type=yes&page=2
              
             Console.WriteLine("正在获取城市数据");
             //rank 为S A B C D (wancheng) E F G
-            allHitCityList = dataop.FindAllByQuery(DataTableNameCity, Query.Or(Query.EQ("rank", "S"),Query.EQ("rank", "A"), Query.EQ("rank", "B"))).SetFields("cityId", "rank", "name").ToList();
+            var query = Query.Or(Query.EQ("rank", "S"), Query.EQ("rank", "A"));
+            //allHitCityList = dataop.FindAllByQuery(DataTableNameCity, query).SetFields("cityId", "rank", "name").ToList();
+            allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             // _DataTableName = "CityEnterpriseInfo_D_MT";
             // allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             Console.WriteLine("待处理数据{0}个", allHitCityList.Count);
-            var allCategory = dataop.FindAllByQuery(DataTableNameCityCategory,Query.In("cityId", allHitCityList.Select(c=>(BsonValue)c.Text("cityId")))).ToList(); 
-         
+            var allCategory = dataop.FindAllByQuery(DataTableNameCityCategory,Query.In("cityId", allHitCityList.Select(c=>(BsonValue)c.Text("cityId")))).Where(c=>c.Text("parentID")!="20"&& c.Text("parentID")!="").ToList();
+           
+            var allEntityList = dataop.FindAllByQuery(DataTableName, null).SetFields("guid").ToList();
+            foreach (var obj in allEntityList)
+            {
+                if(!guidFilter.Contains(obj.Text("guid")))
+                guidFilter.Add(obj.Text("guid"));
+            }
 
             var leafNodeList = allCategory.Where(c =>!c.Text("name").Contains("全部")&& c.Int("hasChildeNode") == 0).ToList();
             foreach (var hitCatObj in leafNodeList)
             {
                 if (hitCatObj.Text("id") == "-1") continue;
-                var limit = hitCatObj.Text("count");
-               // limit = "1";
-                if (limit != "0") { 
-                //生成爬取详细信息链接
-                var hitEnterpriseUrl = GetCityCatEnterpriseListUrl(hitCatObj.Text("cityId"), hitCatObj.Text("id"), limit, hitCatObj.Text("parentID"));
-                UrlQueue.Instance.EnQueue(new UrlInfo(hitEnterpriseUrl) { Depth = 1 });
+                var limit = hitCatObj.Int("count");
+                var rnd = new Random();
+                limit = 10000+ rnd.Next(0,1000);
+
+                var hitEnterpriseUrl = GetCityCatEnterpriseListUrl(hitCatObj.Text("cityId"), hitCatObj.Text("id"), limit.ToString(), hitCatObj.Text("parentID"));
+                if (limit != 0&&!filter.Contains(hitEnterpriseUrl)) { 
+                 //生成爬取详细信息链接
+                 UrlQueue.Instance.EnQueue(new UrlInfo(hitEnterpriseUrl) { Depth = 1 });
+                 filter.Add(hitEnterpriseUrl);
                 }
             }
 
@@ -352,19 +363,54 @@ namespace SimpleCrawler.Demo
             var catId = GetUrlParam(args.Url, "mpt_cate2");
             var parentCatId = GetUrlParam(args.Url, "mpt_cate1");
             var data = jsonObj["data"];
+            var allCount= int.Parse(jsonObj["count"].ToString());
+            var limit = int.Parse(GetUrlParam(args.Url, "limit"));
+            if (limit< allCount)
+            {
+                var url = ReplaceParam(args.Url, "limit", limit.ToString(), allCount.ToString());
+                if (!filter.Contains(url))
+                {
+                    UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1 });
+                    Console.WriteLine("更新urlLimit");
+                    return;
+                }
+            }
+             if (allCount == 10000&& data.ToList().Count()>0)
+            {
+                var offset = 0;
+                if (int.TryParse(GetUrlParam(args.Url, "offset"),out offset))
+                {
+                   
+                    var url = ReplaceParam(args.Url, "offset", offset.ToString(), (offset+5000).ToString());
+                    if (!filter.Contains(url))
+                    {
+                        filter.Add(url);
+                        UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1 });
+                        Console.WriteLine("数量超过10000");
+                        //return;
+                    }
+                }
+           }
+            var updateCatDoc = new BsonDocument();
+            var curCityId = GetUrlParam(args.Url, "cityId");
+            var catQuery = Query.And(Query.EQ("cityId", curCityId), Query.EQ("id", catId));
+            updateCatDoc.Add("hitCount", allCount);
+            DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateCatDoc, Name = DataTableNameCityCategory, Query= catQuery, Type = StorageType.Update });
+
             var insert = 0;
             var update = 0;
             if (data != null)
             {
-                Console.WriteLine("获得数据:{0}",data.ToList().Count);
-                foreach (var entInfo in data.ToList())
+                var dataList = data.ToList();
+                Console.WriteLine("获得数据:{0}", dataList.Count);
+                foreach (var entInfo in dataList)
                 {
                   
                     BsonDocument document  = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(entInfo.ToString());
                     var poiid = document.Text("poiid");
                     var cityId = document.Text("cityId");
-                    var guidStr=string.Format("{0}-{1}-{2}-{3}", poiid, cityId,  document.Text("name"), document.Text("addr") );
-                    var guid = guidStr.GetHashCode().ToString();
+                    var guidStr=string.Format("{0}-{1}-{2}", poiid, cityId,  document.Text("name"));
+                    var guid = StringExtension.EncodeBase64(guidStr.GetHashCode().ToString());
                     document.Set("catId", catId);
                     document.Set("parentCatId", parentCatId);
                     //var payInfo = document.Text("payInfo");
@@ -372,13 +418,13 @@ namespace SimpleCrawler.Demo
                     //var preTags = document.Text("preTags");
                     //var ktv = document.Text("ktv");
                     //var tour  document.Text("tour");=
-                
                     if (!guidFilter.Contains(guid) && !hasExistObj(guid))
                     {
                         document.Set("guid", guid);
                         FixEmptyBson(document);
                         insert++;
                         guidFilter.Add(guid);
+                        
                         DBChangeQueue.Instance.EnQueue(new StorageData() { Document = document, Name = DataTableName, Type = StorageType.Insert });
                     }
                     else
@@ -396,10 +442,15 @@ namespace SimpleCrawler.Demo
             //Console.WriteLine(string.Format("{0}更新",  cityId));
             ////updateBson.Set("url", hitUrl);
             //DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Query = Query.EQ("cityId", cityId), Type = StorageType.Update });
-
-
         }
-
+        private string ReplaceParam(string url, string paramName, string oldValue, string newValue)
+        {
+            if (url.Contains(paramName))
+            {
+                return url.Replace(string.Format("&{0}={1}", paramName, oldValue), string.Format("&{0}={1}", paramName, newValue));
+            }
+            return (url + string.Format("&{0}={1}", paramName, newValue));
+        }
         /// <summary>
         /// 获取url对应查询参数
         /// </summary>

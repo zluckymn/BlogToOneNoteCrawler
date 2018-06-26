@@ -59,8 +59,8 @@
                                         where c.Text("Level") == "2"
                                         select c).ToList<BsonDocument>();
             // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
-            var filterCity = new string[] { "无锡" };
-            foreach (BsonDocument document in list)
+            var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
+            foreach (BsonDocument document in list.Distinct())
             {
                 string str = document.Text("ProvinceName");
                 string str2 = document.Text("CityName");

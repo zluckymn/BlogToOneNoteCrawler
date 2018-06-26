@@ -47,8 +47,8 @@ namespace SimpleCrawler.Demo
         // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
         
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/SimpleCrawler";
-        private static string crawlerClassName = "MeiTuCityBusinessEnterpriseAPPCrawler";//MHDetailCrawler
+        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        private static string crawlerClassName = "LandFangCityRegionCityUpdateAPPCrawler";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
@@ -278,9 +278,12 @@ namespace SimpleCrawler.Demo
                     }
                     if (DBChangeQueue.Instance.Count <= 0)
                     {
-                        Console.WriteLine("处理完毕,5秒后退出");
-                        Thread.Sleep(5000);
-                        Environment.Exit(0);
+                        if (UrlQueue.Instance.Count <= 0)
+                        {
+                            Console.WriteLine("处理完毕,5秒后退出");
+                            Thread.Sleep(5000);
+                            Environment.Exit(0);
+                        }
                     }
                        
                 }
@@ -383,7 +386,7 @@ namespace SimpleCrawler.Demo
             var curDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             while (DBChangeQueue.Instance.Count > 0)
             {
-
+                
                 var temp = DBChangeQueue.Instance.DeQueue();
                 if (temp != null)
                 {

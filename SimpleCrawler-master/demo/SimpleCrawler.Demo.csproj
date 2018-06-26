@@ -129,7 +129,10 @@
     <Compile Include="RegisterAddEnterprise\RegisterEnterpriseAddInfoCrawler.cs" />
     <Compile Include="School\SchoolAreaCrawler.cs" />
     <Compile Include="School\SchoolDetailCrawler.cs" />
+    <Compile Include="School\SchoolDetailIntroCrawler_CD.cs" />
     <Compile Include="School\SchoolListCrawler.cs" />
+    <Compile Include="School\SchoolDetailCrawler_CD.cs" />
+    <Compile Include="School\SchoolListCrawler_CD.cs" />
     <Compile Include="School\SchoolRegionCrawler.cs" />
     <Compile Include="SiMu\SiMuDetailCrawler.cs" />
     <Compile Include="SiMu\SiMuListCrawler.cs" />

@@ -21,7 +21,7 @@ using Newtonsoft.Json.Linq;
 namespace SimpleCrawler.Demo
 {
     /// <summary>
-    /// 通过app进行更新
+    /// 通过app进行更新,更新最新推出的地块
     /// </summary>
     public class LandFangCityRegionUpdateAPPCrawler : ISimpleCrawler
     {

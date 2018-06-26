@@ -536,7 +536,7 @@ namespace QCCWebBrowser
             {
                 ShowMessageInfo("无城市");
                 this.Text = "无城市";
-                return;
+               // return;
             }
             // SetEnterpriseDataOP("192.168.1.124");//默认
 
@@ -610,6 +610,7 @@ namespace QCCWebBrowser
 
         private string GetSpeicalProvinceCode(string provinceName)
         {
+            if (string.IsNullOrEmpty(provinceName)) return string.Empty;
             var hitProvince = allCountyCodeList.Where(c => c.Text("name").Contains(provinceName)).FirstOrDefault();
             if (hitProvince != null)
             {
@@ -626,6 +627,7 @@ namespace QCCWebBrowser
         /// <returns></returns>
         private string GetCountryCode(string cityName, string type = "1")
         {
+            if (string.IsNullOrEmpty(cityName)) return string.Empty;
             // "北京", "天津", "上海", "重庆" 直接使用type=1的市会减少数据，应该返回空
             if (type == "1" || specialCity.Contains(cityName))
             {
@@ -856,7 +858,8 @@ namespace QCCWebBrowser
             if (curCity == null)
             {
                 ShowMessageInfo("请先初始化城市");
-                return;
+                curCity = new BsonDocument();
+                //return;
             }
             var curProvince = cityList.Where(c => c.Text("code") == curCity.Text("provinceCode")).FirstOrDefault();
             var typeList = dataop.FindAll(DataTableIndustry).ToList();//遍历所有的父分类与子分类
@@ -922,7 +925,7 @@ namespace QCCWebBrowser
             int.TryParse(KeyWordFilterTextBox.Text.Trim(), out fetchKeyWorldCount);
             var skipCount = fetchKeyWorldCount == 0 ? 0 : typeNameList.Distinct().Count() - fetchKeyWorldCount;
             
-            //typeNameList = new List<string>() { "酸奶"};
+            //typeNameList = new List<string>() { "琼脂", "复配食品添加剂" };
             foreach (var _typeName in typeNameList.Distinct().Skip(skipCount))
             {
                 if (!this.singalKeyWordCHK.Checked)//是否单个单个运行
@@ -2007,21 +2010,29 @@ namespace QCCWebBrowser
                 var domain = string.Empty;
                 var areaCode = enterpriseObj["AreaCode"].ToString();//4290\t429004;
                 var curCityName = cityName;
+                var regionName = string.Empty;
                 ///根据areaCode进行所在城市获取
-                if (IsProvince||string.IsNullOrEmpty(cityNameStr))
+                if (string.IsNullOrEmpty(areaCode) )
                 {
                     var areaCodeArr = areaCode.Split(new string[] { "\t", "" }, StringSplitOptions.RemoveEmptyEntries);
                     if (areaCodeArr.Length >= 2)
                     {
-                        var curCityCode = allCountyCodeList.Where(c => c.Text("provinceCode") == province && c.Text("code") == areaCodeArr[0]).FirstOrDefault();
+                        var curCityCode = allCountyCodeList.Where(c => c.Text("code") == areaCodeArr[0]).FirstOrDefault();
                         if (curCityCode != null)
                         {
                             curCityName = curCityCode.Text("name");
                         }
+                        var regionCode = allCountyCodeList.Where(c => c.Text("code") == areaCodeArr[1]).FirstOrDefault();
+                        if (regionCode != null)
+                        {
+                            regionName = regionCode.Text("name");
+                        }
                     }
                 }
-
-
+                if (!string.IsNullOrEmpty(curCityName) && !string.IsNullOrEmpty(cityName))
+                {
+                    curCityName = cityName;
+                }
                 try
                 {
                     if (enterpriseObj["Industry"] != null && !string.IsNullOrEmpty(enterpriseObj["Industry"].ToString()))
@@ -2044,7 +2055,7 @@ namespace QCCWebBrowser
                 }
                 message = string.Format("详细信息{0}_{1}获取成功剩余url{2} retryUrl:{3}\r", guid, name, UrlQueue.Instance.Count, UrlRetryQueue.Instance.Count);
                 //curUpdateBson.Set("domain", domain);
-               
+
                 curUpdateBson.Set("domain", FixDocStr(domain));
                 if (curCityName.EndsWith("市"))
                 {
@@ -2052,7 +2063,10 @@ namespace QCCWebBrowser
                 }
                 //设定所属城市
                 curUpdateBson.Set("cityName", curCityName);
-
+                if (!string.IsNullOrEmpty(regionName))
+                {
+                    curUpdateBson.Set("regionName", regionName); 
+                }
                 //foreach (var keyMap in EnterpriseInfoMapDic_App)//遍历字段
                 //{
 
@@ -2078,7 +2092,7 @@ namespace QCCWebBrowser
                 }
 
 
-                curUpdateBson.Set("Industry", "");
+               // curUpdateBson.Set("Industry", "");
                 curUpdateBson.Set("tags", "");
                 string uniqueKey = args.urlInfo.UniqueKey;
                 if (!string.IsNullOrEmpty(uniqueKey))
@@ -4586,8 +4600,8 @@ namespace QCCWebBrowser
                 //刚切换账号前N个url 加入备用队列
                 if (IsMoreDetailInfo)
                 {
-                    MZ.Mongo.QCCEnterpriseHelper qccHelper = new MZ.Mongo.QCCEnterpriseHelper();
-                    MZ.Mongo.DeviceInfo info = new MZ.Mongo.DeviceInfo
+                     QCCEnterpriseHelper qccHelper = new  QCCEnterpriseHelper();
+                     DeviceInfo info = new  DeviceInfo
                     {
                         accessToken = Settings.AccessToken,
                         appId = Settings.AppId,
@@ -7403,7 +7417,7 @@ namespace QCCWebBrowser
             this.comboBox.Items.Add("企业城市分类关键字Guid");////4http://www.qichacha.com/search?key=%E5%8C%97%E4%BA%AC++%E9%A3%9F%E5%93%81%E6%B7%BB%E5%8A%A0%E5%89%82&type=enterprise&source=&isGlobal=Y
             this.comboBox.Items.Add("APP破解城市分类关键字Guid_APP");//6
                                                             //var cityNameStr = "地块企业,佛山,北京,西安,烟台,上海,深圳,成都,福州,广州,杭州,黄山,济南,龙岩,南昌,南京,宁波,泉州,苏州,武汉,厦门,大连,长沙,合肥,镇江,宁波,中山,郑州,昆明,江苏,重庆";
-            var cityNameStr = "仙桃,宁波,扬州,泸州,江阴,马鞍山,太原,兰州,长春,海口,北海,南宁,保定,南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,北京,上海,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照,南宁,武汉,长沙,合肥,济南,郑州,南昌,天津,杭州,兰州,长春,海口,西宁,石家庄,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,漳州,莆田,三明,南平,龙岩,宁德市,宁德地区,东莞,重庆,嘉兴,惠州,珠海,汕头,中山,湛江,泉州,龙岩,南通,常州,镇江,连云港,舟山,黄山,烟台,";
+            var cityNameStr = "张家口,仙桃,宁波,扬州,泸州,江阴,马鞍山,太原,兰州,长春,海口,北海,南宁,保定,南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,北京,上海,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照,南宁,武汉,长沙,合肥,济南,郑州,南昌,天津,杭州,兰州,长春,海口,西宁,石家庄,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,漳州,莆田,三明,南平,龙岩,宁德市,宁德地区,东莞,重庆,嘉兴,惠州,珠海,汕头,中山,湛江,泉州,龙岩,南通,常州,镇江,连云港,舟山,黄山,烟台,";
             // var cityNameStr = "广州,韶关,深圳,珠海,汕头,佛山,江门,湛江,茂名,肇庆,惠州,梅州,汕尾,河源,阳江,清远,东莞,中山,潮州,揭阳,云浮";
             var provinceCityList = new List<string>();
             var provinceCode = textBox.Text;
@@ -7469,6 +7483,7 @@ namespace QCCWebBrowser
             EnterpriseInfoMapDic_App.Add("X", "x");
             EnterpriseInfoMapDic_App.Add("Y", "y");
             EnterpriseInfoMapDic_App.Add("TaxNo", "taxNo");
+            EnterpriseInfoMapDic_App.Add("Industry", "industry");
             ///更新时间与数据库中的更新时间不同
             EnterpriseInfoMapDic_App.Add("UpdatedDate", "companyUpdatedDate");
             EnterpriseInfoMapDic_App.Add("HitReason", "HitReason");
