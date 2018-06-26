@@ -51,7 +51,6 @@ namespace SimpleCrawler.Demo
         private static string crawlerClassName = "LandFangCityRegionCityUpdateAPPCrawler";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
-        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
         private static readonly CrawlSettings Settings = new CrawlSettings();
         /// <summary>

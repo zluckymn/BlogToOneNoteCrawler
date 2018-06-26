@@ -32,7 +32,7 @@ namespace SimpleCrawler.Demo
     public class HuiCongMaterialAPPCrawler : ISimpleCrawler
     {
 
-       // private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+        
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
          

@@ -24,7 +24,7 @@ namespace SimpleCrawler.Demo
     public class MHDetailCrawler : ISimpleCrawler
     {
 
-        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
+      
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>

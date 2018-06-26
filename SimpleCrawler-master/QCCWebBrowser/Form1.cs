@@ -78,7 +78,7 @@ namespace QCCWebBrowser
         private string proxyIpDetail = String.Empty;
         //关键字查询企业所在数据库
         private static string enterpriseNameConnStr = "mongodb://MZsa:MZdba@192.168.1.114/CompanyHY";
-        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/Shared";
+        
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));//主数据库
         static MongoOperation _mongoDBOp = new MongoOperation(connStr);
 

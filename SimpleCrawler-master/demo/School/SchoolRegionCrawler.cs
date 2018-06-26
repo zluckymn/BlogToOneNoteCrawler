@@ -22,7 +22,7 @@ namespace SimpleCrawler.Demo
     public class SchoolRegionCrawler : ISimpleCrawler
     {
 
-        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
+        //private   string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/WorkPlanManage";
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>

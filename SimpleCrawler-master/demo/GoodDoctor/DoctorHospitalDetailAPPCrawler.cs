@@ -28,8 +28,7 @@ namespace SimpleCrawler.Demo
     ///  </summary>
     public class DoctorHospitalDetailAPPCrawler : ISimpleCrawler
     {
-
-       // private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+ 
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
          
