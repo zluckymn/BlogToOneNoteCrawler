@@ -23,7 +23,7 @@ namespace SimpleCrawler.Demo
     public class QCCEnterpriseDetailInfoCrawler : ISimpleCrawler
     {
 
-        //private   string connStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/WorkPlanManage";
+        //private   string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/WorkPlanManage";
 
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
@@ -150,7 +150,7 @@ namespace SimpleCrawler.Demo
             builder.Password = "dba";
             builder.SocketTimeout = new TimeSpan(00, 01, 59);
             dataop = new DataOperation(new MongoOperation(builder));
-            string cookieConnStr = "mongodb://MZsa:MZdba@59.61.72.34:37088/SimpleCrawler";
+            string cookieConnStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
             var cookieDataop = new DataOperation(cookieConnStr, true);
             var hitCookie = cookieDataop.FindAllByQuery(DataTableAccountCookie, Query.EQ("ip", "192.168.1.134")).FirstOrDefault();
             Settings.CurWebProxy = GetWebProxy();//使用代理

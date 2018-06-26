@@ -48,7 +48,7 @@ namespace SimpleCrawler.Demo
         
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
         private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        private static string crawlerClassName = "LandFangCityRegionCityUpdateAPPCrawler";//MHDetailCrawler
+        private static string crawlerClassName = "LandFangUserUpdateAPPCrawler";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
