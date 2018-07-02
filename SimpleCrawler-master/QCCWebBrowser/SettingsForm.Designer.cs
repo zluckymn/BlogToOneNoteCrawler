@@ -54,19 +54,21 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.searchKeyTypeComBox = new System.Windows.Forms.ComboBox();
             this.button3 = new System.Windows.Forms.Button();
+            this.moreDetailInfoCHK = new System.Windows.Forms.CheckBox();
             this.isProvinceCHK = new System.Windows.Forms.CheckBox();
+            this.industryCHK = new System.Windows.Forms.CheckBox();
             this.onlyDateUpdateCHK = new System.Windows.Forms.CheckBox();
             this.GRegistCapiEndTxt = new System.Windows.Forms.TextBox();
             this.GRegistCapiBeginTxt = new System.Windows.Forms.TextBox();
             this.enterpriseIpTxt = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.searchKeyTypeComBox = new System.Windows.Forms.ComboBox();
-            this.industryCHK = new System.Windows.Forms.CheckBox();
-            this.moreDetailInfoCHK = new System.Windows.Forms.CheckBox();
+            this.keyWordRTxt = new System.Windows.Forms.RichTextBox();
+            this.label15 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -312,6 +314,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.keyWordRTxt);
             this.tabPage2.Controls.Add(this.searchKeyTypeComBox);
             this.tabPage2.Controls.Add(this.button3);
             this.tabPage2.Controls.Add(this.moreDetailInfoCHK);
@@ -322,6 +325,7 @@
             this.tabPage2.Controls.Add(this.GRegistCapiBeginTxt);
             this.tabPage2.Controls.Add(this.enterpriseIpTxt);
             this.tabPage2.Controls.Add(this.label14);
+            this.tabPage2.Controls.Add(this.label15);
             this.tabPage2.Controls.Add(this.label12);
             this.tabPage2.Controls.Add(this.label13);
             this.tabPage2.Controls.Add(this.label11);
@@ -333,6 +337,21 @@
             this.tabPage2.Text = "全局变量";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // searchKeyTypeComBox
+            // 
+            this.searchKeyTypeComBox.FormattingEnabled = true;
+            this.searchKeyTypeComBox.Items.AddRange(new object[] {
+            "name",
+            "scope",
+            "opername",
+            "featurelist",
+            "address"});
+            this.searchKeyTypeComBox.Location = new System.Drawing.Point(138, 145);
+            this.searchKeyTypeComBox.Name = "searchKeyTypeComBox";
+            this.searchKeyTypeComBox.Size = new System.Drawing.Size(121, 20);
+            this.searchKeyTypeComBox.TabIndex = 4;
+            this.searchKeyTypeComBox.SelectedIndexChanged += new System.EventHandler(this.searchKeyTypeComBox_SelectedIndexChanged);
+            // 
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(226, 338);
@@ -343,6 +362,16 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
+            // moreDetailInfoCHK
+            // 
+            this.moreDetailInfoCHK.AutoSize = true;
+            this.moreDetailInfoCHK.Location = new System.Drawing.Point(376, 58);
+            this.moreDetailInfoCHK.Name = "moreDetailInfoCHK";
+            this.moreDetailInfoCHK.Size = new System.Drawing.Size(120, 16);
+            this.moreDetailInfoCHK.TabIndex = 2;
+            this.moreDetailInfoCHK.Text = "是否爬取背后关系";
+            this.moreDetailInfoCHK.UseVisualStyleBackColor = true;
+            // 
             // isProvinceCHK
             // 
             this.isProvinceCHK.AutoSize = true;
@@ -352,6 +381,16 @@
             this.isProvinceCHK.TabIndex = 2;
             this.isProvinceCHK.Text = "是否省爬取";
             this.isProvinceCHK.UseVisualStyleBackColor = true;
+            // 
+            // industryCHK
+            // 
+            this.industryCHK.AutoSize = true;
+            this.industryCHK.Location = new System.Drawing.Point(283, 149);
+            this.industryCHK.Name = "industryCHK";
+            this.industryCHK.Size = new System.Drawing.Size(84, 16);
+            this.industryCHK.TabIndex = 2;
+            this.industryCHK.Text = "产业园搜索";
+            this.industryCHK.UseVisualStyleBackColor = true;
             // 
             // onlyDateUpdateCHK
             // 
@@ -394,6 +433,15 @@
             this.label14.TabIndex = 0;
             this.label14.Text = "注册金额结束：";
             // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(18, 145);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(65, 12);
+            this.label12.TabIndex = 0;
+            this.label12.Text = "搜索模式：";
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
@@ -412,43 +460,22 @@
             this.label11.TabIndex = 0;
             this.label11.Text = "enterpriseIp：";
             // 
-            // label12
+            // keyWordRTxt
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(18, 145);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(65, 12);
-            this.label12.TabIndex = 0;
-            this.label12.Text = "搜索模式：";
+            this.keyWordRTxt.Location = new System.Drawing.Point(138, 187);
+            this.keyWordRTxt.Name = "keyWordRTxt";
+            this.keyWordRTxt.Size = new System.Drawing.Size(362, 122);
+            this.keyWordRTxt.TabIndex = 5;
+            this.keyWordRTxt.Text = "";
             // 
-            // searchKeyTypeComBox
+            // label15
             // 
-            this.searchKeyTypeComBox.FormattingEnabled = true;
-            this.searchKeyTypeComBox.Location = new System.Drawing.Point(138, 145);
-            this.searchKeyTypeComBox.Name = "searchKeyTypeComBox";
-            this.searchKeyTypeComBox.Size = new System.Drawing.Size(121, 20);
-            this.searchKeyTypeComBox.TabIndex = 4;
-            this.searchKeyTypeComBox.SelectedIndexChanged += new System.EventHandler(this.searchKeyTypeComBox_SelectedIndexChanged);
-            // 
-            // industryCHK
-            // 
-            this.industryCHK.AutoSize = true;
-            this.industryCHK.Location = new System.Drawing.Point(283, 149);
-            this.industryCHK.Name = "industryCHK";
-            this.industryCHK.Size = new System.Drawing.Size(84, 16);
-            this.industryCHK.TabIndex = 2;
-            this.industryCHK.Text = "产业园搜索";
-            this.industryCHK.UseVisualStyleBackColor = true;
-            // 
-            // moreDetailInfoCHK
-            // 
-            this.moreDetailInfoCHK.AutoSize = true;
-            this.moreDetailInfoCHK.Location = new System.Drawing.Point(376, 58);
-            this.moreDetailInfoCHK.Name = "moreDetailInfoCHK";
-            this.moreDetailInfoCHK.Size = new System.Drawing.Size(120, 16);
-            this.moreDetailInfoCHK.TabIndex = 2;
-            this.moreDetailInfoCHK.Text = "是否爬取背后关系";
-            this.moreDetailInfoCHK.UseVisualStyleBackColor = true;
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(18, 221);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(77, 12);
+            this.label15.TabIndex = 0;
+            this.label15.Text = "爬取关键字：";
             // 
             // SettingsForm
             // 
@@ -510,5 +537,7 @@
         private System.Windows.Forms.CheckBox moreDetailInfoCHK;
         private System.Windows.Forms.CheckBox industryCHK;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.RichTextBox keyWordRTxt;
+        private System.Windows.Forms.Label label15;
     }
 }

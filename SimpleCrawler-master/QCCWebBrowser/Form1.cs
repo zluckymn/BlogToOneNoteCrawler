@@ -47,7 +47,7 @@ namespace QCCWebBrowser
         public static bool IsMoreDetailInfo = false;
         public static string SearchKeyType = "";//产业园搜索类型
         public static bool IndustrySearch = false;//是否产业园搜索
-
+        public static List<string> PreKeyWordList = new List<string>();//预设的爬取关键字列表1
 
         private bool ChangeIpWhenInvalid = true;//是否自动切换IP
         private int AccountMaxAddional = 1100;//每个账号最大可爬取数量；
@@ -893,39 +893,44 @@ namespace QCCWebBrowser
             curQCCProvinceCode = province;
             curQCCCityCode = cityCode;
             #region QCC实时关键字初始化
-
-
-            ///是否限制split次数
-            if (this.splitLimitChk.Checked == true)
+            ///是否有预设的关键字
+            if (PreKeyWordList.Count > 0)
             {
-                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWord, null, new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 0).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
-                typeNameList.AddRange(new string[] { "零售", "塑料", "设备","金属" });
+                typeNameList = PreKeyWordList;
             }
             else
             {
-                var cityNameQueryList = new List<string>() { "重庆", "南京", "天津", "北京", "上海", "深圳", "广州" };
-                // typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", "广州"), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 20).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
-                typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c => (BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 100).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
-                var needAddKeyWords = new string[] { "房地产", "贸易", "交通", "轻工", "食品", "医药", "公用", "金属", "电子", "建筑材料", "化工", "金融" };
-                typeNameList.AddRange(needAddKeyWords);
-            }
-            
-            InitKeyWordHitCount(cityNameStr);
-            // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
-            if (keyWordSourceCHK.Checked == true)
-            { //是否使用关键字数据源
-                typeNameList = typeNameList.Take(10).ToList();
-                
-                var tempTypeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
-                typeNameList.AddRange(tempTypeNameList);
-               
+                ///是否限制split次数
+                if (this.splitLimitChk.Checked == true)
+                {
+                    typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWord, null, new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 0).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
+                    typeNameList.AddRange(new string[] { "零售", "塑料", "设备", "金属" });
+                }
+                else
+                {
+                    var cityNameQueryList = new List<string>() { "重庆", "南京", "天津", "北京", "上海", "深圳", "广州" };
+                    // typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.EQ("cityName", "广州"), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 20).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).ToList();
+                    typeNameList = dataop.FindFieldsByQuery(DataTableEnterriseKeyWordCount, Query.In("cityName", cityNameQueryList.Select(c => (BsonValue)c)), new string[] { "keyWord", "count" }).Where(c => c.Int("count") > 100).OrderByDescending(c => c.Int("count")).Select(c => c.Text("keyWord")).Distinct().ToList();
+                    var needAddKeyWords = new string[] { "房地产", "贸易", "交通", "轻工", "食品", "医药", "公用", "金属", "电子", "建筑材料", "化工", "金融" };
+                    typeNameList.AddRange(needAddKeyWords);
+                }
+
+                InitKeyWordHitCount(cityNameStr);
+                // typeNameList = new List<string>() { "建筑", "餐饮", "服务", "代理", "服装", "化工", "电力", "木材", "广告", "项目咨询","装饰装修" }; 
+                if (keyWordSourceCHK.Checked == true)
+                { //是否使用关键字数据源
+                    typeNameList = typeNameList.Take(10).ToList();
+
+                    var tempTypeNameList = dataop.FindAll(DataTableScopeKeyWord).Select(c => c.Text("keyWord")).ToList();
+                    typeNameList.AddRange(tempTypeNameList);
+
+                }
             }
             // typeNameList.Add("母婴");
             var fetchKeyWorldCount = 0;
             int.TryParse(KeyWordFilterTextBox.Text.Trim(), out fetchKeyWorldCount);
             var skipCount = fetchKeyWorldCount == 0 ? 0 : typeNameList.Distinct().Count() - fetchKeyWorldCount;
             
-            //typeNameList = new List<string>() { "琼脂", "复配食品添加剂" };
             foreach (var _typeName in typeNameList.Distinct().Skip(skipCount))
             {
                 if (!this.singalKeyWordCHK.Checked)//是否单个单个运行
@@ -2012,7 +2017,7 @@ namespace QCCWebBrowser
                 var curCityName = cityName;
                 var regionName = string.Empty;
                 ///根据areaCode进行所在城市获取
-                if (string.IsNullOrEmpty(areaCode) )
+                if (!string.IsNullOrEmpty(areaCode) )
                 {
                     var areaCodeArr = areaCode.Split(new string[] { "\t", "" }, StringSplitOptions.RemoveEmptyEntries);
                     if (areaCodeArr.Length >= 2)
@@ -2029,7 +2034,7 @@ namespace QCCWebBrowser
                         }
                     }
                 }
-                if (!string.IsNullOrEmpty(curCityName) && !string.IsNullOrEmpty(cityName))
+                if (string.IsNullOrEmpty(curCityName) && !string.IsNullOrEmpty(cityName))
                 {
                     curCityName = cityName;
                 }

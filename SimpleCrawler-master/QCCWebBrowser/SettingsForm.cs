@@ -52,6 +52,10 @@ namespace QCCWebBrowser
             {
                 this.searchKeyTypeComBox.SelectedText = Form1.SearchKeyType;
             }
+            if (Form1.PreKeyWordList.Count()>0)
+            {
+                this.keyWordRTxt.Text = string.Join( "\n", Form1.PreKeyWordList);
+            }
         }
             
         private void button1_Click(object sender, EventArgs e)
@@ -101,6 +105,15 @@ namespace QCCWebBrowser
             Form1.GRegistCapiEnd = this.GRegistCapiEndTxt.Text;
             Form1.IsMoreDetailInfo = this.moreDetailInfoCHK.Checked;
             Form1.IndustrySearch = this.industryCHK.Checked;
+            var keyWordStr = this.keyWordRTxt.Text;
+            if (!string.IsNullOrEmpty(keyWordStr))
+            {
+                var keyWordList = keyWordStr.Split(new string[] { "\r", "\n", ",", "\t", "，", "、" },StringSplitOptions.RemoveEmptyEntries);
+                if (keyWordList.Count() > 0)
+                {
+                    Form1.PreKeyWordList = keyWordList.Distinct().ToList();
+                }
+            }
             this.Close();
         }
 
