@@ -3,8 +3,10 @@ using HtmlAgilityPack;
 using LibCurlNet;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
@@ -20,12 +22,12 @@ using Yinhe.ProcessingCenter.DataRule;
 namespace SimpleCrawler.Demo
 {
     /// <summary>
-    /// 用于城市与区域代码初始化
+    /// 迷途
     /// </summary>
-    public class MHListCrawler : ISimpleCrawler
+    public class MiPidListCrawler : ISimpleCrawler
     {
 
-        
+
         DataOperation dataop = null;
         private CrawlSettings Settings = null;
         /// <summary>
@@ -35,15 +37,23 @@ namespace SimpleCrawler.Demo
         /// 结束http://www.hhcool.com/cool62061/253.html?s=10&d=0
         /// </summary>
         private BloomFilter<string> filter;
-        private BloomFilter<string> schoolIdFilter = new BloomFilter<string>(8000000);
-        private const string _DataTableName = "MH_Cartoon";//存储的数据库表名
+        private BloomFilter<string> idFilter = new BloomFilter<string>(8000000);
+        private const string _DataTableName = "MiTu";//存储的数据库表名
 
         /// <summary>
-        /// 返回
+        /// 项目名
         /// </summary>
         public string DataTableName
         {
             get { return _DataTableName; }
+
+        }
+        /// <summary>
+        /// 房屋名
+        /// </summary>
+        public string DataTableNameDetail
+        {
+            get { return _DataTableName + "Profile"; }
 
         }
         /// <summary>
@@ -56,14 +66,21 @@ namespace SimpleCrawler.Demo
         }
 
         /// <summary>
-        /// 返回
+        /// 区域
         /// </summary>
-        public string DataTableNameCity
+        public string DataTableNameRegion
         {
-            get { return "MH_CartoonCity"; }
+            get { return _DataTableName + "_Region"; }
 
         }
+        /// <summary>
+        /// 五类类型
+        /// </summary>
+        public string DataTableNameType
+        {
+            get { return _DataTableName + "_Type"; }
 
+        }
 
 
         /// <summary>
@@ -71,7 +88,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         /// <param name="_Settings"></param>
         /// <param name="filter"></param>
-        public MHListCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
+        public MiPidListCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
         {
             Settings = _Settings; filter = _filter; dataop = _dataop;
         }
@@ -88,27 +105,38 @@ namespace SimpleCrawler.Demo
             Settings.IPProxyList = new List<IPProxy>();
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.MaxReTryTimes = 20;
-            Settings.ThreadCount =1;
-            Settings.ContentType = "text/html; charset=utf-8";
-            Settings.UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36";
-            Settings.UseSuperWebClient = true;
-            Settings.hi = new HttpInput();
-            HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
+            Settings.ThreadCount = 10;
+            Settings.Accept = "application/json, text/plain, */*";
+            // Settings.ContentType = "application/x-www-form-urlencoded";
+            Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36";
+            Settings.HeadSetDic = new Dictionary<string, string>();
+            Settings.HeadSetDic.Add("Accept-Encoding", "gzip, deflate, br");
+            //Settings.UseSuperWebClient = true;
+            //Settings.hi = new HttpInput();
+            //HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
             Console.WriteLine("正在获取已存在的url数据");
             //布隆url初始化,防止重复读取url
             Console.WriteLine("正在初始化选择url队列");
 
-            
-            urlDic.Add("灌篮高手全国大赛", "http://www.hhcool.com/manhua/6604.html");
-           
-            foreach (var dic in urlDic)
-            {
-                var url = dic.Value; 
-                if (!filter.Contains(url))//详情添加
-                {
-                    UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1 ,  Authorization= dic.Key });
-                }
+            Settings.SimulateCookies = "serviceToken=rcu+GfCMDhx4ZCDJLkqDU3/2m8d3M3zMS0UfygZTLjHh0Pc1ch+8xHq9RcoydhhNhFpUIzLU+dE/QTFqlBNxUMxmE1Zm6Le0D5+Ued9T9M/4tRwfTIaqhcthlNd4mbjUOKcQmLv1Sl/mBIk7nYgGwC4wjcKOWoqhyScI3v/P63KN6/tHny5ukDe8nu4VfkLYty8g1R/J1xTzpeUe8Eua9pqnp8RfJxaijBkkXDc5CLCZieq2/Jdw7E1pbUUIMyaLLkGPX2qIr1PWV7k8hVi8Pg==; userId=86746990; jiamitu_slh=m+6hSHbUeRXZg+u7iCPkZycZ+Bs=; jiamitu_ph=iYZ5flgCd0IjNWfZk3N+Xw==; Hm_lvt_08ad038db088bb26c69084e80bc70125=1529372392,1529372396; Hm_lpvt_08ad038db088bb26c69084e80bc70125=1531119965";
+            var allObjList = dataop.FindAllByQuery(DataTableName,Query.Exists("isUpdate",false)).ToList();
+            var region = new BsonDocument();
+            var type = new BsonDocument();
 
+            var takeCount = 10;
+            var allPage = 37;
+            //foreach (var region in regionList)
+            {
+                foreach (var obj in allObjList)
+                {
+                    var url = string.Format("https://jiamitu.mi.com/pet/ng/getng?gid={0}&followUp=https:%2F%2Fjiamitu.mi.com%2Fbabydetail%3FpetId%3D{0} ", obj.Text("id"));
+
+                    if (!filter.Contains(url))//详情添加
+                    {
+                        filter.Add(url);
+                        UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1,UniqueKey=obj.Text("id") });
+                    }
+                }
             }
 
             //Settings.SeedsAddress.Add(string.Format("http://fdc.fang.com/data/land/CitySelect.aspx"));
@@ -140,63 +168,101 @@ namespace SimpleCrawler.Demo
         public void DataReceive(DataReceivedEventArgs args)
         {
             //获取图片地址
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(args.Html);
-            var catName = string.Empty;
-            if (urlDic.ContainsValue(args.Url)) {
-               
-                var catObj = urlDic.Where(c => c.Value == args.Url).FirstOrDefault();
-                 catName = catObj.Key;
-            }
-            var ibodyDiv = htmlDoc.GetElementbyId("list");
-            if (ibodyDiv != null)
+            JObject jsonObj = JObject.Parse(args.Html);
+            var result = jsonObj["result"];
+            if (result == null) return;
+            var id = args.urlInfo.UniqueKey;
+            var parent = result["parents"];
+            var insert = 0;
+            var update = 0;
+            var parentIds = new BsonArray();
+            foreach (var entInfo in parent.ToList())
             {
-                
-                var aNodes = ibodyDiv.SelectNodes("//ul[@class='cVolUl']/li/a");
-                foreach (HtmlNode aNode in aNodes)
-                {
-                    if (aNode != null && aNode.Attributes["href"] != null)
-                    {
-                        var title = aNode.InnerText;
-                        var curDoc = new BsonDocument();
-                        curDoc.Add("catName", catName);
-                        curDoc.Add("name", title.Trim());
-                        curDoc.Add("url", string.Format("http://www.hhcool.com{0}", aNode.Attributes["href"].Value.ToString()));
-                        ///cool286073/1.html?s=11
-                        //提取数字
 
-                        var match = Regex.Matches(curDoc.Text("url"), @"\d+");
-                        if (match != null && match.Count > 0)
-                        {
-                            var result = match[0].Value;
-                            curDoc.Add("num", int.Parse(result.ToString()));
-                        }
-                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = curDoc, Name = DataTableName, Type = StorageType.Insert });
-                    }
+                BsonDocument document = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(entInfo.ToString());
+                var guid = document.Text("petId");
+                parentIds.Add(guid);
+                if (!hasExistObj(DataTableNameDetail,guid))
+                {
+                    DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("id", guid), Name = DataTableNameDetail, Type = StorageType.Insert });
                 }
             }
-            else
-            {
-                Console.WriteLine("目录不存在");
-            }
+             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("pIds", parentIds).Add("isUpdate",1), Name = DataTableName,Query=Query.EQ("id",id), Type = StorageType.Update });
+             Console.WriteLine("获得数据当前添加：{0} ", id, UrlQueue.Instance.Count);
 
-           
         }
-       
+
 
         #region method
+        private string GetNum(string url)
+        {
+            var match = Regex.Matches(url, @"\d+");
+            if (match != null && match.Count > 0)
+            {
+                var result = match[0].Value;
+                return result;
+            }
+            return string.Empty;
+        }
+
+        private bool hasExistObj(string guid)
+        {
+            return (this.dataop.FindCount(this.DataTableName, Query.EQ("id", guid)) > 0);
+        }
+        private bool hasExistObj(string tableName,string guid)
+        {
+            return (this.dataop.FindCount(tableName, Query.EQ("id", guid)) > 0);
+        }
+
+        private static string GetGuidFromUrl(string url)
+        {
+            int num = url.LastIndexOf("=");
+            int num2 = url.Length;
+            if ((num != -1) && (num2 != -1))
+            {
+                if (num > num2)
+                {
+                    int num3 = num;
+                    num = num2;
+                    num2 = num3;
+                }
+                return url.Substring(num + 1, (num2 - num) - 1);
+            }
+            return string.Empty;
+        }
 
         public string GetInnerText(HtmlNode node)
         {
-            if (node == null || string.IsNullOrEmpty(node.InnerText)) { throw new NullReferenceException(); }
+            if ((node == null) || string.IsNullOrEmpty(node.InnerText))
+            {
+                throw new NullReferenceException();
+            }
             return node.InnerText;
+        }
+
+        private static string GetQueryString(string url)
+        {
+            int index = url.IndexOf("?");
+            if (index != -1)
+            {
+                return url.Substring(index + 1, (url.Length - index) - 1);
+            }
+            return string.Empty;
         }
 
         public string[] GetStrSplited(string str)
         {
-            var strArr = str.Split(new string[] { ":", "：" }, StringSplitOptions.RemoveEmptyEntries);
-            return strArr;
+            string[] separator = new string[] { ":", "：" };
+            return str.Split(separator, StringSplitOptions.RemoveEmptyEntries);
         }
+
+        private static string GetUrlParam(string url, string name)
+        {
+            NameValueCollection values = HttpUtility.ParseQueryString(GetQueryString(url));
+            return ((values[name] != null) ? values[name].ToString() : string.Empty);
+        }
+
+
         /// <summary>
         /// IP限定处理，ip被限制 账号被限制跳转处理
         /// </summary>
@@ -207,12 +273,12 @@ namespace SimpleCrawler.Demo
             {
                 return true;
             }
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(args.Html);
-            var ibodyDiv = htmlDoc.GetElementbyId("list");
-            if (ibodyDiv == null)
+            JObject jsonObj = JObject.Parse(args.Html);
+            var result = jsonObj["result"];
+            
+            if (result == null)
             {
-
+                DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isUpdate", 2).Add("isBid", 1), Name = DataTableName, Query = Query.EQ("id",args.urlInfo.UniqueKey), Type = StorageType.Update });
                 return true;
             }
             return false;

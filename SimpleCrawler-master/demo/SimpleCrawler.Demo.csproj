@@ -75,6 +75,12 @@
     <Compile Include="Cookie\INativeMethods.cs" />
     <Compile Include="DistrictLeader\DistrictLeaderCrawler.cs" />
     <Compile Include="Fang99\Fang99Crawler.cs" />
+    <Compile Include="FangGuanJu\FangBuildingDetailCrawler_NanNing.cs" />
+    <Compile Include="FangGuanJu\FangHouseDetailCrawler_WenZhou.cs" />
+    <Compile Include="FangGuanJu\FangListCrawler_WenZhou.cs" />
+    <Compile Include="FangGuanJu\FangListCrawler_NanNing.cs" />
+    <Compile Include="FangGuanJu\FangProjectDetailCrawler_WenZhou.cs" />
+    <Compile Include="FangGuanJu\FangProjectDetailCrawler_NanNing.cs" />
     <Compile Include="FangGuanJu\FangProjectDetailCrawler_JiangYin.cs" />
     <Compile Include="FangGuanJu\FangDetailCrawler_JiangYin.cs" />
     <Compile Include="FangGuanJu\FangListCrawler_JiangYin.cs" />
@@ -111,6 +117,11 @@
     <Compile Include="MeiTu\MeiTuCityBusinessDistinctAPPCrawler.cs" />
     <Compile Include="MeiTu\MeiTuCityBusinessEnterpriseAPPCrawler.cs" />
     <Compile Include="MeiTu\MeiTuCityBusinessCategoryAppCrawler.cs" />
+    <Compile Include="Mi\MiListCrawler.cs" />
+    <Compile Include="Mi\MiDetailCrawler.cs" />
+    <Compile Include="Mi\MiParentDetailCrawler.cs" />
+    <Compile Include="Mi\MiPidListCrawler.cs" />
+    <Compile Include="Mi\MiEggListCrawler.cs" />
     <Compile Include="Profile\ProfileCompany56JobDetailCrawler.cs" />
     <Compile Include="Profile\ProfileCompanyDetailCrawler_BaiCheng.cs" />
     <Compile Include="Profile\ProfileCompanyCrawler_BaiCheng.cs" />

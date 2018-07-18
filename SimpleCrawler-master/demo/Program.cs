@@ -47,8 +47,8 @@ namespace SimpleCrawler.Demo
         // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
         
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        private static string crawlerClassName = "LandFangUserUpdateAPPCrawler";//MHDetailCrawler
+        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/CrawlerDataBase";
+        private static string crawlerClassName = "MiDetailCrawler";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
@@ -177,8 +177,8 @@ namespace SimpleCrawler.Demo
             // 例如：mail.pzcast.com 和 www.pzcast.com
             Settings.LockHost = false;
             //是否启用代理
-             //Settings.CurWebProxy = GetWebProxy();
-             //Settings.CurWebProxyString = GetWebProxyString();
+              Settings.CurWebProxy = GetWebProxy();
+              Settings.CurWebProxyString = GetWebProxyString();
 
 
             // 设置请求的 User-Agent HTTP 标头的值
@@ -204,7 +204,10 @@ namespace SimpleCrawler.Demo
             master.CrawlErrorEvent += CrawlErrorEvent;
             master.Crawl();
             // Console.WriteLine("遍历结束");
-            Console.ReadKey();
+            if (UrlQueue.Instance.Count > 0)
+            {
+                Console.ReadKey();
+            }
         }
 
         
@@ -267,40 +270,47 @@ namespace SimpleCrawler.Demo
                     }
                     StartDBChangeProcess();
                 }
+                TryExit();
 
-                if (UrlQueue.Instance.Count <= 0) {
-
-                    while (DBChangeQueue.Instance.Count > 0)
-                    {
-                        Console.WriteLine("正在等待保存数据库");
-                        Thread.Sleep(1000);
-                    }
-                    if (DBChangeQueue.Instance.Count <= 0)
-                    {
-                        if (UrlQueue.Instance.Count <= 0)
-                        {
-                            Console.WriteLine("处理完毕,5秒后退出");
-                            Thread.Sleep(5000);
-                            Environment.Exit(0);
-                        }
-                    }
-                       
-                }
                 //YunFengBlogReceive(args);
                 // fang99DataReceive(args);
-                
-            
+
+
             }
             catch (NullReferenceException ex)//未将对象引用到对象实例，将当前连接所使用的Ip进行设置为无效,IP被禁用
             {
-                 IPInvalidProcess(args.IpProx);
+                
+                IPInvalidProcess(args.IpProx);
             }
             catch (Exception ex)
             {
+                 
                 Console.WriteLine(string.Format("{0}出错{1}", args.Url, ex.Message));
             }
            
 
+        }
+        private static void TryExit()
+        {
+            if (UrlQueue.Instance.Count <= 0)
+            {
+
+                while (DBChangeQueue.Instance.Count > 0)
+                {
+                    Console.WriteLine("正在等待保存数据库");
+                    Thread.Sleep(1000);
+                }
+                if (DBChangeQueue.Instance.Count <= 0)
+                {
+                    if (UrlQueue.Instance.Count <= 0)
+                    {
+                        Console.WriteLine("处理完毕,5秒后退出");
+                        Thread.Sleep(5000);
+                        Environment.Exit(0);
+                    }
+                }
+
+            }
         }
 
         /// <summary>

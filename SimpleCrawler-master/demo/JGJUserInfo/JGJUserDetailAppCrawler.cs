@@ -133,29 +133,34 @@ namespace SimpleCrawler.Demo
             Settings.ThreadCount = 5;
             Settings.DBSaveCountLimit = 1;
             //Settings.UseSuperWebClient = true;
-            Settings.MaxReTryTimes = 10;
-
-
+            Settings.MaxReTryTimes = 1;
+            
             //Settings.CurWebProxy = GetWebProxy();
             Settings.ContentType = "application/x-www-form-urlencoded";
             Settings.Accept = "application/json";
-            this.Settings.UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
-            Settings.Referer = "http://wx1.jgjapp.com/helper/list/110100?city_name=%E5%8C%97%E4%BA%AC%E5%B8%82&city_no=110100&role_type=2&work_space=&work_type_id=5&work_type_name=%E6%B3%A5%E6%B0%B4%E5%B7%A5";
+            this.Settings.UserAgent = "Mozilla/5.0 (Linux; Android 4.4.2; SM-G955N Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/[图片]30.0.0.0 Mobile Safari/537.36;person;ver=2.0.1;";
+            Settings.Referer = "http://wx1.jgjapp.com/helper/detail?uid=100028350&role_type=1&pid=undefined";
             var headSetDic = new Dictionary<string, string>();
+            //Settings.SimulateCookies = "PHPSESSID=nun3s7v8jsd47jja1hkkdu3gm0; UM_distinctid=164a22125fc8d8-0ef8e38b4c5929-47e1137-13c680-164a22125fe8f4; Authorization=W+a6cc7228e13c845836563cc26512d3d1";
 
             headSetDic.Add("Origin", "http://wx1.jgjapp.com");
             Settings.HeadSetDic = headSetDic;
             //date=&end_date=&title=&content=&key=%E5%85%AC%E5%8F%B8&database=saic&search_field=all&search_type=yes&page=2
-            var allGuidList = dataop.FindFieldsByQuery(DataTableName, null, new string[] { "guid" }).ToList();
+            var allGuidList = dataop.FindFieldsByQuery(DataTableName, Query.NE("isUpdate",1), new string[] { "guid","role_type" }).ToList();
            
             foreach (var obj in allGuidList)
             {
                 var guid = obj.Text("guid");
+                var role_type = obj.Text("role_type");
                 //foreach (var workType in allWorkTypeList)
                 {
+                    if (string.IsNullOrEmpty(role_type))
+                    {
+                        role_type = "1";
+                    }
                     // var code = workType.Text("code");
                     var url = string.Format("http://api.jgjapp.com/weixin/findworkerdetail");
-                    UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1, PostData=string.Format("uid={0}&pg=1&role_type=1&platform=w&os=A&token=d7b540d5b821def030d14f8403fe9a4b", guid) });
+                    UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1, PostData=string.Format("uid={0}&pg=1&role_type={1}&platform=w&os=A&token=88954b2503f349ce99469390bb3d20cd", guid, role_type) });
             
                 }
 
@@ -240,38 +245,46 @@ namespace SimpleCrawler.Demo
         /// <param name="args">url参数</param>
         public void DataReceive(DataReceivedEventArgs args)
         {
-            JObject jsonObj = JObject.Parse(FromUnicodeString(args.Html));
-            var curPageSize = GetUrlParam(args.Url, "pageSize");//每页个数默认10
-            var pageIndex = HttpUtility.UrlDecode(GetUrlParam(args.Url, "pg"));//每页个数默认24
-            var cityno = HttpUtility.UrlDecode(GetUrlParam(args.Url, "cityno"));//城市代码
-            var workType = HttpUtility.UrlDecode(GetUrlParam(args.Url, "work_type"));//工作代码
-            var role_type = GetUrlParam(args.Url, "role_type");
-            var cityObj = allCityList.Where(c => c.Text("city_code") == cityno).FirstOrDefault();
-            var workTypeObj = allWorkTypeList.Where(c => c.Text("code") == workType).FirstOrDefault();
-            if (cityObj == null)
+            try
             {
-                Console.WriteLine("参数不正确");
-                return;
-            }
-            if (workTypeObj == null)
-            {
-                workTypeObj = new BsonDocument();
-            }
-            var data = jsonObj["values"];
-            var insert = 0;
-            var update = 0;
-            if (data != null)
-            {
-                var allRecordCount = data.ToList().Count;
-                Console.WriteLine("获得数据:{0}", data.ToList().Count);
-                BsonDocument document = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(data.ToString());
-               // foreach (var document in documentList)
+                JObject jsonObj = JObject.Parse(FromUnicodeString(args.Html));
+                var curPageSize = GetUrlParam(args.Url, "pageSize");//每页个数默认10
+                var pageIndex = HttpUtility.UrlDecode(GetUrlParam(args.Url, "pg"));//每页个数默认24
+                var cityno = HttpUtility.UrlDecode(GetUrlParam(args.Url, "cityno"));//城市代码
+                var workType = HttpUtility.UrlDecode(GetUrlParam(args.Url, "work_type"));//工作代码
+                var role_type = GetUrlParam(args.Url, "role_type");
+                var cityObj = allCityList.Where(c => c.Text("city_code") == cityno).FirstOrDefault();
+                var workTypeObj = allWorkTypeList.Where(c => c.Text("code") == workType).FirstOrDefault();
+                if (cityObj == null)
                 {
-                    var guid = document.Text("uid");
-                   DBChangeQueue.Instance.EnQueue(new StorageData() { Document = document, Name = DataTableName, Type = StorageType.Update,Query=Query.EQ("guid",guid) });
-                  
+                   // Console.WriteLine("参数不正确");
+                  //  return;
                 }
-                Console.WriteLine("获得数据{3},添加：{0} cityName:{4} worType:{5} 更新{1}剩余url:{2}", insert, update, UrlQueue.Instance.Count, allRecordCount, cityObj.Text("city_name"), workTypeObj.Text("name"));
+                if (workTypeObj == null)
+                {
+                    workTypeObj = new BsonDocument();
+                }
+                var data = jsonObj["values"];
+                var insert = 0;
+                var update = 0;
+                if (data != null)
+                {
+                    var allRecordCount = data.ToList().Count;
+                    Console.WriteLine("获得数据:{0}", data.ToList().Count);
+                    BsonDocument document = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(data.ToString());
+                    // foreach (var document in documentList)
+                    {
+                        var guid = document.Text("uid");
+                        document.Set("isUpdate", 1);
+                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = document, Name = DataTableName, Type = StorageType.Update, Query = Query.EQ("guid", guid) });
+
+                    }
+                    Console.WriteLine("获得数据{3},添加：{0} cityName:{4} worType:{5} 更新{1}剩余url:{2}", insert, update, UrlQueue.Instance.Count, allRecordCount, cityObj.Text("city_name"), workTypeObj.Text("name"));
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
           
         }
