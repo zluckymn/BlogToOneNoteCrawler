@@ -198,6 +198,7 @@ namespace SimpleCrawler.Demo
             // fang99Init();
             // JGZFBlogInit();
             simpleCrawler.SettingInit();
+            StartDBChangeProcess();
             var master = new CrawlMaster(Settings);
             master.AddUrlEvent += MasterAddUrlEvent;
             master.DataReceivedEvent += MasterDataReceivedEvent;
@@ -252,11 +253,12 @@ namespace SimpleCrawler.Demo
                 if (simpleCrawler.IPLimitProcess(args))
                 {
                     IPInvalidProcess(args.IpProx);
-                    if (Settings.IgnoreFailUrl) { 
+                    if (Settings.IgnoreFailUrl||Settings.MaxReTryTimes>0) { 
                       UrlQueue.Instance.EnQueue(args.urlInfo);
                     }
                     Console.WriteLine(string.Format("当前：{0}被IPLimitProcess判定为IP失效页面", UrlQueue.Instance.Count));
                 }
+
                 else
                 {
                    

@@ -975,7 +975,9 @@ namespace QCCWebBrowser
 
         /// <summary>
         /// 初始化待转化的企业名称http://www.qichacha.com/company/{0}
+        /// 通过名称获取企业Guid
         /// </summary>
+        ///
         private void InitialEnterpriseGuidByKeyWordEnhence()
         {
             Settings.MaxReTryTimes = 1;
@@ -1006,14 +1008,14 @@ namespace QCCWebBrowser
             //var tableName = "HuXiuProject"; //"ListedCompanyInformation companyName"; , "geographical"
             //var columnName = "地址";//
             //allEnterpriseList = enterpriseDataop.FindAllByQuery(tableName, Query.And(Query.Exists("eGuid", false), Query.Exists(columnName, true))).SetFields(columnName, "法定代表人").ToList();
-            var tableName = "ListedCompanyInformation"; //"ListedCompanyInformation companyName";
-            var columnName = "companyName";//
-            tableName = "SiMu_Project"; //"ListedCompanyInformation companyName";
-            columnName = "epNeedCompanyName";//
+            var tableName = "INNOTREE_AllInvestor"; //"ListedCompanyInformation companyName";
+            var columnName = "fullName";//
+            //tableName = "SiMu_Project"; //"ListedCompanyInformation companyName";
+            //columnName = "epNeedCompanyName";//
             //var tableName = "UnicornCompany"; //"ListedCompanyInformation companyName";
             //var columnName = "name";//
             var allEnterpriseList = new List<BsonDocument>();
-            allEnterpriseList = enterpriseDataop.FindAllByQuery(tableName, Query.And(Query.Exists(columnName, true))).SetFields(columnName).ToList();
+            allEnterpriseList = enterpriseDataop.FindAllByQuery(tableName, Query.And(Query.Exists(columnName, true),Query.Exists("eGuid",false))).SetFields(columnName).ToList();
             if (allEnterpriseList.Count() > 0)
             {
 
@@ -1030,9 +1032,9 @@ namespace QCCWebBrowser
                     //        Type = StorageType.Update});
                     //}
                     //continue;
-
-                    var guidUrl = string.Format("http://www.qichacha.com/gongsi_getList?key={0}", enterprise.Text(columnName));
-                    UrlQueue.Instance.EnQueue(new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=undefined", enterprise.Text(columnName)), Authorization = tableName });
+                    
+                    var guidUrl = string.Format("https://www.qichacha.com/gongsi_getList?key={0}", enterprise.Text(columnName));
+                    UrlQueue.Instance.EnQueue(new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=0", enterprise.Text(columnName)), Authorization = tableName });
 
                 }
             }

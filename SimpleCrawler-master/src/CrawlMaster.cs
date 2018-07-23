@@ -418,6 +418,7 @@ namespace SimpleCrawler
                 var curIPProxy = Settings.GetIPProxy();
                 try
                 {
+
                     if (urlInfo == null)
                     {
                         continue;

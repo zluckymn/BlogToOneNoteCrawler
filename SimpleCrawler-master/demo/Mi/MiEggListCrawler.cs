@@ -101,7 +101,7 @@ namespace SimpleCrawler.Demo
             for ( var pageIndex = curpageIndex; pageIndex <= pageCount; pageIndex++)
             {
                 //bid_price update_time
-                   var url = string.Format("https://jiamitu.mi.com/pet/ng/listng?page={0}&limit={1}&order=desc&orderBy=bid_price&followUp=https:%2F%2Fjiamitu.mi.com%2Fauction%23 ", pageIndex, takeCount);
+                   var url = string.Format("https://jiamitu.mi.com/pet/ng/listng?page={0}&limit={1}&order=desc&orderBy=rare_degree&followUp=https:%2F%2Fjiamitu.mi.com%2Fauction%23 ", pageIndex, takeCount);
                    if (!filter.Contains(url))//详情添加
                     {
                         filter.Add(url);
@@ -182,9 +182,8 @@ namespace SimpleCrawler.Demo
             {
 
                 BsonDocument document = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(entInfo.ToString());
-                if (document.Int("price") <= 500)
+                if (false&&document.Int("price") <=100)
                 {
-                    
                     Environment.Exit(0);
                 }
                  var guid = document.Text("id");

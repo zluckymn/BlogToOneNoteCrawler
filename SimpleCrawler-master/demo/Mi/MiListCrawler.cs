@@ -127,6 +127,7 @@ namespace SimpleCrawler.Demo
             {
                for(var pageIndex=1; pageIndex <= 1; pageIndex++)
                 {
+                    //https://jiamitu.mi.com/pet/data/list?page=1&limit=10&order=rare_degree&orderBy=desc&followUp=https:%2F%2Fjiamitu.mi.com%2Fhome 
                     var url = string.Format("https://jiamitu.mi.com/pet/data/list?page={0}&limit=10&order=generated_id&orderBy=desc&followUp=https:%2F%2Fjiamitu.mi.com%2Fhome%23", pageIndex,takeCount);
                    
                     if (!filter.Contains(url))//详情添加

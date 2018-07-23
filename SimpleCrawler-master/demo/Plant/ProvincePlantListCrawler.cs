@@ -1,9 +1,7 @@
 ﻿using DotNet.Utilities;
 using HtmlAgilityPack;
-using LibCurlNet;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -22,9 +20,9 @@ using Yinhe.ProcessingCenter.DataRule;
 namespace SimpleCrawler.Demo
 {
     /// <summary>
-    /// 迷途
+    /// 用于城市与区域代码初始化
     /// </summary>
-    public class MiPidListCrawler : ISimpleCrawler
+    public class ProvincePlantListCrawler : ISimpleCrawler
     {
 
 
@@ -38,7 +36,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         private BloomFilter<string> filter;
         private BloomFilter<string> idFilter = new BloomFilter<string>(8000000);
-        private const string _DataTableName = "MiTu";//存储的数据库表名
+        private const string _DataTableName = "PlantByProvinceId";//存储的数据库表名
 
         /// <summary>
         /// 项目名
@@ -48,12 +46,29 @@ namespace SimpleCrawler.Demo
             get { return _DataTableName; }
 
         }
+
         /// <summary>
         /// 房屋名
         /// </summary>
-        public string DataTableNameDetail
+        public string DataTableNameProvince
         {
-            get { return _DataTableName + "Profile"; }
+            get { return "PlantProvince"; }
+
+        }
+        /// <summary>
+        /// 房屋名
+        /// </summary>
+        public string DataTableNameHouse
+        {
+            get { return _DataTableName + "_House"; }
+
+        }
+        /// <summary>
+        /// 房屋名
+        /// </summary>
+        public string DataTableNameBuilding
+        {
+            get { return _DataTableName + "_Building"; }
 
         }
         /// <summary>
@@ -83,18 +98,20 @@ namespace SimpleCrawler.Demo
         }
 
 
+
         /// <summary>
         /// 谁的那个
         /// </summary>
+        /// 
         /// <param name="_Settings"></param>
         /// <param name="filter"></param>
-        public MiPidListCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
+        public ProvincePlantListCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
         {
             Settings = _Settings; filter = _filter; dataop = _dataop;
         }
 
-
-        private Dictionary<string, string> urlDic = new Dictionary<string, string>();
+        List<BsonDocument> provinceList= new List<BsonDocument>();
+        List<BsonDocument> buildingList = new List<BsonDocument>();
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
             //webClient.DownloadFileCompleted += WebClient_DownloadFileCompleted;
@@ -105,40 +122,38 @@ namespace SimpleCrawler.Demo
             Settings.IPProxyList = new List<IPProxy>();
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.MaxReTryTimes = 20;
-            Settings.ThreadCount = 10;
-            Settings.Accept = "application/json, text/plain, */*";
-            // Settings.ContentType = "application/x-www-form-urlencoded";
-            Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36";
+            Settings.ThreadCount =2;
+            Settings.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
+            Settings.ContentType = "application/x-www-form-urlencoded";
+            Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36";
             Settings.HeadSetDic = new Dictionary<string, string>();
-            Settings.HeadSetDic.Add("Accept-Encoding", "gzip, deflate, br");
-            //Settings.UseSuperWebClient = true;
-            //Settings.hi = new HttpInput();
-            //HttpManager.Instance.InitWebClient(Settings.hi, true, 30, 30);
+            Settings.HeadSetDic.Add("Accept-Encoding", "gzip, deflate");
+            Settings.Referer = "http://frps.eflora.cn/shengtree.aspx";
             Console.WriteLine("正在获取已存在的url数据");
             //布隆url初始化,防止重复读取url
             Console.WriteLine("正在初始化选择url队列");
 
-            Settings.SimulateCookies = "serviceToken=rcu+GfCMDhx4ZCDJLkqDU3/2m8d3M3zMS0UfygZTLjHh0Pc1ch+8xHq9RcoydhhNhFpUIzLU+dE/QTFqlBNxUMxmE1Zm6Le0D5+Ued9T9M/4tRwfTIaqhcthlNd4mbjUOKcQmLv1Sl/mBIk7nYgGwC4wjcKOWoqhyScI3v/P63KN6/tHny5ukDe8nu4VfkLYty8g1R/J1xTzpeUe8Eua9pqnp8RfJxaijBkkXDc5CLCZieq2/Jdw7E1pbUUIMyaLLkGPX2qIr1PWV7k8hVi8Pg==; userId=86746990; jiamitu_slh=m+6hSHbUeRXZg+u7iCPkZycZ+Bs=; jiamitu_ph=iYZ5flgCd0IjNWfZk3N+Xw==; Hm_lvt_08ad038db088bb26c69084e80bc70125=1529372392,1529372396; Hm_lpvt_08ad038db088bb26c69084e80bc70125=1531119965";
-            var allObjList = dataop.FindAllByQuery(DataTableName,Query.Or(Query.Exists("isUpdate",false), Query.EQ("isUpdate", 0))).ToList();
-            var region = new BsonDocument();
-            var type = new BsonDocument();
+            ///省份获取
+            provinceList = dataop.FindAll(DataTableNameProvince).ToList();
 
-            var takeCount = 10;
-            var allPage = 37;
-            //foreach (var region in regionList)
+            foreach (var province in provinceList)
             {
-                foreach (var obj in allObjList)
+                var provinceId = province.Text("id");
+                var provinceName = province.Text("name");
+                var fixDataTable = string.Format("{0}{1}", DataTableName, provinceName);
+                buildingList = dataop.FindAllByQuery(fixDataTable, Query.NE("isDetailUpdate", 1)).Where(c => c.Int("type") == 0).ToList();
+                //iCPH
+                foreach (var building in buildingList)
                 {
-                    var url = string.Format("https://jiamitu.mi.com/pet/ng/getng?gid={0}&followUp=https:%2F%2Fjiamitu.mi.com%2Fbabydetail%3FpetId%3D{0} ", obj.Text("id"));
-
-                    if (!filter.Contains(url))//详情添加
+                    var mhUrl = string.Format("http://frps.eflora.cn/protreeajax.aspx?ID={0}&p={1}", building.Text("id"), provinceId);
+                    if (!filter.Contains(mhUrl))//具体页面
                     {
-                        filter.Add(url);
-                        UrlQueue.Instance.EnQueue(new UrlInfo(url) { Depth = 1,UniqueKey=obj.Text("id") });
+                        //filter.Add(mhUrl);
+                        UrlQueue.Instance.EnQueue(new UrlInfo(mhUrl) { Depth = 1, UniqueKey = building.Text("id"), });
                     }
                 }
             }
-
+            // UrlQueue.Instance.EnQueue(new UrlInfo("http://www.hhcool.com/cool286073/1.html?s=11&d=0"+"&checkPageCount=1") { Depth = 1 });
             //Settings.SeedsAddress.Add(string.Format("http://fdc.fang.com/data/land/CitySelect.aspx"));
             Settings.RegularFilterExpressions.Add("XXX");//不添加其他
             if (SimulateLogin())
@@ -158,7 +173,7 @@ namespace SimpleCrawler.Demo
         }
 
         public static object lockThis = new object();
-
+        public static List<Task> allTask = new List<Task>();
         /// <summary>
         /// 数据接收处理，失败后抛出NullReferenceException异常，主线程会进行捕获
         /// cool62061/1.html?s=10&d=0
@@ -167,53 +182,90 @@ namespace SimpleCrawler.Demo
         /// <param name="args">url参数</param>
         public void DataReceive(DataReceivedEventArgs args)
         {
-            //获取图片地址
-            JObject jsonObj = JObject.Parse(args.Html);
-            var result = jsonObj["result"];
-            if (result == null) return;
-            var id = args.urlInfo.UniqueKey;
-            var parent = result["parents"];
-            var insert = 0;
+            HtmlDocument htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(args.Html);
+            var root = htmlDoc.DocumentNode;
+            var aNodes = root.SelectNodes("//a[contains(@href,'proclasslist')]");
+            var nodePid = args.urlInfo.UniqueKey;
+            var provinceId = GetUrlParam(args.Url, "p");
+            var hitProvinceObj = provinceList.Where(c => c.Text("id") == provinceId).FirstOrDefault();
+            if (hitProvinceObj == null)
+            {
+
+                Console.WriteLine("省份不存在"+ provinceId);
+                return;
+            }
+            var provinceName = hitProvinceObj.Text("name");
+            var fixDataTableName = string.Format("{0}{1}", DataTableName, provinceName);
+            //获取页数
+
+            var add = 0;
             var update = 0;
-            var parentIds = new BsonArray();
-            foreach (var entInfo in parent.ToList())
-            {
 
-                BsonDocument document = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(entInfo.ToString());
-                var guid = document.Text("petId");
-                parentIds.Add(guid);
-                if (!hasExistObj(DataTableNameDetail,guid))
+            if (aNodes != null)
+            {
+                var order = 1;
+                foreach (var aNode in aNodes)
                 {
-                    DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("id", guid), Name = DataTableNameDetail, Type = StorageType.Insert });
+                    var url = string.Empty;
+                    if (aNode.Attributes.Contains("href"))
+                    {
+                        url = aNode.Attributes["href"].Value.ToString();
+                    }
+
+                    if (string.IsNullOrEmpty(url))
+                    {
+                        continue;
+                    }
+                    var id = GetUrlParam(url,"id");
+                    if (string.IsNullOrEmpty(id))
+                    {
+                        Console.WriteLine("id不存在");
+                        continue;
+                    }
+                    var fullName = aNode.InnerText;
+                    var name = fullName.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries)[1];
+                    var houseDoc = new BsonDocument();
+                    houseDoc.Add("id", id);
+                    houseDoc.Add("provinceId", provinceId);
+                    houseDoc.Add("provinceName", provinceName);
+                    houseDoc.Add("nodePid", nodePid);//父节点
+                    houseDoc.Add("url", url);//父节点
+                    houseDoc.Add("name", name);//父节点
+                    houseDoc.Add("fullName", fullName);//父节点
+                    houseDoc.Add("order", order++);//父节点
+                    houseDoc.Add("type", 1);//父节点
+                    if (!idFilter.Contains(id) && !hasExistObj(fixDataTableName, id))
+                    {
+                        add++;
+                        DBChangeQueue.Instance.EnQueue(new StorageData() { Document = houseDoc, Name = fixDataTableName, Type = StorageType.Insert });
+                    }
+                    else
+                    {
+
+                        update++;
+                    }
+                    DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument("isDetailUpdate", 1), Name = fixDataTableName, Query = Query.EQ("id", nodePid), Type = StorageType.Update });
                 }
+                Console.WriteLine("新增{0}更新:{1}{2}", add, update,provinceName);
+                //  DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isUpdate",1) , Name = DataTableName,Query=Query.EQ("projId", projId), Type = StorageType.Update });
             }
-             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("pIds", parentIds).Add("isUpdate",1), Name = DataTableName,Query=Query.EQ("id",id), Type = StorageType.Update });
-             Console.WriteLine("获得数据当前添加：{0} ", id, UrlQueue.Instance.Count);
+
+
 
         }
 
-
-        #region method
-        private string GetNum(string url)
-        {
-            var match = Regex.Matches(url, @"\d+");
-            if (match != null && match.Count > 0)
-            {
-                var result = match[0].Value;
-                return result;
-            }
-            return string.Empty;
-        }
 
         private bool hasExistObj(string guid)
         {
             return (this.dataop.FindCount(this.DataTableName, Query.EQ("id", guid)) > 0);
         }
+
+
         private bool hasExistObj(string tableName,string guid)
         {
             return (this.dataop.FindCount(tableName, Query.EQ("id", guid)) > 0);
         }
-
         private static string GetGuidFromUrl(string url)
         {
             int num = url.LastIndexOf("=");
@@ -263,6 +315,9 @@ namespace SimpleCrawler.Demo
         }
 
 
+
+        #region method
+
         /// <summary>
         /// IP限定处理，ip被限制 账号被限制跳转处理
         /// </summary>
@@ -273,12 +328,13 @@ namespace SimpleCrawler.Demo
             {
                 return true;
             }
-            JObject jsonObj = JObject.Parse(args.Html);
-            var result = jsonObj["result"];
-            
-            if (result == null)
+            HtmlDocument htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(args.Html);
+            var root = htmlDoc.DocumentNode;
+            var aNodes = root.SelectNodes("//a[contains(@href,'proclasslist')]");
+            if (aNodes == null)
             {
-                DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isUpdate", 2).Add("isBid", 1), Name = DataTableName, Query = Query.EQ("id",args.urlInfo.UniqueKey), Type = StorageType.Update });
+
                 return true;
             }
             return false;
