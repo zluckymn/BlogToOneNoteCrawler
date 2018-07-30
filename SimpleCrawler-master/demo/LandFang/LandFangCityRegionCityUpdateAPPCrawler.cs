@@ -59,12 +59,12 @@
                                         where c.Text("Level") == "2"
                                         select c).ToList<BsonDocument>();
             // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
-            var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
+           // var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
             foreach (BsonDocument document in list.Distinct())
             {
                 string str = document.Text("ProvinceName");
                 string str2 = document.Text("CityName");
-                if (!filterCity.Any(c=>str2.Contains(c))) continue;
+              //  if (!filterCity.Any(c=>str2.Contains(c))) continue;
                 string item = this.appHelper.InitCityFormatUrl(this.UrlEncode(str2), this.pageSize.ToString(), "1");
                 if (!this.urlFilter.Contains(item))
                 {

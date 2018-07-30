@@ -105,7 +105,7 @@ namespace SimpleCrawler.Demo
             Settings.IPProxyList = new List<IPProxy>();
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.MaxReTryTimes = 20;
-            Settings.ThreadCount =10;
+            Settings.ThreadCount =1;
             Settings.Accept = "application/json, text/plain, */*";
            // Settings.ContentType = "application/x-www-form-urlencoded";
             Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36";
@@ -286,7 +286,7 @@ namespace SimpleCrawler.Demo
         public bool IPLimitProcess(DataReceivedEventArgs args)
         {
 
-            if (string.IsNullOrEmpty(args.Html) || args.Html.Contains("503 Service Unavailable"))//需要编写被限定IP的处理
+            if (string.IsNullOrEmpty(args.Html.Trim()) || args.Html.Contains("503 Service Unavailable"))//需要编写被限定IP的处理
             {
                 return true;
             }

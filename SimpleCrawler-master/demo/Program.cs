@@ -45,10 +45,11 @@ namespace SimpleCrawler.Demo
 
         //  private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
         // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        
+
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/CrawlerDataBase";
-        private static string crawlerClassName = "MiDetailCrawler";//MHDetailCrawler
+        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/FangListCrawler";
+       // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        private static string crawlerClassName = "FangBuildingDetailCrawler_NanNing";//MHDetailCrawler
 
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
@@ -137,9 +138,13 @@ namespace SimpleCrawler.Demo
             if (string.IsNullOrEmpty(crawlerClassName))
             {
                 Console.WriteLine("请-classname 设置对应的爬取类");
-                Console.Read();
-                return;
+                crawlerClassName=Console.ReadLine();
+                if (string.IsNullOrEmpty(crawlerClassName))
+                {
+                    return;
+                }
             }
+
             var factoryClassName = string.Format("SimpleCrawler.Demo.{0}", crawlerClassName);
             filter = new BloomFilter<string>(5000000);
             //LandFangUserUpdateCrawler,LandFangCrawler  
@@ -244,13 +249,13 @@ namespace SimpleCrawler.Demo
         /// </param>
         private static void MasterDataReceivedEvent(DataReceivedEventArgs args)
         {
- 
+            //Too Many Requests
             // 在此处解析页面，可以用类似于 HtmlAgilityPack（页面解析组件）的东东、也可以用正则表达式、还可以自己进行字符串分析
-          try
+            try
             {
                 Console.WriteLine(string.Format("当前处理：{0} ip:{1}", UrlQueue.Instance.Count,Settings.curIPProxy!=null? Settings.curIPProxy.IP:"localhost"));
                 //进行ip限定处理,返回IP是否被限制了
-                if (simpleCrawler.IPLimitProcess(args))
+                if (args.Html.Contains("Too Many Requests")||simpleCrawler.IPLimitProcess(args))
                 {
                     IPInvalidProcess(args.IpProx);
                     if (Settings.IgnoreFailUrl||Settings.MaxReTryTimes>0) { 

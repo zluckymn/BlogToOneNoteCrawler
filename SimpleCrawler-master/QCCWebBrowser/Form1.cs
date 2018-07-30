@@ -2033,7 +2033,16 @@ namespace QCCWebBrowser
                         if (regionCode != null)
                         {
                             regionName = regionCode.Text("name");
+                            if (curCityCode == null)
+                            {
+                                curCityCode = allCountyCodeList.Where(c => c.Text("code") == regionCode.Text("cityCode")).FirstOrDefault();
+                                if (curCityCode != null)
+                                {
+                                    curCityName = curCityCode.Text("name");
+                                }
+                            }
                         }
+                        
                     }
                 }
                 if (string.IsNullOrEmpty(curCityName) && !string.IsNullOrEmpty(cityName))

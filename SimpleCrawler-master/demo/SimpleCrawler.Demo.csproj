@@ -122,6 +122,7 @@
     <Compile Include="Mi\MiParentDetailCrawler.cs" />
     <Compile Include="Mi\MiPidListCrawler.cs" />
     <Compile Include="Mi\MiEggListCrawler.cs" />
+    <Compile Include="Plant\PlantDetailInfoCrawler.cs" />
     <Compile Include="Plant\ProvincePlantDetailListCrawler.cs" />
     <Compile Include="Plant\PlantDetailListCrawler.cs" />
     <Compile Include="Plant\PlantCategoryListCrawler.cs" />

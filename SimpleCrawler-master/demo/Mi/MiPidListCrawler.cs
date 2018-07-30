@@ -167,11 +167,13 @@ namespace SimpleCrawler.Demo
         /// <param name="args">url参数</param>
         public void DataReceive(DataReceivedEventArgs args)
         {
+            var id = args.urlInfo.UniqueKey;
+            
             //获取图片地址
             JObject jsonObj = JObject.Parse(args.Html);
             var result = jsonObj["result"];
             if (result == null) return;
-            var id = args.urlInfo.UniqueKey;
+           
             var parent = result["parents"];
             var insert = 0;
             var update = 0;
@@ -273,9 +275,16 @@ namespace SimpleCrawler.Demo
             {
                 return true;
             }
-            JObject jsonObj = JObject.Parse(args.Html);
-            var result = jsonObj["result"];
-            
+            JToken result=null;
+            try
+            {
+                JObject jsonObj = JObject.Parse(args.Html);
+                result = jsonObj["result"];
+            }
+            catch (Exception ex)
+            {
+
+            }
             if (result == null)
             {
                 DBChangeQueue.Instance.EnQueue(new StorageData() { Document = new BsonDocument().Add("isUpdate", 2).Add("isBid", 1), Name = DataTableName, Query = Query.EQ("id",args.urlInfo.UniqueKey), Type = StorageType.Update });

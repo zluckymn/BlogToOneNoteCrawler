@@ -43,7 +43,8 @@ namespace SimpleCrawler.Demo
         /// </summary>
         private static BloomFilter<string> filter;
         private static BloomFilter<string> guidFilter;
-        private   string _DataTableName = "CityEnterpriseInfo_MT_20180612";//存储的数据库表明
+        private static string DateStr = DateTime.Now.ToString("yyyy-MM");
+        private static string _DataTableName = "CityEnterpriseInfo_MT_"+ DateStr;//存储的数据库表明
        
 
         /// <summary>
@@ -80,7 +81,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public string DataTableNameCityCategory
         {
-            get { return "CityCategoryInfo_MT_20180603"; }
+            get { return "CityCategoryInfo_MT_"+ DateStr; }
 
         }
         /// <summary>
