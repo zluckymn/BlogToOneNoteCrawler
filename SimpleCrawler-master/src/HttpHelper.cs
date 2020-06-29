@@ -42,7 +42,11 @@ namespace SimpleCrawler
         #endregion
 
         #region Public
-
+         
+         private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        }
         /// <summary>
         /// 根据相传入的数据，得到相应页面数据
         /// </summary>
@@ -59,16 +63,18 @@ namespace SimpleCrawler
             }
             catch (Exception ex)
             {
-                //result.Cookie = string.Empty;
-                //result.Header = null;
-                //result.Html = ex.Message;
-                //result.StatusDescription = "配置参数时出错：" + ex.Message;
-                throw ex;
+                result.Cookie = string.Empty;
+                result.Header = null;
+                result.Html = ex.Message;
+                result.StatusDescription = "配置参数时出错：" + ex.Message;
+
                 //配置参数时出错
-                //return result;
+                return result;
             }
             try
             {
+                //2020.4.28基础连接已经关闭: 未能为SSL/TLS 安全通道建立信任关系解决 出现问题考虑关闭该配置 用于旧版的背后关系获取
+                ServicePointManager.ServerCertificateValidationCallback = ValidateServerCertificate;
                 //请求数据
                 using (response = (HttpWebResponse)request.GetResponse())
                 {
@@ -89,7 +95,7 @@ namespace SimpleCrawler
 
                     // throw ex;
                     // result.StatusCode
-                    // result.Html = ex.Message;
+                    result.Html = ex.Message;
                 }
             }
             catch (Exception ex)
@@ -301,6 +307,8 @@ namespace SimpleCrawler
             {
                 request.MaximumAutomaticRedirections = item.MaximumAutomaticRedirections;
             }
+
+           // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             //设置Post数据
             SetPostData(item);
             //设置最大连接
@@ -318,9 +326,12 @@ namespace SimpleCrawler
                 ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(CheckValidationResult);
                 //初始化对像，并设置请求的URL地址
                 request = (HttpWebRequest)WebRequest.Create(item.URL);
-                SetCerList(item);
-                //将证书添加到请求里
-                request.ClientCertificates.Add(new X509Certificate(item.CerPath));
+                if (File.Exists(item.CerPath))
+                {
+                    SetCerList(item);
+                    //将证书添加到请求里
+                    request.ClientCertificates.Add(new X509Certificate(item.CerPath));
+                }
             }
             else
             {

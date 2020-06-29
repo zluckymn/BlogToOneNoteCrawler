@@ -79,12 +79,13 @@
                                     BsonDocument addDoc = new BsonDocument().Add("name", innerText.Trim());
                                     addDoc.Add("url", str2);
                                     string guid = str2.GetHashCode().ToString();
+                                   
                                     addDoc.Add("guid", guid);
                                     addDoc.Add("cityCode", cityCode);
                                     addDoc.Add("catCode", catCode);
                                     Console.WriteLine(innerText);
                                     addCount++;
-                                    if (!idFilter.Contains(guid) && hasExistObj(guid, "guid"))
+                                    if (!idFilter.Contains(guid) && !hasExistObj(guid, "guid"))
                                     {
                                         this.idFilter.Add(guid);
                                         StorageData target = new StorageData
@@ -171,10 +172,17 @@
             this.Settings.ThreadCount = 1;
             Console.WriteLine("正在获取已存在的url数据");
             Console.WriteLine("正在初始化选择url队列");
-            this.allCityList = this.dataop.FindAllByQuery(this.DataTableNameCity, Query.NE("isUpdate", 1)).Where(c => c.Text("cityCode") == "shanghai").ToList<BsonDocument>();
+            this.allCityList = this.dataop.FindAllByQuery(this.DataTableNameCity, Query.NE("isUpdate",1)).ToList<BsonDocument>();
             this.allCategoryList = this.dataop.FindAll(this.DataTableNameCategory).ToList<BsonDocument>();
+            var canContinue = false;
             foreach (BsonDocument document in this.allCityList)
             {
+                if (document.Text("cityCode") == "changsha")
+                {
+                    canContinue = true;
+                   
+                }
+                if (!canContinue) continue;
                 foreach (BsonDocument document2 in this.allCategoryList)
                 {
                     string item = string.Format("http://poi.mapbar.com/{0}/{1}/", document.Text("cityCode"), document2.Text("code"));

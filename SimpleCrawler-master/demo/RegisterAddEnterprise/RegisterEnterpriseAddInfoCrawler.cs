@@ -487,7 +487,9 @@ namespace SimpleCrawler.Demo
             //return true;
             Settings.SimulateCookies = "yunsuo_session_verify=760b6fed201cabba9dbbc08d6ee95433; yoursessionname1=217703E3DF30F6B367DEC0B3B4EBD13F; yoursessionname0=2ACF87288AD50420E1507A8F20B69186";//设置cookie值
              return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (!string.IsNullOrEmpty(Settings.LoginAccount))
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 return true;
             }
@@ -518,7 +520,9 @@ namespace SimpleCrawler.Demo
             }
            // return AliyunAutoLoin(userName, passWord);
              
+#pragma warning disable CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
             IPProxy ipProxy = null;
+#pragma warning restore CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
           
             HttpManager.Instance.InitWebClient(hi, true, 30, 30);
             Random rand = new Random(Environment.TickCount);

@@ -68,7 +68,6 @@ namespace MZ.Mongo
               
                 var uStr = string.Format("https://app.qichacha.net/app/v1/base/getEntDetail?unique={0}&timestamp={1}&sign={2}", guid, curDeviceInfo.timestamp, curDeviceInfo.sign);
                 var result= GetHttpHtml(uStr);
-
                 return result;
             }
             /// <summary>
@@ -244,15 +243,21 @@ namespace MZ.Mongo
                     result = http.GetHtml(item);
 
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
 
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (TimeoutException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
 
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
 
                 }

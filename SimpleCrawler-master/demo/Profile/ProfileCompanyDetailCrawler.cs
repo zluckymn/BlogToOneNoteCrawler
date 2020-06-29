@@ -96,7 +96,9 @@ namespace SimpleCrawler.Demo
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.ThreadCount = 1;
             Console.WriteLine("正在获取已存在的url数据");
+#pragma warning disable CS0219 // 变量“startIndex”已被赋值，但从未使用过它的值
             var startIndex = 15376;
+#pragma warning restore CS0219 // 变量“startIndex”已被赋值，但从未使用过它的值
             var maxIndex = 38792;
             var companyUrl ="http://www.rc.cc/gongsi-{0}/";
             //布隆url初始化,防止重复读取url

@@ -1,5 +1,6 @@
 ﻿namespace SimpleCrawler.Demo
 {
+    using Helpers;
     using HtmlAgilityPack;
     using MongoDB.Bson;
     using MongoDB.Driver;

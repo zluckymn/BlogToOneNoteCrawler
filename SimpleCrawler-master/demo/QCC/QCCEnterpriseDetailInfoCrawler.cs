@@ -621,7 +621,11 @@ namespace SimpleCrawler.Demo
             }
             return AliyunAutoLoin(userName, passWord);
              
+#pragma warning disable CS0162 // 检测到无法访问的代码
+#pragma warning disable CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
             IPProxy ipProxy = null;
+#pragma warning restore CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
+#pragma warning restore CS0162 // 检测到无法访问的代码
           
             HttpManager.Instance.InitWebClient(hi, true, 30, 30);
             Random rand = new Random(Environment.TickCount);
@@ -723,9 +727,15 @@ namespace SimpleCrawler.Demo
             {
                 return false;
             }
+#pragma warning disable CS0219 // 变量“validUrl”已被赋值，但从未使用过它的值
             var validUrl = "";
+#pragma warning restore CS0219 // 变量“validUrl”已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量“postFormat”已被赋值，但从未使用过它的值
             var postFormat = "";
+#pragma warning restore CS0219 // 变量“postFormat”已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量“result”已被赋值，但从未使用过它的值
             bool result = false;
+#pragma warning restore CS0219 // 变量“result”已被赋值，但从未使用过它的值
           
 
             hi.Url = "http://101.200.187.122:9600/passali/fuckali.oko?uid=01161add5a3c4c55bd9c133baa9effd0&data=QNYX|login|http://www.qichacha.com/user_login";

@@ -31,6 +31,7 @@ namespace SimpleCrawler.Demo
     using System.Threading.Tasks;
     using System.Runtime.InteropServices;
     using System.Threading;
+    using MongoDB.Driver;
 
     /// <summary>
     /// The program.
@@ -44,13 +45,25 @@ namespace SimpleCrawler.Demo
         /// </summary>
 
         //  private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        //private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
 
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        private static string connStr = "mongodb://MZsa:MZdba@192.168.1.124:37088/FangListCrawler";
-       // private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
-        private static string crawlerClassName = "FangBuildingDetailCrawler_NanNing";//MHDetailCrawler
+        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:47088/SimpleCrawler";
+        // private static string crawlerClassName = "EnterpriserListCrawler_ZhengHeDao";
+        // private static string connStr = "mongodb://192.168.1.121:37888/DouTu";
+        // private static string connStr = "mongodb://192.168.1.121:37888/ShunQi";
+        //地块
+        private static string connStr = "mongodb://192.168.1.121:37888/LandFang";
+        private static string crawlerClassName = "LandFangUserUpdateAPPCrawler";
+        //private static string crawlerClassName = "QCCEnterpriseNameGuidMatchCrawler";// "EnterpriserListCrawler_ZhengHeDao";//"EnterpriseDetailCrawler_XiaoLanBen";//MHDetailCrawler MiPidListCrawler
 
+        //private static string connStr = "mongodb://MZsa:MZdba@59.61.72.38:37088/SimpleCrawler";
+        //private static string crawlerClassName = "HuiCongMaterialCompanyDetailAPPCrawler_WeiXin"; 
+        //正和岛；
+        // private static string crawlerClassName = "EnterpriserSearchCrawler_ShunQi";
+
+        //private static string connStr = "mongodb://192.168.1.121:37888/ZhengHeDao";
+        //private static string crawlerClassName = "EnterpriserFeedDetailCrawler_ZhengHeDao";
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
         private static readonly CrawlSettings Settings = new CrawlSettings();
@@ -62,7 +75,9 @@ namespace SimpleCrawler.Demo
       
         private static List<string> urlFilterKeyWord = new List<string>();
         private static ISimpleCrawler simpleCrawler = null;
+#pragma warning disable CS0169 // 从不使用字段“Program.DBUpdateQueue”
         static SecurityQueue<StorageData> DBUpdateQueue  ;
+#pragma warning restore CS0169 // 从不使用字段“Program.DBUpdateQueue”
         #endregion
         #region 控制台关闭代理
         public delegate bool ControlCtrlDelegate(int CtrlType);
@@ -85,6 +100,7 @@ namespace SimpleCrawler.Demo
         }
         static string GetWebProxyString()
         {
+             
             return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "http-pro.abuyun.com", "9010");
         }
 
@@ -182,8 +198,8 @@ namespace SimpleCrawler.Demo
             // 例如：mail.pzcast.com 和 www.pzcast.com
             Settings.LockHost = false;
             //是否启用代理
-              Settings.CurWebProxy = GetWebProxy();
-              Settings.CurWebProxyString = GetWebProxyString();
+            Settings.CurWebProxy = GetWebProxy();
+            Settings.CurWebProxyString = GetWebProxyString();
 
 
             // 设置请求的 User-Agent HTTP 标头的值
@@ -231,6 +247,7 @@ namespace SimpleCrawler.Demo
             //符合条件的url
             //if (urlFilterKeyWord.Any(c => args.Url.Contains(c))) return false;//url过滤
             if (!simpleCrawler.CanAddUrl(args)) return false;
+            var url = args.Url;
             if (!filter.Contains(args.Url))
             {
                 filter.Add(args.Url);
@@ -258,9 +275,20 @@ namespace SimpleCrawler.Demo
                 if (args.Html.Contains("Too Many Requests")||simpleCrawler.IPLimitProcess(args))
                 {
                     IPInvalidProcess(args.IpProx);
-                    if (Settings.IgnoreFailUrl||Settings.MaxReTryTimes>0) { 
-                      UrlQueue.Instance.EnQueue(args.urlInfo);
+                    if (Settings.IgnoreFailUrl || Settings.MaxReTryTimes > 0)
+                    {
+                        if (args.urlInfo.Depth > Settings.MaxReTryTimes)
+                        {
+                            Console.WriteLine(string.Format("该url无效即将清除"));
+                        }
+                        else
+                        {
+                            args.urlInfo.Depth++;
+                            UrlQueue.Instance.EnQueue(args.urlInfo);
+                        }
+                       
                     }
+                    
                     Console.WriteLine(string.Format("当前：{0}被IPLimitProcess判定为IP失效页面", UrlQueue.Instance.Count));
                 }
 
@@ -284,7 +312,9 @@ namespace SimpleCrawler.Demo
 
 
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (NullReferenceException ex)//未将对象引用到对象实例，将当前连接所使用的Ip进行设置为无效,IP被禁用
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
                 
                 IPInvalidProcess(args.IpProx);
@@ -305,10 +335,12 @@ namespace SimpleCrawler.Demo
                 while (DBChangeQueue.Instance.Count > 0)
                 {
                     Console.WriteLine("正在等待保存数据库");
-                    Thread.Sleep(1000);
+                    
                 }
                 if (DBChangeQueue.Instance.Count <= 0)
                 {
+                   // simpleCrawler.SettingInit();
+                    Thread.Sleep(20000);
                     if (UrlQueue.Instance.Count <= 0)
                     {
                         Console.WriteLine("处理完毕,5秒后退出");
@@ -348,7 +380,9 @@ namespace SimpleCrawler.Demo
         {
             StartDBChangeProcessQuick();
                 return;
+#pragma warning disable CS0162 // 检测到无法访问的代码
              var limitCount = Settings.DBSaveCountLimit;
+#pragma warning restore CS0162 // 检测到无法访问的代码
             if (limitCount <= 0)
             {
                 limitCount = 20;
@@ -419,7 +453,7 @@ namespace SimpleCrawler.Demo
                         case StorageType.Update:
                             // insertDoc.Set("updateDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));      //更新时间
                             // insertDoc.Set("updateUserId", "1");
-                            result = _mongoDBOp.Save(temp.Name, temp.Query, insertDoc);
+                            result = _mongoDBOp.UpdateOrInsert(temp.Name, temp.Query, insertDoc);
                             break;
                         case StorageType.Delete:
                             result = _mongoDBOp.Delete(temp.Name, temp.Query);
@@ -472,7 +506,9 @@ namespace SimpleCrawler.Demo
         {
 
             var ls = new Application();
+#pragma warning disable CS0219 // 变量“ls_return”已被赋值，但从未使用过它的值
             string ls_return = "";
+#pragma warning restore CS0219 // 变量“ls_return”已被赋值，但从未使用过它的值
             var pageId = string.Empty;
 
             string notebookXml;

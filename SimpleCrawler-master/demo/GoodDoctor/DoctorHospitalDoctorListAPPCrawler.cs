@@ -138,7 +138,9 @@ namespace SimpleCrawler.Demo
         }
         
         int pageSize = 10;//24
+#pragma warning disable CS0414 // 字段“DoctorHospitalDoctorListAPP.pageIndex”已被赋值，但从未使用过它的值
         int pageIndex = 1;
+#pragma warning restore CS0414 // 字段“DoctorHospitalDoctorListAPP.pageIndex”已被赋值，但从未使用过它的值
          
         string materialUrl = "http://mobile-api.haodf.com/patientapi/hospital_getDoctorListByHospitalFacultyV2";
         string curUrl = string.Empty;

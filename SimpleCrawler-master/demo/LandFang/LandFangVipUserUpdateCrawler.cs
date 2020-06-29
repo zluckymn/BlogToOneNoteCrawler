@@ -94,7 +94,9 @@ namespace SimpleCrawler.Demo
             var distinctAreaStr = cityStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
             var orQuery = Query.In("所在地", distinctAreaStr.Select(c => (BsonValue)c));
 
+#pragma warning disable CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             var partName = "所在地";
+#pragma warning restore CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             //var orQuery = Query.In("地区", "天津");
              landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(orQuery, Query.EQ("isDiamon", "1"), Query.Or(Query.EQ("竞得方", "******")))).Take(10000).ToList();//土地url
             //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.EQ("isDiamon", "1"), Query.Or(Query.EQ("isTradeStatusChange", "1")))).Take(10000).ToList();//土地url
@@ -424,11 +426,15 @@ namespace SimpleCrawler.Demo
                     }
                     return false;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }

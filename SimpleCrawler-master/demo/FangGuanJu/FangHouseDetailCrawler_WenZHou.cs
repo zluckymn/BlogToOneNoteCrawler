@@ -164,8 +164,12 @@ namespace SimpleCrawler.Demo
             //获取页数
             if (contentTableNode!=null)
             {
+#pragma warning disable CS0219 // 变量“add”已被赋值，但从未使用过它的值
                 var add=0;
+#pragma warning restore CS0219 // 变量“add”已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量“update”已被赋值，但从未使用过它的值
                 var update = 0;
+#pragma warning restore CS0219 // 变量“update”已被赋值，但从未使用过它的值
                 if (true)
                 {
                     var houseDoc = new BsonDocument();

@@ -18,6 +18,7 @@ using Yinhe.ProcessingCenter.DataRule;
 using System.Collections;
 using Newtonsoft.Json.Linq;
 using LibCurlNet;
+using Helpers;
 
 namespace SimpleCrawler.Demo
 {
@@ -233,7 +234,7 @@ namespace SimpleCrawler.Demo
             //rank 为S A B C D (wancheng) E F G
             var query = Query.Or(Query.EQ("rank", "S"), Query.EQ("rank", "A"));
             //allHitCityList = dataop.FindAllByQuery(DataTableNameCity, query).SetFields("cityId", "rank", "name").ToList();
-            allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
+            allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").Where(c=>c.Text("cityId")=="80").ToList();
             // _DataTableName = "CityEnterpriseInfo_D_MT";
             // allHitCityList = dataop.FindAll(DataTableNameCity).SetFields("cityId", "rank", "name").ToList();
             Console.WriteLine("待处理数据{0}个", allHitCityList.Count);
@@ -252,7 +253,7 @@ namespace SimpleCrawler.Demo
                 if (hitCatObj.Text("id") == "-1") continue;
                 var limit = hitCatObj.Int("count");
                 var rnd = new Random();
-                limit = 10000+ rnd.Next(0,1000);
+                limit = 2400+ rnd.Next(0,100);
 
                 var hitEnterpriseUrl = GetCityCatEnterpriseListUrl(hitCatObj.Text("cityId"), hitCatObj.Text("id"), limit.ToString(), hitCatObj.Text("parentID"));
                 if (limit != 0&&!filter.Contains(hitEnterpriseUrl)) { 
@@ -576,7 +577,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (Settings.LandFangIUserId == 0)
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 var hitAccount = dataop.FindOneByQuery(DataTableNameAccount, Query.EQ("userName", "savegod523"));
                 if (hitAccount != null)

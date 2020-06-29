@@ -106,7 +106,9 @@ namespace SimpleCrawler.Demo
             Settings.ThreadCount = 1;
             Console.WriteLine("正在获取已存在的url数据");
             entFilter = new BloomFilter<string>(8000000);
+#pragma warning disable CS0219 // 变量“allCount”已被赋值，但从未使用过它的值
             var allCount = 56164;
+#pragma warning restore CS0219 // 变量“allCount”已被赋值，但从未使用过它的值
             Settings.CurWebProxy = GetWebProxy();//使用代理
             this.Settings.UserAgent = "Mozilla/5.0 (Linux; Android 4.4.2; GT-I9300 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile";
 

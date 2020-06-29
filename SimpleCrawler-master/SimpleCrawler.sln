@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.28218.60
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleCrawler", "src\SimpleCrawler.csproj", "{67F07677-22A9-4176-B549-28F1448B0448}"
 EndProject
@@ -12,8 +12,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yinhe.WebReference", "..\..\..\115Box\A3\Yinhe.WebReference\Yinhe.WebReference.csproj", "{8D2934A3-8CE8-4943-A8A3-3353F8DF030B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QCCWebBrowser", "QCCWebBrowser\QCCWebBrowser.csproj", "{C71A0474-7E8E-4210-BCE8-5C7A8970E767}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8D2934A3-8CE8-4943-A8A3-3353F8DF030B} = {8D2934A3-8CE8-4943-A8A3-3353F8DF030B}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helper", "..\..\SiteHealthDiagnoses\SiteHealthDiagnoses\Helper\Helper.csproj", "{8937DE29-3C6D-45B0-9692-68BF585DFC0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleCrawler.MQ.Enterrpise", "SimpleCrawler.MQ.Enterrpise\SimpleCrawler.MQ.Enterrpise.csproj", "{8317C9BC-F183-47A7-A2F5-5621070E0070}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8D2934A3-8CE8-4943-A8A3-3353F8DF030B} = {8D2934A3-8CE8-4943-A8A3-3353F8DF030B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +79,14 @@ Global
 		{8937DE29-3C6D-45B0-9692-68BF585DFC0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8937DE29-3C6D-45B0-9692-68BF585DFC0A}.Release|x86.ActiveCfg = Release|Any CPU
 		{8937DE29-3C6D-45B0-9692-68BF585DFC0A}.Release|x86.Build.0 = Release|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Debug|x86.Build.0 = Debug|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Release|x86.ActiveCfg = Release|Any CPU
+		{8317C9BC-F183-47A7-A2F5-5621070E0070}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

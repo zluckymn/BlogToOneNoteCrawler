@@ -178,8 +178,12 @@ namespace SimpleCrawler.Demo
         
         }
 
+#pragma warning disable CS0414 // 字段“HuiCongMaterialDetailAPPCrawler.pageSize”已被赋值，但从未使用过它的值
         int pageSize = 100;//24
+#pragma warning restore CS0414 // 字段“HuiCongMaterialDetailAPPCrawler.pageSize”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“HuiCongMaterialDetailAPPCrawler.pageBeginNum”已被赋值，但从未使用过它的值
         int pageBeginNum = 1;
+#pragma warning restore CS0414 // 字段“HuiCongMaterialDetailAPPCrawler.pageBeginNum”已被赋值，但从未使用过它的值
         string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&w={0}&v=59&e={1}&c=供应信息&n={2}&m=2&H=1&bt=0";
         HuiCongAppHelper appHelper = new HuiCongAppHelper();
 
@@ -596,7 +600,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (Settings.LandFangIUserId == 0)
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 var hitAccount = dataop.FindOneByQuery(DataTableNameAccount, Query.EQ("userName", "savegod523"));
                 if (hitAccount != null)

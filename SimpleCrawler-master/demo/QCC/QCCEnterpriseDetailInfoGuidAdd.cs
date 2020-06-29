@@ -91,8 +91,10 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public void InitialUrlQueue()
         {
+#pragma warning disable CS0219 // 变量“skipCount”已被赋值，但从未使用过它的值
             ///请注意改detailInfo表guid 为eGuid
             var skipCount = 0;
+#pragma warning restore CS0219 // 变量“skipCount”已被赋值，但从未使用过它的值
             var takeCount = 1000;
             var allCount = dataop.FindCount(DataTableName, Query.And(Query.Exists("detailInfo", false)));
             Console.WriteLine("待处理个数:{0}", allCount);

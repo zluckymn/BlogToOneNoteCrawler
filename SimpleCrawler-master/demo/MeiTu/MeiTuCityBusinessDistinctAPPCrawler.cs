@@ -16,6 +16,8 @@ using Yinhe.ProcessingCenter;
 
 using Yinhe.ProcessingCenter.DataRule;
 using System.Collections;
+using Helpers;
+
 namespace SimpleCrawler.Demo
 {
     /// <summary>
@@ -131,7 +133,9 @@ namespace SimpleCrawler.Demo
 
 
             Console.WriteLine("正在获取已存在的url数据");
+#pragma warning disable CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             var partName = "所在地";
+#pragma warning restore CS0219 // 变量“partName”已被赋值，但从未使用过它的值
              landUrlList = dataop.FindAllByQuery(DataTableName,Query.NE("isUpdated","2")).ToList();//土地url
             //var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
             Console.WriteLine("待处理数据{0}个", landUrlList.Count);
@@ -318,7 +322,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (Settings.LandFangIUserId == 0)
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 var hitAccount = dataop.FindOneByQuery(DataTableNameAccount, Query.EQ("userName", "savegod523"));
                 if (hitAccount != null)

@@ -7,9 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using OpenQA.Selenium;
-using System;
-
+ 
 namespace SimpleCrawler
 {
     /// <summary>

@@ -26,7 +26,9 @@
         private BloomFilter<string> filter;
         private BloomFilter<string> schoolIdFilter = new BloomFilter<string>(0x7a1200);
         private const string _DataTableName = "HuXiuProject";
+#pragma warning disable CS0414 // 字段“HuXiuDetailCrawler.huxiu_hash_code”已被赋值，但从未使用过它的值
         private string huxiu_hash_code = "6090caa5f7ef6fe849d98aa30b9b8a22";
+#pragma warning restore CS0414 // 字段“HuXiuDetailCrawler.huxiu_hash_code”已被赋值，但从未使用过它的值
         private string cookie = "screen=%7B%22w%22%3A1440%2C%22h%22%3A900%2C%22d%22%3A1%7D; huxiu_analyzer_wcy_id=8ehxzchebcamo4hrtht; gr_user_id=195bbdae-dae2-4c5e-aa58-8cfb1fb2f983; b6a739d69e7ea5b6_gr_last_sent_cs1=0; _ga=GA1.2.31956796.1521192557; screen=%7B%22w%22%3A1440%2C%22h%22%3A900%2C%22d%22%3A1%7D; aliyungf_tc=AQAAAEBxQxdFggcAIkg9OyZRDExnOTml; _gid=GA1.2.973452414.1521708084; Hm_lvt_324368ef52596457d064ca5db8c6618e=1521192557,1521195814,1521708085; b6a739d69e7ea5b6_gr_session_id=a92c45d9-1bf3-47df-b216-e40667b82c3f; b6a739d69e7ea5b6_gr_last_sent_sid_with_cs1=a92c45d9-1bf3-47df-b216-e40667b82c3f; show_view_com_id=60984; b6a739d69e7ea5b6_gr_cs1=0; Hm_lpvt_324368ef52596457d064ca5db8c6618e=1521774318; SERVERID=6d35b07e250aadfe8b4fbf72aeadecb9|1521774418|1521771265";
         private List<BsonDocument> records = new List<BsonDocument>();
         public static object lockThis = new object();

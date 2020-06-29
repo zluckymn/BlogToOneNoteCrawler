@@ -18,7 +18,7 @@ namespace SimpleCrawler.Demo
     /// <summary>
     /// 事务执行接口，不同的事务对象都继承该接口
     /// </summary>
-    public interface ISimpleCrawler
+    public  interface ISimpleCrawler
     {
         void SettingInit();//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         void DataReceive(DataReceivedEventArgs args);//数据接收处理
@@ -58,7 +58,9 @@ namespace SimpleCrawler.Demo
                 Type type = Type.GetType(Name, true);
                 myExecuteTran = (ISimpleCrawler)Activator.CreateInstance(type, _Settings, _filter, _dataop);
             }
+#pragma warning disable CS0168 // 声明了变量“e”，但从未使用过
             catch (TypeLoadException e)
+#pragma warning restore CS0168 // 声明了变量“e”，但从未使用过
             {
 
             }

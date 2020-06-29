@@ -112,8 +112,12 @@ namespace SimpleCrawler.Demo
         public bool isSpecialUrlMode = false;
 
 
+#pragma warning disable CS0414 // 字段“JGJUserDetailAppCrawler.pageSize”已被赋值，但从未使用过它的值
         int pageSize = 100;//24
+#pragma warning restore CS0414 // 字段“JGJUserDetailAppCrawler.pageSize”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“JGJUserDetailAppCrawler.pageBeginNum”已被赋值，但从未使用过它的值
         int pageBeginNum = 1;
+#pragma warning restore CS0414 // 字段“JGJUserDetailAppCrawler.pageBeginNum”已被赋值，但从未使用过它的值
         List<BsonDocument> allCityList = new List<BsonDocument>();
         List<BsonDocument> allWorkTypeList = new List<BsonDocument>();
         //将z.hc360改成 s.hc360 可用
@@ -232,7 +236,9 @@ namespace SimpleCrawler.Demo
                         strResult.Append((char)charCode);
                     }
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (FormatException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     return Regex.Unescape(str);
                 }
@@ -282,7 +288,9 @@ namespace SimpleCrawler.Demo
                     Console.WriteLine("获得数据{3},添加：{0} cityName:{4} worType:{5} 更新{1}剩余url:{2}", insert, update, UrlQueue.Instance.Count, allRecordCount, cityObj.Text("city_name"), workTypeObj.Text("name"));
                 }
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
 
             }
@@ -433,7 +441,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (Settings.LandFangIUserId == 0)
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 var hitAccount = dataop.FindOneByQuery(DataTableNameAccount, Query.EQ("userName", "savegod523"));
                 if (hitAccount != null)

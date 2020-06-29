@@ -635,7 +635,9 @@ namespace SimpleCrawler.Demo
                 }
 
             }
+#pragma warning disable CS0168 // 声明了变量“exception”，但从未使用过
             catch (Exception exception)
+#pragma warning restore CS0168 // 声明了变量“exception”，但从未使用过
             {
 
                 //   throw;
@@ -697,7 +699,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
              return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             IPProxy ipProxy = null;
+#pragma warning restore CS0162 // 检测到无法访问的代码
             if (Settings.IPProxyList == null || Settings.IPProxyList.Where(c => c.Unavaiable == false).Count() <= 0)
             {
                 Environment.Exit(0);
@@ -746,11 +750,15 @@ namespace SimpleCrawler.Demo
                     }
                     return false;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }

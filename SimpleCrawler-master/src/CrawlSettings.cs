@@ -9,7 +9,8 @@
 
 namespace SimpleCrawler
 {
-    using OpenQA.Selenium.PhantomJS;
+    using OpenQA.Selenium.Chrome;
+    using OpenQA.Selenium.Remote;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -243,6 +244,11 @@ namespace SimpleCrawler
                 this.timeout = value;
             }
         }
+        /// <summary>
+        ///超过5次没有获取新数据
+        /// </summary>
+        public int noCountTimes { get; set; } 
+        public int curNoCountTimes { get; set; } 
 
         /// <summary>
         /// Gets or sets the user agent.
@@ -259,6 +265,9 @@ namespace SimpleCrawler
                 this.userAgent = value;
             }
         }
+
+        public bool Allowautoredirect { get; set; } = true;
+         
 
         /// <summary>
         /// Gets or sets the user agent.
@@ -285,8 +294,19 @@ namespace SimpleCrawler
                 this._loginAccount = value;
             }
         }
+        /// <summary>
+        /// Gets or sets the user agent.
+        /// </summary>
+        public string LoginPassword { get; set; }
 
 
+        /// <summary>
+        /// Gets or sets the user agent.
+        /// </summary>
+        public string SearchKeyWord { get; set; }
+
+
+        public int KeyWordAddCount { get; set; }
 
         List<SimpleCrawler.LoginAccount> _curAccountList = new List<SimpleCrawler.LoginAccount>();
         /// <summary>
@@ -351,6 +371,10 @@ namespace SimpleCrawler
         /// </summary>
         public int MaxAccountCrawlerCount { get; set; }
 
+
+        public int AccounAddCount { get; set; }
+
+        public string AccounInfo { get; set; }
         /// <summary>
         /// 失败的url是否尝试重新进行
         /// </summary>
@@ -415,40 +439,40 @@ namespace SimpleCrawler
             }
         }
         #region 无头浏览器组件对象
-        public PhantomJSOptions _options { get; set; }//定义PhantomJS内核参数
-        public PhantomJSDriverService _service { get; set; }//定义Selenium驱动配置
+        
         public SeleniumScript script { get; set; }
         /// <summary>
         /// Gets or sets the operation.配合PhantomJs使用
         /// </summary>
         public SeleniumOperation operation { get; set; }
+        public RemoteWebDriver RemoteWebDriver { get; internal set; }
+
         /// <summary>
         /// 调用前初始化
         /// </summary>
         public void InitPhantomJs()
         {
-            this._options = new PhantomJSOptions();//定义PhantomJS的参数配置对象
-            this._service = PhantomJSDriverService.CreateDefaultService(Environment.CurrentDirectory);//初始化Selenium配置，传入存放phantomjs.exe文件的目录
-            _service.IgnoreSslErrors = true;//忽略证书错误
-            _service.WebSecurity = false;//禁用网页安全
-            _service.HideCommandPromptWindow = true;//隐藏弹出窗口
-            _service.LoadImages = false;//禁止加载图片
-            _service.LocalToRemoteUrlAccess = true;//允许使用本地资源响应远程 URL
-            var defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36";
-            if (!string.IsNullOrEmpty(UserAgent))
-            {
-                defaultUserAgent = UserAgent;
-            }
-            _options.AddAdditionalCapability(@"phantomjs.page.settings.userAgent", defaultUserAgent);
-            if (!string.IsNullOrEmpty(CurWebProxyString))
-            { 
-                _service.ProxyType = "HTTP";//使用HTTP代理 {
-                _service.Proxy = CurWebProxyString;//代理IP及端口
-            }
-            else
-            {
-                _service.ProxyType = "none";//不使用代理
-            }
+            //ChromeOptions options = new ChromeOptions();
+
+            ////var proxy = new Proxy();
+            ////proxy.Kind = ProxyKind.Manual;
+            ////proxy.IsAutoDetect = false;
+            ////proxy.HttpProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
+            ////proxy.SslProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
+            ////options.Proxy = proxy;
+            ////options.AddArguments("--proxy-server=http://H1538UM3D6R2133P:511AF06ABED1E7AE@http-pro.abuyun.com:9010");
+            //options.AddArgument("ignore-certificate-errors");
+            //options.AddArgument("–incognito");
+            //options.AddArgument("disable-infobars");
+            //if (!string.IsNullOrEmpty(CurWebProxyString))
+            //{ 
+            //    _service.ProxyType = "HTTP";//使用HTTP代理 {
+            //    _service.Proxy = CurWebProxyString;//代理IP及端口
+            //}
+            //else
+            //{
+            //    _service.ProxyType = "none";//不使用代理
+            //}
 }
         #endregion
 

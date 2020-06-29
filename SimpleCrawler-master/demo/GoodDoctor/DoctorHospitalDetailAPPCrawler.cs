@@ -136,8 +136,12 @@ namespace SimpleCrawler.Demo
            return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010");
         }
         
+#pragma warning disable CS0414 // 字段“DoctorHospitalDetailAPPCrawler.pageSize”已被赋值，但从未使用过它的值
         int pageSize = 20;//24
+#pragma warning restore CS0414 // 字段“DoctorHospitalDetailAPPCrawler.pageSize”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“DoctorHospitalDetailAPPCrawler.pageSkipNum”已被赋值，但从未使用过它的值
         int pageSkipNum = 0;
+#pragma warning restore CS0414 // 字段“DoctorHospitalDetailAPPCrawler.pageSkipNum”已被赋值，但从未使用过它的值
          
         string materialUrl = "http://mobile-api.haodf.com/patientapi/hospital_getHospitalBaseInfoNew";
         string curUrl = string.Empty;

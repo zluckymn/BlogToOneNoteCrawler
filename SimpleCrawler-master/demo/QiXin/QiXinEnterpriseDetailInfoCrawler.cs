@@ -372,12 +372,16 @@ namespace SimpleCrawler.Demo
                   
                     return false;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     canSimulateLoginEx = false;
                     IPInvalidProcess(ipProxy);
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     canSimulateLoginEx = false;
                     IPInvalidProcess(ipProxy);

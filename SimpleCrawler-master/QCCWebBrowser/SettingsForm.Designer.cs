@@ -32,6 +32,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.button4 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -54,25 +55,51 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.deviceTableTxt = new System.Windows.Forms.TextBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.keyWordMaxCountTxt = new System.Windows.Forms.TextBox();
+            this.keyWordMaxCountLbl = new System.Windows.Forms.Label();
+            this.SearchTakeCountLimitTXT = new System.Windows.Forms.TextBox();
+            this.SearchCustomCategoryNameTXT = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.subIndustryCodeTXT = new System.Windows.Forms.TextBox();
+            this.industryCodeTXT = new System.Windows.Forms.TextBox();
+            this.keyWordRTxt = new System.Windows.Forms.RichTextBox();
             this.searchKeyTypeComBox = new System.Windows.Forms.ComboBox();
             this.button3 = new System.Windows.Forms.Button();
             this.moreDetailInfoCHK = new System.Windows.Forms.CheckBox();
+            this.globalDBHasPassWordChk = new System.Windows.Forms.CheckBox();
             this.isProvinceCHK = new System.Windows.Forms.CheckBox();
             this.industryCHK = new System.Windows.Forms.CheckBox();
             this.onlyDateUpdateCHK = new System.Windows.Forms.CheckBox();
             this.GRegistCapiEndTxt = new System.Windows.Forms.TextBox();
             this.GRegistCapiBeginTxt = new System.Windows.Forms.TextBox();
+            this.enterprisePortTxt = new System.Windows.Forms.TextBox();
+            this.globalDBNameTxt = new System.Windows.Forms.TextBox();
             this.enterpriseIpTxt = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.keyWordRTxt = new System.Windows.Forms.RichTextBox();
-            this.label15 = new System.Windows.Forms.Label();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
@@ -105,6 +132,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.button4);
             this.groupBox1.Controls.Add(this.button2);
             this.groupBox1.Controls.Add(this.comboBox1);
             this.groupBox1.Controls.Add(this.label10);
@@ -133,6 +161,16 @@
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "AppSetting";
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(415, 310);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(150, 23);
+            this.button4.TabIndex = 5;
+            this.button4.Text = "刷新全库token";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // button2
             // 
@@ -294,12 +332,15 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(595, 399);
             this.tabControl1.TabIndex = 4;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -314,20 +355,39 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button6);
+            this.tabPage2.Controls.Add(this.button5);
+            this.tabPage2.Controls.Add(this.deviceTableTxt);
+            this.tabPage2.Controls.Add(this.label22);
+            this.tabPage2.Controls.Add(this.keyWordMaxCountTxt);
+            this.tabPage2.Controls.Add(this.keyWordMaxCountLbl);
+            this.tabPage2.Controls.Add(this.SearchTakeCountLimitTXT);
+            this.tabPage2.Controls.Add(this.SearchCustomCategoryNameTXT);
+            this.tabPage2.Controls.Add(this.label17);
+            this.tabPage2.Controls.Add(this.subIndustryCodeTXT);
+            this.tabPage2.Controls.Add(this.industryCodeTXT);
             this.tabPage2.Controls.Add(this.keyWordRTxt);
             this.tabPage2.Controls.Add(this.searchKeyTypeComBox);
             this.tabPage2.Controls.Add(this.button3);
             this.tabPage2.Controls.Add(this.moreDetailInfoCHK);
+            this.tabPage2.Controls.Add(this.globalDBHasPassWordChk);
             this.tabPage2.Controls.Add(this.isProvinceCHK);
             this.tabPage2.Controls.Add(this.industryCHK);
             this.tabPage2.Controls.Add(this.onlyDateUpdateCHK);
             this.tabPage2.Controls.Add(this.GRegistCapiEndTxt);
             this.tabPage2.Controls.Add(this.GRegistCapiBeginTxt);
+            this.tabPage2.Controls.Add(this.enterprisePortTxt);
+            this.tabPage2.Controls.Add(this.globalDBNameTxt);
             this.tabPage2.Controls.Add(this.enterpriseIpTxt);
             this.tabPage2.Controls.Add(this.label14);
             this.tabPage2.Controls.Add(this.label15);
+            this.tabPage2.Controls.Add(this.label16);
+            this.tabPage2.Controls.Add(this.label19);
+            this.tabPage2.Controls.Add(this.label18);
             this.tabPage2.Controls.Add(this.label12);
             this.tabPage2.Controls.Add(this.label13);
+            this.tabPage2.Controls.Add(this.label20);
+            this.tabPage2.Controls.Add(this.label21);
             this.tabPage2.Controls.Add(this.label11);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
@@ -336,6 +396,86 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "全局变量";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // deviceTableTxt
+            // 
+            this.deviceTableTxt.Location = new System.Drawing.Point(138, 227);
+            this.deviceTableTxt.Name = "deviceTableTxt";
+            this.deviceTableTxt.Size = new System.Drawing.Size(133, 21);
+            this.deviceTableTxt.TabIndex = 13;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(18, 237);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(113, 12);
+            this.label22.TabIndex = 12;
+            this.label22.Text = "设备KeyTableName：";
+            // 
+            // keyWordMaxCountTxt
+            // 
+            this.keyWordMaxCountTxt.Location = new System.Drawing.Point(138, 199);
+            this.keyWordMaxCountTxt.Name = "keyWordMaxCountTxt";
+            this.keyWordMaxCountTxt.Size = new System.Drawing.Size(133, 21);
+            this.keyWordMaxCountTxt.TabIndex = 11;
+            this.keyWordMaxCountTxt.Text = "-1";
+            // 
+            // keyWordMaxCountLbl
+            // 
+            this.keyWordMaxCountLbl.AutoSize = true;
+            this.keyWordMaxCountLbl.Location = new System.Drawing.Point(18, 202);
+            this.keyWordMaxCountLbl.Name = "keyWordMaxCountLbl";
+            this.keyWordMaxCountLbl.Size = new System.Drawing.Size(113, 12);
+            this.keyWordMaxCountLbl.TabIndex = 10;
+            this.keyWordMaxCountLbl.Text = "关键最多爬取个数：";
+            // 
+            // SearchTakeCountLimitTXT
+            // 
+            this.SearchTakeCountLimitTXT.Location = new System.Drawing.Point(375, 175);
+            this.SearchTakeCountLimitTXT.Name = "SearchTakeCountLimitTXT";
+            this.SearchTakeCountLimitTXT.Size = new System.Drawing.Size(121, 21);
+            this.SearchTakeCountLimitTXT.TabIndex = 9;
+            this.SearchTakeCountLimitTXT.Text = "-1";
+            // 
+            // SearchCustomCategoryNameTXT
+            // 
+            this.SearchCustomCategoryNameTXT.Location = new System.Drawing.Point(138, 175);
+            this.SearchCustomCategoryNameTXT.Name = "SearchCustomCategoryNameTXT";
+            this.SearchCustomCategoryNameTXT.Size = new System.Drawing.Size(133, 21);
+            this.SearchCustomCategoryNameTXT.TabIndex = 8;
+            this.SearchCustomCategoryNameTXT.Text = "蔬菜";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(281, 116);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(77, 12);
+            this.label17.TabIndex = 7;
+            this.label17.Text = "子行业代码：";
+            // 
+            // subIndustryCodeTXT
+            // 
+            this.subIndustryCodeTXT.Location = new System.Drawing.Point(375, 116);
+            this.subIndustryCodeTXT.Name = "subIndustryCodeTXT";
+            this.subIndustryCodeTXT.Size = new System.Drawing.Size(121, 21);
+            this.subIndustryCodeTXT.TabIndex = 6;
+            // 
+            // industryCodeTXT
+            // 
+            this.industryCodeTXT.Location = new System.Drawing.Point(138, 113);
+            this.industryCodeTXT.Name = "industryCodeTXT";
+            this.industryCodeTXT.Size = new System.Drawing.Size(133, 21);
+            this.industryCodeTXT.TabIndex = 6;
+            // 
+            // keyWordRTxt
+            // 
+            this.keyWordRTxt.Location = new System.Drawing.Point(138, 267);
+            this.keyWordRTxt.Name = "keyWordRTxt";
+            this.keyWordRTxt.Size = new System.Drawing.Size(358, 72);
+            this.keyWordRTxt.TabIndex = 5;
+            this.keyWordRTxt.Text = "";
             // 
             // searchKeyTypeComBox
             // 
@@ -348,13 +488,13 @@
             "address"});
             this.searchKeyTypeComBox.Location = new System.Drawing.Point(138, 145);
             this.searchKeyTypeComBox.Name = "searchKeyTypeComBox";
-            this.searchKeyTypeComBox.Size = new System.Drawing.Size(121, 20);
+            this.searchKeyTypeComBox.Size = new System.Drawing.Size(133, 20);
             this.searchKeyTypeComBox.TabIndex = 4;
             this.searchKeyTypeComBox.SelectedIndexChanged += new System.EventHandler(this.searchKeyTypeComBox_SelectedIndexChanged);
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(226, 338);
+            this.button3.Location = new System.Drawing.Point(226, 343);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 23);
             this.button3.TabIndex = 3;
@@ -372,9 +512,23 @@
             this.moreDetailInfoCHK.Text = "是否爬取背后关系";
             this.moreDetailInfoCHK.UseVisualStyleBackColor = true;
             // 
+            // globalDBHasPassWordChk
+            // 
+            this.globalDBHasPassWordChk.AutoSize = true;
+            this.globalDBHasPassWordChk.Checked = true;
+            this.globalDBHasPassWordChk.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.globalDBHasPassWordChk.Location = new System.Drawing.Point(376, 36);
+            this.globalDBHasPassWordChk.Name = "globalDBHasPassWordChk";
+            this.globalDBHasPassWordChk.Size = new System.Drawing.Size(120, 16);
+            this.globalDBHasPassWordChk.TabIndex = 2;
+            this.globalDBHasPassWordChk.Text = "数据库是否有密码";
+            this.globalDBHasPassWordChk.UseVisualStyleBackColor = true;
+            // 
             // isProvinceCHK
             // 
             this.isProvinceCHK.AutoSize = true;
+            this.isProvinceCHK.Checked = true;
+            this.isProvinceCHK.CheckState = System.Windows.Forms.CheckState.Checked;
             this.isProvinceCHK.Location = new System.Drawing.Point(283, 61);
             this.isProvinceCHK.Name = "isProvinceCHK";
             this.isProvinceCHK.Size = new System.Drawing.Size(84, 16);
@@ -395,6 +549,8 @@
             // onlyDateUpdateCHK
             // 
             this.onlyDateUpdateCHK.AutoSize = true;
+            this.onlyDateUpdateCHK.Checked = true;
+            this.onlyDateUpdateCHK.CheckState = System.Windows.Forms.CheckState.Checked;
             this.onlyDateUpdateCHK.Location = new System.Drawing.Point(138, 61);
             this.onlyDateUpdateCHK.Name = "onlyDateUpdateCHK";
             this.onlyDateUpdateCHK.Size = new System.Drawing.Size(120, 16);
@@ -406,23 +562,38 @@
             // 
             this.GRegistCapiEndTxt.Location = new System.Drawing.Point(376, 80);
             this.GRegistCapiEndTxt.Name = "GRegistCapiEndTxt";
-            this.GRegistCapiEndTxt.Size = new System.Drawing.Size(98, 21);
+            this.GRegistCapiEndTxt.Size = new System.Drawing.Size(120, 21);
             this.GRegistCapiEndTxt.TabIndex = 1;
             // 
             // GRegistCapiBeginTxt
             // 
             this.GRegistCapiBeginTxt.Location = new System.Drawing.Point(138, 80);
             this.GRegistCapiBeginTxt.Name = "GRegistCapiBeginTxt";
-            this.GRegistCapiBeginTxt.Size = new System.Drawing.Size(120, 21);
+            this.GRegistCapiBeginTxt.Size = new System.Drawing.Size(133, 21);
             this.GRegistCapiBeginTxt.TabIndex = 1;
+            // 
+            // enterprisePortTxt
+            // 
+            this.enterprisePortTxt.Location = new System.Drawing.Point(375, 13);
+            this.enterprisePortTxt.Name = "enterprisePortTxt";
+            this.enterprisePortTxt.Size = new System.Drawing.Size(121, 21);
+            this.enterprisePortTxt.TabIndex = 1;
+            this.enterprisePortTxt.Text = "37088";
+            // 
+            // globalDBNameTxt
+            // 
+            this.globalDBNameTxt.Location = new System.Drawing.Point(138, 36);
+            this.globalDBNameTxt.Name = "globalDBNameTxt";
+            this.globalDBNameTxt.Size = new System.Drawing.Size(133, 21);
+            this.globalDBNameTxt.TabIndex = 1;
             // 
             // enterpriseIpTxt
             // 
             this.enterpriseIpTxt.Location = new System.Drawing.Point(138, 13);
             this.enterpriseIpTxt.Name = "enterpriseIpTxt";
-            this.enterpriseIpTxt.Size = new System.Drawing.Size(362, 21);
+            this.enterpriseIpTxt.Size = new System.Drawing.Size(133, 21);
             this.enterpriseIpTxt.TabIndex = 1;
-            this.enterpriseIpTxt.Text = "192.168.1.124";
+            this.enterpriseIpTxt.Text = "192.168.1.121";
             // 
             // label14
             // 
@@ -432,6 +603,42 @@
             this.label14.Size = new System.Drawing.Size(89, 12);
             this.label14.TabIndex = 0;
             this.label14.Text = "注册金额结束：";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(18, 267);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(77, 12);
+            this.label15.TabIndex = 0;
+            this.label15.Text = "爬取关键字：";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(18, 116);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(89, 12);
+            this.label16.TabIndex = 0;
+            this.label16.Text = "限定行业代码：";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(281, 184);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(89, 12);
+            this.label19.TabIndex = 0;
+            this.label19.Text = "限制保存条数：";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(18, 175);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(101, 12);
+            this.label18.TabIndex = 0;
+            this.label18.Text = "自定义数据源名：";
             // 
             // label12
             // 
@@ -451,6 +658,24 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "注册金额开始：";
             // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(317, 16);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(41, 12);
+            this.label20.TabIndex = 0;
+            this.label20.Text = "端口：";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(18, 40);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(65, 12);
+            this.label21.TabIndex = 0;
+            this.label21.Text = "数据库名：";
+            // 
             // label11
             // 
             this.label11.AutoSize = true;
@@ -460,22 +685,72 @@
             this.label11.TabIndex = 0;
             this.label11.Text = "enterpriseIp：";
             // 
-            // keyWordRTxt
+            // tabPage3
             // 
-            this.keyWordRTxt.Location = new System.Drawing.Point(138, 187);
-            this.keyWordRTxt.Name = "keyWordRTxt";
-            this.keyWordRTxt.Size = new System.Drawing.Size(362, 122);
-            this.keyWordRTxt.TabIndex = 5;
-            this.keyWordRTxt.Text = "";
+            this.tabPage3.Controls.Add(this.richTextBox1);
+            this.tabPage3.Controls.Add(this.treeView1);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(587, 373);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "拆分树";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // label15
+            // richTextBox1
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(18, 221);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(77, 12);
-            this.label15.TabIndex = 0;
-            this.label15.Text = "爬取关键字：";
+            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.richTextBox1.Location = new System.Drawing.Point(0, 277);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(587, 96);
+            this.richTextBox1.TabIndex = 1;
+            this.richTextBox1.Text = "";
+            // 
+            // treeView1
+            // 
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView1.Location = new System.Drawing.Point(0, 3);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(584, 280);
+            this.treeView1.TabIndex = 0;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.richTextBox2);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(587, 373);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "无效账号";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox2
+            // 
+            this.richTextBox2.Location = new System.Drawing.Point(3, 3);
+            this.richTextBox2.Name = "richTextBox2";
+            this.richTextBox2.Size = new System.Drawing.Size(576, 362);
+            this.richTextBox2.TabIndex = 0;
+            this.richTextBox2.Text = "";
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(506, 11);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 14;
+            this.button5.Text = "一键切换";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(294, 225);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(75, 23);
+            this.button6.TabIndex = 15;
+            this.button6.Text = "加载";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // SettingsForm
             // 
@@ -492,6 +767,8 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -539,5 +816,30 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.RichTextBox keyWordRTxt;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox subIndustryCodeTXT;
+        private System.Windows.Forms.TextBox industryCodeTXT;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox SearchTakeCountLimitTXT;
+        private System.Windows.Forms.TextBox SearchCustomCategoryNameTXT;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox keyWordMaxCountTxt;
+        private System.Windows.Forms.Label keyWordMaxCountLbl;
+        private System.Windows.Forms.TextBox enterprisePortTxt;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.CheckBox globalDBHasPassWordChk;
+        private System.Windows.Forms.TextBox globalDBNameTxt;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.TextBox deviceTableTxt;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
     }
 }

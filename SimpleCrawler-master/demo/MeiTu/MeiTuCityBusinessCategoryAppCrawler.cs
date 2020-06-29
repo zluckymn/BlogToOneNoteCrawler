@@ -18,6 +18,7 @@ using Yinhe.ProcessingCenter.DataRule;
 using System.Collections;
 using Newtonsoft.Json.Linq;
 using LibCurlNet;
+using Helpers;
 
 namespace SimpleCrawler.Demo
 {
@@ -540,7 +541,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             if (Settings.LandFangIUserId == 0)
+#pragma warning restore CS0162 // 检测到无法访问的代码
             {
                 var hitAccount = dataop.FindOneByQuery(DataTableNameAccount, Query.EQ("userName", "savegod523"));
                 if (hitAccount != null)

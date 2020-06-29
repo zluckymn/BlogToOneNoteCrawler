@@ -17,7 +17,8 @@
             {
                 components.Dispose();
             }
-            base.Dispose(disposing);
+             base.Dispose(disposing);
+             
         }
 
         #region Windows 窗体设计器生成的代码
@@ -93,6 +94,23 @@
             this.keyWordSourceCHK = new System.Windows.Forms.CheckBox();
             this.label10 = new System.Windows.Forms.Label();
             this.MaxAccountCrawlerCountTxt = new System.Windows.Forms.TextBox();
+            this.quickChangeAccountChk = new System.Windows.Forms.CheckBox();
+            this.industryFilterChk = new System.Windows.Forms.CheckBox();
+            this.button14 = new System.Windows.Forms.Button();
+            this.quickModeChk = new System.Windows.Forms.CheckBox();
+            this.requestNewVersionCHk = new System.Windows.Forms.CheckBox();
+            this.updateEndDateTxt = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.onlySpecialCityChk = new System.Windows.Forms.CheckBox();
+            this.mqPushChk = new System.Windows.Forms.CheckBox();
+            this.useCustomerKeyWordCHK = new System.Windows.Forms.CheckBox();
+            this.button15 = new System.Windows.Forms.Button();
+            this.button16 = new System.Windows.Forms.Button();
+            this.button17 = new System.Windows.Forms.Button();
+            this.changeValidBtn = new System.Windows.Forms.Button();
+            this.isUpCrawDetailCHK = new System.Windows.Forms.CheckBox();
+            this.ignoreCancelChk = new System.Windows.Forms.CheckBox();
+            this.existedUpdateChk = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // webBrowser
@@ -100,11 +118,11 @@
             this.webBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.webBrowser.Location = new System.Drawing.Point(-11, 71);
+            this.webBrowser.Location = new System.Drawing.Point(-11, 116);
             this.webBrowser.MinimumSize = new System.Drawing.Size(20, 20);
             this.webBrowser.Name = "webBrowser";
             this.webBrowser.ScriptErrorsSuppressed = true;
-            this.webBrowser.Size = new System.Drawing.Size(1257, 562);
+            this.webBrowser.Size = new System.Drawing.Size(1257, 277);
             this.webBrowser.TabIndex = 0;
             this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser_DocumentCompleted);
             this.webBrowser.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.webBrowser_Navigated);
@@ -112,12 +130,11 @@
             // 
             // richTextBoxInfo
             // 
-            this.richTextBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.richTextBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBoxInfo.Location = new System.Drawing.Point(-1, 656);
+            this.richTextBoxInfo.Location = new System.Drawing.Point(-1, 433);
             this.richTextBoxInfo.Name = "richTextBoxInfo";
-            this.richTextBoxInfo.Size = new System.Drawing.Size(1257, 59);
+            this.richTextBoxInfo.Size = new System.Drawing.Size(1257, 90);
             this.richTextBoxInfo.TabIndex = 1;
             this.richTextBoxInfo.Text = "";
             // 
@@ -125,9 +142,9 @@
             // 
             this.richTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox.Location = new System.Drawing.Point(-1, 721);
+            this.richTextBox.Location = new System.Drawing.Point(-1, 529);
             this.richTextBox.Name = "richTextBox";
-            this.richTextBox.Size = new System.Drawing.Size(1257, 17);
+            this.richTextBox.Size = new System.Drawing.Size(1257, 23);
             this.richTextBox.TabIndex = 2;
             this.richTextBox.Text = "";
             // 
@@ -361,7 +378,8 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1160, 631);
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button2.Location = new System.Drawing.Point(1160, 400);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(89, 23);
             this.button2.TabIndex = 20;
@@ -441,7 +459,8 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(1063, 631);
+            this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button5.Location = new System.Drawing.Point(1063, 400);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(96, 23);
             this.button5.TabIndex = 28;
@@ -461,7 +480,8 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(985, 631);
+            this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button6.Location = new System.Drawing.Point(985, 400);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(75, 23);
             this.button6.TabIndex = 29;
@@ -471,7 +491,8 @@
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(823, 631);
+            this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button7.Location = new System.Drawing.Point(823, 400);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(75, 23);
             this.button7.TabIndex = 30;
@@ -481,7 +502,8 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(742, 631);
+            this.button8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button8.Location = new System.Drawing.Point(742, 400);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(75, 23);
             this.button8.TabIndex = 31;
@@ -496,7 +518,8 @@
             // 
             // button9
             // 
-            this.button9.Location = new System.Drawing.Point(904, 631);
+            this.button9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button9.Location = new System.Drawing.Point(904, 400);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(75, 23);
             this.button9.TabIndex = 32;
@@ -506,7 +529,8 @@
             // 
             // button10
             // 
-            this.button10.Location = new System.Drawing.Point(627, 631);
+            this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button10.Location = new System.Drawing.Point(627, 400);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(109, 23);
             this.button10.TabIndex = 33;
@@ -516,7 +540,7 @@
             // 
             // button11
             // 
-            this.button11.Location = new System.Drawing.Point(1121, 592);
+            this.button11.Location = new System.Drawing.Point(1121, 320);
             this.button11.Name = "button11";
             this.button11.Size = new System.Drawing.Size(91, 23);
             this.button11.TabIndex = 34;
@@ -526,11 +550,10 @@
             // 
             // EnterpriseKeySuffixTxt
             // 
-            this.EnterpriseKeySuffixTxt.Location = new System.Drawing.Point(263, 26);
+            this.EnterpriseKeySuffixTxt.Location = new System.Drawing.Point(249, 26);
             this.EnterpriseKeySuffixTxt.Name = "EnterpriseKeySuffixTxt";
             this.EnterpriseKeySuffixTxt.Size = new System.Drawing.Size(100, 21);
             this.EnterpriseKeySuffixTxt.TabIndex = 35;
-            this.EnterpriseKeySuffixTxt.Text = "test";
             // 
             // singalKeyWordCHK
             // 
@@ -596,7 +619,8 @@
             // 
             // button13
             // 
-            this.button13.Location = new System.Drawing.Point(454, 631);
+            this.button13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button13.Location = new System.Drawing.Point(454, 400);
             this.button13.Name = "button13";
             this.button13.Size = new System.Drawing.Size(75, 23);
             this.button13.TabIndex = 40;
@@ -626,7 +650,7 @@
             this.updateDateTxt.Name = "updateDateTxt";
             this.updateDateTxt.Size = new System.Drawing.Size(60, 21);
             this.updateDateTxt.TabIndex = 42;
-            this.updateDateTxt.Text = "20171222";
+            this.updateDateTxt.Text = "20180101";
             // 
             // label8
             // 
@@ -640,16 +664,16 @@
             // proxyListCB
             // 
             this.proxyListCB.FormattingEnabled = true;
-            this.proxyListCB.Location = new System.Drawing.Point(187, 49);
+            this.proxyListCB.Location = new System.Drawing.Point(74, 68);
             this.proxyListCB.Name = "proxyListCB";
-            this.proxyListCB.Size = new System.Drawing.Size(126, 20);
+            this.proxyListCB.Size = new System.Drawing.Size(143, 20);
             this.proxyListCB.TabIndex = 44;
             this.proxyListCB.SelectedIndexChanged += new System.EventHandler(this.proxyListCB_SelectedIndexChanged);
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(140, 54);
+            this.label9.Location = new System.Drawing.Point(12, 74);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(41, 12);
             this.label9.TabIndex = 45;
@@ -658,13 +682,11 @@
             // keyWordSourceCHK
             // 
             this.keyWordSourceCHK.AutoSize = true;
-            this.keyWordSourceCHK.Checked = true;
-            this.keyWordSourceCHK.CheckState = System.Windows.Forms.CheckState.Checked;
             this.keyWordSourceCHK.Location = new System.Drawing.Point(330, 53);
             this.keyWordSourceCHK.Name = "keyWordSourceCHK";
-            this.keyWordSourceCHK.Size = new System.Drawing.Size(120, 16);
+            this.keyWordSourceCHK.Size = new System.Drawing.Size(150, 16);
             this.keyWordSourceCHK.TabIndex = 47;
-            this.keyWordSourceCHK.Text = "是否使用企业分类";
+            this.keyWordSourceCHK.Text = "使用企业分类/更多分类";
             this.keyWordSourceCHK.UseVisualStyleBackColor = true;
             // 
             // label10
@@ -682,18 +704,210 @@
             this.MaxAccountCrawlerCountTxt.Name = "MaxAccountCrawlerCountTxt";
             this.MaxAccountCrawlerCountTxt.Size = new System.Drawing.Size(61, 21);
             this.MaxAccountCrawlerCountTxt.TabIndex = 48;
-            this.MaxAccountCrawlerCountTxt.Text = "150";
+            this.MaxAccountCrawlerCountTxt.Text = "30";
+            // 
+            // quickChangeAccountChk
+            // 
+            this.quickChangeAccountChk.AutoSize = true;
+            this.quickChangeAccountChk.Location = new System.Drawing.Point(885, 70);
+            this.quickChangeAccountChk.Name = "quickChangeAccountChk";
+            this.quickChangeAccountChk.Size = new System.Drawing.Size(132, 16);
+            this.quickChangeAccountChk.TabIndex = 49;
+            this.quickChangeAccountChk.Text = "QuickChangeAccount";
+            this.quickChangeAccountChk.UseVisualStyleBackColor = true;
+            // 
+            // industryFilterChk
+            // 
+            this.industryFilterChk.AutoSize = true;
+            this.industryFilterChk.Location = new System.Drawing.Point(1019, 72);
+            this.industryFilterChk.Name = "industryFilterChk";
+            this.industryFilterChk.Size = new System.Drawing.Size(96, 16);
+            this.industryFilterChk.TabIndex = 50;
+            this.industryFilterChk.Text = "是否产业细分";
+            this.industryFilterChk.UseVisualStyleBackColor = true;
+            // 
+            // button14
+            // 
+            this.button14.Location = new System.Drawing.Point(249, 47);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(75, 23);
+            this.button14.TabIndex = 51;
+            this.button14.Text = "最后更新日";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click);
+            // 
+            // quickModeChk
+            // 
+            this.quickModeChk.AutoSize = true;
+            this.quickModeChk.Location = new System.Drawing.Point(657, 70);
+            this.quickModeChk.Name = "quickModeChk";
+            this.quickModeChk.Size = new System.Drawing.Size(216, 16);
+            this.quickModeChk.TabIndex = 52;
+            this.quickModeChk.Text = "是否快速模式（不细分城市）V3使用";
+            this.quickModeChk.UseVisualStyleBackColor = true;
+            // 
+            // requestNewVersionCHk
+            // 
+            this.requestNewVersionCHk.AutoSize = true;
+            this.requestNewVersionCHk.Location = new System.Drawing.Point(562, 72);
+            this.requestNewVersionCHk.Name = "requestNewVersionCHk";
+            this.requestNewVersionCHk.Size = new System.Drawing.Size(96, 16);
+            this.requestNewVersionCHk.TabIndex = 53;
+            this.requestNewVersionCHk.Text = "请求新V3接口";
+            this.requestNewVersionCHk.UseVisualStyleBackColor = true;
+            this.requestNewVersionCHk.CheckedChanged += new System.EventHandler(this.requestNewVersionCHk_CheckedChanged);
+            // 
+            // updateEndDateTxt
+            // 
+            this.updateEndDateTxt.Location = new System.Drawing.Point(157, 48);
+            this.updateEndDateTxt.Name = "updateEndDateTxt";
+            this.updateEndDateTxt.Size = new System.Drawing.Size(60, 21);
+            this.updateEndDateTxt.TabIndex = 42;
+            this.updateEndDateTxt.Text = "20200101";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(140, 50);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(11, 12);
+            this.label11.TabIndex = 54;
+            this.label11.Text = "-";
+            // 
+            // onlySpecialCityChk
+            // 
+            this.onlySpecialCityChk.AutoSize = true;
+            this.onlySpecialCityChk.Location = new System.Drawing.Point(399, 71);
+            this.onlySpecialCityChk.Name = "onlySpecialCityChk";
+            this.onlySpecialCityChk.Size = new System.Drawing.Size(156, 16);
+            this.onlySpecialCityChk.TabIndex = 55;
+            this.onlySpecialCityChk.Text = "北京，上海，天津，重庆";
+            this.onlySpecialCityChk.UseVisualStyleBackColor = true;
+            // 
+            // mqPushChk
+            // 
+            this.mqPushChk.AutoSize = true;
+            this.mqPushChk.Location = new System.Drawing.Point(249, 72);
+            this.mqPushChk.Name = "mqPushChk";
+            this.mqPushChk.Size = new System.Drawing.Size(132, 16);
+            this.mqPushChk.TabIndex = 56;
+            this.mqPushChk.Text = "推送获取的消息到MQ";
+            this.mqPushChk.UseVisualStyleBackColor = true;
+            this.mqPushChk.CheckedChanged += new System.EventHandler(this.mqPushChk_CheckedChanged);
+            // 
+            // useCustomerKeyWordCHK
+            // 
+            this.useCustomerKeyWordCHK.AutoSize = true;
+            this.useCustomerKeyWordCHK.Location = new System.Drawing.Point(1112, 70);
+            this.useCustomerKeyWordCHK.Name = "useCustomerKeyWordCHK";
+            this.useCustomerKeyWordCHK.Size = new System.Drawing.Size(144, 16);
+            this.useCustomerKeyWordCHK.TabIndex = 57;
+            this.useCustomerKeyWordCHK.Text = "是否使用自定义数据源";
+            this.useCustomerKeyWordCHK.UseVisualStyleBackColor = true;
+            // 
+            // button15
+            // 
+            this.button15.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button15.Location = new System.Drawing.Point(298, 399);
+            this.button15.Name = "button15";
+            this.button15.Size = new System.Drawing.Size(75, 23);
+            this.button15.TabIndex = 58;
+            this.button15.Text = "测试方法";
+            this.button15.UseVisualStyleBackColor = true;
+            this.button15.Click += new System.EventHandler(this.button15_Click);
+            // 
+            // button16
+            // 
+            this.button16.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button16.Location = new System.Drawing.Point(199, 400);
+            this.button16.Name = "button16";
+            this.button16.Size = new System.Drawing.Size(75, 23);
+            this.button16.TabIndex = 59;
+            this.button16.Text = "跳转搜索页";
+            this.button16.UseVisualStyleBackColor = true;
+            this.button16.Click += new System.EventHandler(this.button16_Click);
+            // 
+            // button17
+            // 
+            this.button17.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button17.Location = new System.Drawing.Point(14, 400);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(75, 23);
+            this.button17.TabIndex = 60;
+            this.button17.Text = "退出登陆";
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
+            // 
+            // changeValidBtn
+            // 
+            this.changeValidBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.changeValidBtn.Location = new System.Drawing.Point(95, 399);
+            this.changeValidBtn.Name = "changeValidBtn";
+            this.changeValidBtn.Size = new System.Drawing.Size(104, 23);
+            this.changeValidBtn.TabIndex = 61;
+            this.changeValidBtn.Text = "设置为有效账号";
+            this.changeValidBtn.UseVisualStyleBackColor = true;
+            this.changeValidBtn.Click += new System.EventHandler(this.changeValidBtn_Click);
+            // 
+            // isUpCrawDetailCHK
+            // 
+            this.isUpCrawDetailCHK.AutoSize = true;
+            this.isUpCrawDetailCHK.Checked = true;
+            this.isUpCrawDetailCHK.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.isUpCrawDetailCHK.Location = new System.Drawing.Point(14, 94);
+            this.isUpCrawDetailCHK.Name = "isUpCrawDetailCHK";
+            this.isUpCrawDetailCHK.Size = new System.Drawing.Size(120, 16);
+            this.isUpCrawDetailCHK.TabIndex = 62;
+            this.isUpCrawDetailCHK.Text = "是否上传爬取信息";
+            this.isUpCrawDetailCHK.UseVisualStyleBackColor = true;
+            // 
+            // ignoreCancelChk
+            // 
+            this.ignoreCancelChk.AutoSize = true;
+            this.ignoreCancelChk.Location = new System.Drawing.Point(157, 94);
+            this.ignoreCancelChk.Name = "ignoreCancelChk";
+            this.ignoreCancelChk.Size = new System.Drawing.Size(120, 16);
+            this.ignoreCancelChk.TabIndex = 63;
+            this.ignoreCancelChk.Text = "是否过滤注销信息";
+            this.ignoreCancelChk.UseVisualStyleBackColor = true;
+            // 
+            // existedUpdateChk
+            // 
+            this.existedUpdateChk.AutoSize = true;
+            this.existedUpdateChk.Location = new System.Drawing.Point(298, 93);
+            this.existedUpdateChk.Name = "existedUpdateChk";
+            this.existedUpdateChk.Size = new System.Drawing.Size(144, 16);
+            this.existedUpdateChk.TabIndex = 64;
+            this.existedUpdateChk.Text = "存在是否更新现有数据";
+            this.existedUpdateChk.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1258, 742);
+            this.ClientSize = new System.Drawing.Size(1258, 549);
+            this.Controls.Add(this.existedUpdateChk);
+            this.Controls.Add(this.ignoreCancelChk);
+            this.Controls.Add(this.isUpCrawDetailCHK);
+            this.Controls.Add(this.changeValidBtn);
+            this.Controls.Add(this.button17);
+            this.Controls.Add(this.button16);
+            this.Controls.Add(this.button15);
+            this.Controls.Add(this.useCustomerKeyWordCHK);
+            this.Controls.Add(this.mqPushChk);
+            this.Controls.Add(this.onlySpecialCityChk);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.requestNewVersionCHk);
+            this.Controls.Add(this.quickModeChk);
+            this.Controls.Add(this.button14);
+            this.Controls.Add(this.industryFilterChk);
+            this.Controls.Add(this.quickChangeAccountChk);
             this.Controls.Add(this.MaxAccountCrawlerCountTxt);
             this.Controls.Add(this.keyWordSourceCHK);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.proxyListCB);
             this.Controls.Add(this.label8);
+            this.Controls.Add(this.updateEndDateTxt);
             this.Controls.Add(this.updateDateTxt);
             this.Controls.Add(this.KeyWordFilterTextBox);
             this.Controls.Add(this.button13);
@@ -751,7 +965,6 @@
             this.Name = "Form1";
             this.Text = "企查查";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -824,6 +1037,23 @@
         private System.Windows.Forms.CheckBox keyWordSourceCHK;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox MaxAccountCrawlerCountTxt;
+        private System.Windows.Forms.CheckBox quickChangeAccountChk;
+        private System.Windows.Forms.CheckBox industryFilterChk;
+        private System.Windows.Forms.Button button14;
+        private System.Windows.Forms.CheckBox quickModeChk;
+        private System.Windows.Forms.CheckBox requestNewVersionCHk;
+        private System.Windows.Forms.TextBox updateEndDateTxt;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.CheckBox onlySpecialCityChk;
+        private System.Windows.Forms.CheckBox mqPushChk;
+        private System.Windows.Forms.CheckBox useCustomerKeyWordCHK;
+        private System.Windows.Forms.Button button15;
+        private System.Windows.Forms.Button button16;
+        private System.Windows.Forms.Button button17;
+        private System.Windows.Forms.Button changeValidBtn;
+        private System.Windows.Forms.CheckBox isUpCrawDetailCHK;
+        private System.Windows.Forms.CheckBox ignoreCancelChk;
+        private System.Windows.Forms.CheckBox existedUpdateChk;
     }
 }
 

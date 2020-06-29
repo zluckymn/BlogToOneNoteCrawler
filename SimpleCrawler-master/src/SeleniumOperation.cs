@@ -7,7 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using OpenQA.Selenium;
+
+ 
 using System;
 
 namespace SimpleCrawler
@@ -30,10 +31,7 @@ namespace SimpleCrawler
     public class SeleniumOperation
     {
         public int Timeout { get; set; }
-
-        public Action<IWebDriver> Action { get; set; }
-
-        public Func<IWebDriver, bool> Condition { get; set; }
+ 
 
     }
 }

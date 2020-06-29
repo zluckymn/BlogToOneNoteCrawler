@@ -137,7 +137,9 @@ namespace SimpleCrawler.Demo
            
             
             
+#pragma warning disable CS0219 // 变量“allPage”已被赋值，但从未使用过它的值
             var allPage = 40;
+#pragma warning restore CS0219 // 变量“allPage”已被赋值，但从未使用过它的值
             InitialUrl(1,1);
 
             //Settings.SeedsAddress.Add(string.Format("http://fdc.fang.com/data/land/CitySelect.aspx"));
@@ -298,7 +300,9 @@ namespace SimpleCrawler.Demo
                     return true;
                 }
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
                 return true;
             }

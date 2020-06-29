@@ -218,10 +218,27 @@ namespace SimpleCrawler
                     int hash = this.ComputeHash(primaryHash, secondaryHash, i);
                     this.hashBits[hash] = true;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             }catch(Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
                 canAdd = false;
             }
+        }
+        /// <summary>
+        ///  判断filter 是否包含T对象 如果包含返回true 不包含则添加范围false
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+
+        public bool ContainsAdd(T item)
+        {
+            if (Contains(item))
+            {
+                return true;
+            }
+            Add(item);
+            return false;
         }
 
         /// <summary>

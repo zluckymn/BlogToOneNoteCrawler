@@ -164,7 +164,9 @@ namespace SimpleCrawler.Demo
 
 
             Console.WriteLine("正在获取已存在的url数据");
+#pragma warning disable CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             var partName = "所在地";
+#pragma warning restore CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             Console.WriteLine("正在处理更新数据10页每次100个", landUrlList.Count);
             cityList = dataop.FindAllByQuery("LandFangCityEXURL",Query.NE("type","2")).SetFields("name", "cityCode","type", "provinceCode").ToList();
             for (var i= 1;i < 20; i++){ 

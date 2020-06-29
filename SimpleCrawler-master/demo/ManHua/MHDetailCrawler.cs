@@ -232,6 +232,7 @@ namespace SimpleCrawler.Demo
                     Console.WriteLine("所有下载完成");
                 });
                 Console.ReadLine();
+                
             }
 
         }

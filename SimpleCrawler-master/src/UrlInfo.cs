@@ -74,6 +74,13 @@ namespace SimpleCrawler
         /// Gets the url string.
         /// </summary>
         public string UniqueKey { get; set; }
+
+        /// <summary>
+        /// Gets the extraData string.
+        /// </summary>
+        public string extraData { get; set; }
+
+
         /// <summary>
         ///通过urlsplit次数 通过限制个数节约key的用量
         /// </summary>

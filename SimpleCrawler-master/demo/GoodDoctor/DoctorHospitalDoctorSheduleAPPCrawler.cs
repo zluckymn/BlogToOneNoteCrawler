@@ -137,8 +137,12 @@ namespace SimpleCrawler.Demo
            return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010");
         }
         
+#pragma warning disable CS0414 // 字段“DoctorHospitalDoctorSheduleAPPCrawler.pageSize”已被赋值，但从未使用过它的值
         int pageSize = 10;//24
+#pragma warning restore CS0414 // 字段“DoctorHospitalDoctorSheduleAPPCrawler.pageSize”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“DoctorHospitalDoctorSheduleAPPCrawler.pageIndex”已被赋值，但从未使用过它的值
         int pageIndex = 1;
+#pragma warning restore CS0414 // 字段“DoctorHospitalDoctorSheduleAPPCrawler.pageIndex”已被赋值，但从未使用过它的值
          
         string materialUrl = "http://mobile-api.haodf.com/patientapi/doctor_getScheduleDetailByDoctorId";
         string curUrl = string.Empty;

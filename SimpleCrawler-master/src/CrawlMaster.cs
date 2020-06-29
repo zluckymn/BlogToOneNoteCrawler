@@ -9,7 +9,10 @@
 
 namespace SimpleCrawler
 {
-    using OpenQA.Selenium.PhantomJS;
+   
+    using OpenQA.Selenium;
+    using OpenQA.Selenium.Chrome;
+    using OpenQA.Selenium.Remote;
     using OpenQA.Selenium.Support.UI;
     using System;
     using System.Collections.Generic;
@@ -556,35 +559,47 @@ namespace SimpleCrawler
         /// <param name="urlInfo"></param>
         /// <returns></returns>
         private string GetPhantomJsResult(UrlInfo urlInfo)
-        {   
+        {
             
             var pageSource = string.Empty;
-            var _service = Settings._service;
-            var _options = Settings._options;
-            if (_service == null || _service==null)
-            {
-                Console.WriteLine("使用PhantomJsMode请先Settings.InitPhantomJs()");
+
+            if (Settings.RemoteWebDriver == null) {
+                ChromeOptions options = new ChromeOptions();
+
+                //var proxy = new Proxy();
+                //proxy.Kind = ProxyKind.Manual;
+                //proxy.IsAutoDetect = false;
+                //proxy.HttpProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
+                //proxy.SslProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
+                //options.Proxy = proxy;
+                //options.AddArguments("--proxy-server=http://H1538UM3D6R2133P:511AF06ABED1E7AE@http-pro.abuyun.com:9010");
+                options.AddArgument("ignore-certificate-errors");
+                options.AddArgument("–incognito");
+                options.AddArgument("disable-infobars");
+                
+                Settings.RemoteWebDriver = new ChromeDriver(options) ;
             }
-            var driver = new PhantomJSDriver(_service, _options);//实例化PhantomJS的WebDriver
+            RemoteWebDriver driver = Settings.RemoteWebDriver;
             try
             {
-                ///默认为settings的设置
-                SeleniumScript script = Settings.script;
-                SeleniumOperation operation = Settings.operation;
-                if (urlInfo.script != null)
-                { script = urlInfo.script; }
-                if (urlInfo.operation != null)
-                { operation = urlInfo.operation; }
-
-                var watch = DateTime.Now;
-                driver.Navigate().GoToUrl(urlInfo.UrlString);//请求URL地址
-                if (script != null) driver.ExecuteScript(script.Code, script.Args);//执行Javascript代码
-                if (operation.Action != null) operation.Action.Invoke(driver);
-                var driverWait = new WebDriverWait(driver, TimeSpan.FromMilliseconds(operation.Timeout));//设置超时时间为x毫秒
-                if (operation.Condition != null) driverWait.Until(operation.Condition);
-                var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;//获取当前任务线程ID
-                var milliseconds = DateTime.Now.Subtract(watch).Milliseconds;//获取请求执行时间;
-                pageSource = driver.PageSource;//获取网页Dom结构
+                using (driver)
+                {
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(Settings.operation.Timeout));
+                    driver.Navigate().GoToUrl(string.Format(urlInfo.UrlString));
+                
+                    if (Settings.operation != null)
+                    {
+#pragma warning disable CS0618 // “ExpectedConditions”已过时:“The ExpectedConditions implementation in the .NET bindings is deprecated and will be removed in a future release. This portion of the code has been migrated to the DotNetSeleniumExtras repository on GitHub (https://github.com/DotNetSeleniumTools/DotNetSeleniumExtras)”
+                      wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(@"//*[@id='js-player-title']/div/div[4]/div/span")));
+#pragma warning restore CS0618 // “ExpectedConditions”已过时:“The ExpectedConditions implementation in the .NET bindings is deprecated and will be removed in a future release. This portion of the code has been migrated to the DotNetSeleniumExtras repository on GitHub (https://github.com/DotNetSeleniumTools/DotNetSeleniumExtras)”
+                      driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Settings.operation.Timeout);
+                    }
+                   
+                    pageSource = driver.PageSource;
+                }
+                    //var cookies = driver.Manage().Cookies.AllCookies;
+                    //var cookieStr = string.Join(";", cookies);
+                    //Settings.SimulateCookies = cookieStr;
                 return pageSource;
             }
             catch (Exception ex)
@@ -597,7 +612,9 @@ namespace SimpleCrawler
                 driver.Close();
                 driver.Quit();
             }
+#pragma warning disable CS0162 // 检测到无法访问的代码
             return pageSource;
+#pragma warning restore CS0162 // 检测到无法访问的代码
         }
 
         /// <summary>
@@ -695,9 +712,10 @@ namespace SimpleCrawler
                 URL = url,//URL     必需项    
                                         //URL = "http://luckymn.cn/QuestionAnswer",
                 Method = "get",//URL     可选项 默认为Get   
-                ContentType = "text/html",//返回类型    可选项有默认值 
+               // ContentType = "text/html",//返回类型    可选项有默认值 
                 Timeout = this.Settings.Timeout,
                 UserAgent = this.Settings.UserAgent,
+                Allowautoredirect=this.Settings.Allowautoredirect
             };
 
 
@@ -978,7 +996,9 @@ namespace SimpleCrawler
 
                             url = currentUri.AbsoluteUri;
                         }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                         catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                         {
                             continue;
                         }

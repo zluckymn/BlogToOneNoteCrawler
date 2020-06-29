@@ -16,6 +16,9 @@ using Yinhe.ProcessingCenter;
 
 using Yinhe.ProcessingCenter.DataRule;
 using System.Collections;
+using System.Threading;
+using Helper;
+
 namespace SimpleCrawler.Demo
 {
     /// <summary>
@@ -26,6 +29,7 @@ namespace SimpleCrawler.Demo
 
        
         DataOperation dataop = null;
+        MongoOperation mongoOp = null;
         private CrawlSettings Settings = null;
         LandFangAppHelper appHelper = new LandFangAppHelper();
         private Dictionary<string, string> columnMapDic = new Dictionary<string, string>();
@@ -130,7 +134,10 @@ namespace SimpleCrawler.Demo
         /// <param name="filter"></param>
         public LandFangUserUpdateAPPCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
         {
-            Settings = _Settings; filter = _filter; dataop = _dataop;
+            mongoOp = MongoOpCollection.GetNew121MongoOp_MT("LandFang");
+            dataop =new DataOperation(mongoOp);
+            Settings = _Settings; filter = _filter; 
+            //dataop = _dataop;
         }
         public bool isSpecialUrlMode = false;
         /// <summary>
@@ -156,8 +163,89 @@ namespace SimpleCrawler.Demo
             return string.Format("http://{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010");
             
         }
+        int CurThreadId = 0;
+        internal bool CanLoadNewData()
+        {
+            if (CurThreadId == 0)
+            {
+                CurThreadId = Thread.CurrentThread.ManagedThreadId;
+            }
+            if (UrlQueue.Instance.Count <= 10 && Thread.CurrentThread.ManagedThreadId == CurThreadId)
+            {
+                return true;
+            }
+            return false;
+        }
+        int allCount = 1;
+        public void InitialUrl()
+        {
+            Console.WriteLine("正在获取已存在的url数据");
+            var partName = "所在地";
+            //注意需要定时爬去isSpecialUrl 为1 的url 这些url需要用无账号登陆进行使用
+            //布隆url初始化,防止重复读取url//         "中山", 
+            // ,
+            //var distinctAreaStr = new string[] {"长沙","成都","大连","佛山","福州","广州","杭州","黄山","济南","昆明","龙岩","南昌","南京","宁波","泉州","深圳","苏州","武汉","西安","厦门","烟台","镇江","郑州" };
+            //var distinctAreaStr = new string[] { "北京", "上海", "重庆" };
+            //var distinctAreaStr = new string[] { "长沙", "成都", "大连", "佛山", "福州", "广州", "杭州","佛山", "南京", "深圳", "武汉","西安" };
+            // var cityStr = "南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
+            //var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
+            // var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
+            var cityStr = "保定,成都,广州,杭州,济宁,南宁,宁波,石家庄,潍坊,徐州,烟台,长春,西安,福州,自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥";
+            //var cityStr = "南京";//,
+            var distinctAreaStr = cityStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            var orQuery = Query.In(partName, distinctAreaStr.Select(c => (BsonValue)c));
+            var distincorQuery = Query.In("地区", "北京,上海,天津,重庆".Select(c => (BsonValue)c));
+            isSpecialUrlMode = false;//使用特殊模式表是某些url 需要进行不登陆进行爬去，true代表不登陆爬取
+            var specialUrlQuery = Query.And(Query.NE("isSpecialUrl", "1"));
+            if (isSpecialUrlMode == true)
+            {
+                specialUrlQuery = Query.EQ("isSpecialUrl", "1");
+            }
+            //var orQuery = Query.In("地区", " ");deleteStatus Query.EQ("竞得方", ""),Query.EQ("竞得方", "暂无")
+            var takeCount = 10000;
+            // var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("竞得方", "暂无"),  Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
+            //Query.Or(orQuery, distincorQuery),
+            var query = Query.And(Query.Or( Query.Exists("竞得方", false),Query.EQ("竞得方", "暂无")), Query.NE("updateMonth", DateTime.Now.Month % 6), Query.NE("deleteStatus", "1"));
+            //(Query.NE("deleteStatus", "1"), 
+            if (allCount <=1)
+            {
+                //allCount = 10001;
+               allCount= (int)mongoOp.FindCount(DataTableName, query);
+            }
+           
+            if (allCount <= 10000)
+            {
+                takeCount = allCount;
+            }
+            allCount -= takeCount;
+            var fields = new string[] { "url", "guid", "updateMonth" };
+            landUrlList = mongoOp.FindAll(DataTableName,query).SetFields(fields).SetLimit(takeCount).ToList();//土地url
 
+            //未更新的地块
+            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.EQ("竞得方", "")))).Take(10000).ToList();//土地url
 
+            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And( specialUrlQuery, Query.EQ("needUpdate", "1"))).Take(100000).ToList();//土地url
+            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.Or(Query.Exists("竞得方", false))).Take(10000).ToList();//土地url
+            //  var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
+            Console.WriteLine("待处理数据{0}个", allCount);
+
+            foreach (var cityObj in landUrlList)
+            {
+              
+                var url = cityObj.Text("url");//http://land.fang.com/market/2e81878c-eb62-4687-971f-01b174817207.html
+                var guid = GetGuidFromUrl(url);
+                // var guid = cityObj.Text("sParcelID");
+                if (!string.IsNullOrEmpty(guid))
+                {
+                    var detailUrl = appHelper.InitLandDetailUrl(guid, "143636", "true");
+                    if (!filter.Contains(url))
+                    {
+                        UrlQueue.Instance.EnQueue(new UrlInfo(detailUrl) { Depth = 1, UniqueKey = url });
+                        filter.Add(url);
+                    }
+                }
+            }
+        }
         public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
         {
             //种子地址需要加布隆过滤
@@ -196,57 +284,9 @@ namespace SimpleCrawler.Demo
             Settings.HeadSetDic = headSetDic;
             //date=&end_date=&title=&content=&key=%E5%85%AC%E5%8F%B8&database=saic&search_field=all&search_type=yes&page=2
 
+            InitialUrl();
 
-            Console.WriteLine("正在获取已存在的url数据");
-            var partName = "所在地";
-            //注意需要定时爬去isSpecialUrl 为1 的url 这些url需要用无账号登陆进行使用
-            //布隆url初始化,防止重复读取url//         "中山", 
-            // ,
-            //var distinctAreaStr = new string[] {"长沙","成都","大连","佛山","福州","广州","杭州","黄山","济南","昆明","龙岩","南昌","南京","宁波","泉州","深圳","苏州","武汉","西安","厦门","烟台","镇江","郑州" };
-            //var distinctAreaStr = new string[] { "北京", "上海", "重庆" };
-            //var distinctAreaStr = new string[] { "长沙", "成都", "大连", "佛山", "福州", "广州", "杭州","佛山", "南京", "深圳", "武汉","西安" };
-            // var cityStr = "南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
-            //var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
-           // var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
-            //  var cityStr = "广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
-            var cityStr = "南京";//,
-            var distinctAreaStr = cityStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-            var orQuery = Query.In(partName, distinctAreaStr.Select(c => (BsonValue)c));
-            isSpecialUrlMode = false;//使用特殊模式表是某些url 需要进行不登陆进行爬去，true代表不登陆爬取
-            var specialUrlQuery = Query.And(Query.NE("isSpecialUrl", "1"));
-            if (isSpecialUrlMode == true)
-            {
-                specialUrlQuery = Query.EQ("isSpecialUrl", "1");
-            }
-            //var orQuery = Query.In("地区", " ");deleteStatus
-            var takeCount = 10000;
-            var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("needUpdate","1"),Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
-           
-            var allCount = dataop.FindCount(DataTableName, query);
-            if (allCount <= 100000)
-            {
-                takeCount = allCount;
-            }
-            landUrlList = dataop.FindAllByQuery(DataTableName, query).Take(takeCount).ToList();//土地url
-            
-            //未更新的地块
-            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.EQ("竞得方", "")))).Take(10000).ToList();//土地url
 
-            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.And( specialUrlQuery, Query.EQ("needUpdate", "1"))).Take(100000).ToList();//土地url
-            //landUrlList = dataop.FindAllByQuery(DataTableName, Query.Or(Query.Exists("竞得方", false))).Take(10000).ToList();//土地url
-            //  var allAccountList = dataop.FindAllByQuery(DataTableNameAccount,Query.EQ("userName", "18900372887")).SetFields("userName", "postData", "status", "passWord").ToList();
-            Console.WriteLine("待处理数据{0}个", allCount);
-
-            foreach (var cityObj in landUrlList)
-            {
-                var url = cityObj.Text("url");//http://land.fang.com/market/2e81878c-eb62-4687-971f-01b174817207.html
-                var guid = GetGuidFromUrl(url);
-               // var guid = cityObj.Text("sParcelID");
-                if (!string.IsNullOrEmpty(guid)) { 
-                var detailUrl = appHelper.InitLandDetailUrl(guid, "143636", "true");
-                UrlQueue.Instance.EnQueue(new UrlInfo(detailUrl) { Depth = 1 });
-                }
-            }
             Console.WriteLine("正在加载账号数据");
 
 
@@ -293,7 +333,11 @@ namespace SimpleCrawler.Demo
         /// <param name="args">url参数</param>
         public void DataReceive(DataReceivedEventArgs args)
         {
-          
+            //if (CanLoadNewData())
+            //{
+            //    InitialUrl();
+            //}
+            var urlKey = args.urlInfo.UniqueKey;
             var hmtl = args.Html;
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(args.Html);
@@ -341,7 +385,7 @@ namespace SimpleCrawler.Demo
                 if (hitObj == null)
                 {
                     Console.WriteLine("对象不存在");
-                    return;
+                    //return;
                 }
                 else
                 {
@@ -401,10 +445,11 @@ namespace SimpleCrawler.Demo
             {
                 updateBson.Add("needUpdate", "0");
             }
+            updateBson.Add("updateMonth", DateTime.Now.Month % 6);//6个月只更新一次
             updateBson.Add("isUserUpdated", "1");//更新了数据
-            Console.WriteLine(string.Format("{0}更新{1}", landName,Settings.LandFangIUserId));
+            Console.WriteLine($"{landName},{Settings.LandFangIUserId}更新 竞得方:{updateBson.Text("竞得方")}{urlKey}");
             //updateBson.Set("url", hitUrl);
-            DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Query = Query.EQ("url", hitUrl), Type = StorageType.Update });
+            DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Query = Query.EQ("url", urlKey), Type = StorageType.Update });
 
 
         }

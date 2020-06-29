@@ -61,15 +61,21 @@ namespace QCCWebBrowser
                 result = http.GetHtml(item);
 
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
 
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (TimeoutException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
 
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
 
             }
@@ -151,7 +157,9 @@ namespace QCCWebBrowser
                     //    //HtmlClick();
                 }
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
                // this.timer1.Stop();
                // this.timer1.Enabled = false;

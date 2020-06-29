@@ -122,8 +122,12 @@ namespace SimpleCrawler.Demo
             var region = new BsonDocument();
             var type = new BsonDocument();
 
+#pragma warning disable CS0219 // 变量“takeCount”已被赋值，但从未使用过它的值
             var takeCount = 10;
+#pragma warning restore CS0219 // 变量“takeCount”已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量“allPage”已被赋值，但从未使用过它的值
             var allPage = 37;
+#pragma warning restore CS0219 // 变量“allPage”已被赋值，但从未使用过它的值
             //foreach (var region in regionList)
             {
                 foreach (var obj in allObjList)
@@ -269,7 +273,9 @@ namespace SimpleCrawler.Demo
                 JObject jsonObj = JObject.Parse(args.Html);
                 result = jsonObj["result"];
             }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
             catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             {
 
             }

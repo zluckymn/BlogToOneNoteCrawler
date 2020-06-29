@@ -21,7 +21,9 @@
         private BloomFilter<string> filter;
         private BloomFilter<string> urlFilter = new BloomFilter<string>(0x7a1200);
         private const string _DataTableName = "SiMu_Project";
+#pragma warning disable CS0414 // 字段“SiMuListCrawler.huxiu_hash_code”已被赋值，但从未使用过它的值
         private string huxiu_hash_code = "6090caa5f7ef6fe849d98aa30b9b8a22";
+#pragma warning restore CS0414 // 字段“SiMuListCrawler.huxiu_hash_code”已被赋值，但从未使用过它的值
         private string cookie = "JSESSIONID=3D9611D26264FDB33C8A2AE4C392F97D;quickLogonKey=781f8bcecdf14284a069aabaa67e7101$40FED11B93B7E0691A2BB09B3E6BB2F6";
         private int pageSize = 200;
         private Dictionary<string, string> urlDic = new Dictionary<string, string>();

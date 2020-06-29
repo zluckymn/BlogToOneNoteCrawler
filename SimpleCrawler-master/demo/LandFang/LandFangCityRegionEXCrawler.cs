@@ -378,7 +378,9 @@ namespace SimpleCrawler.Demo
         public bool SimulateLogin()
         {
             return true;
+#pragma warning disable CS0162 // 检测到无法访问的代码
             IPProxy ipProxy = null;
+#pragma warning restore CS0162 // 检测到无法访问的代码
 
             HttpHelper http = new HttpHelper();
             //尝试登陆
@@ -432,11 +434,15 @@ namespace SimpleCrawler.Demo
                     }
                     return false;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }

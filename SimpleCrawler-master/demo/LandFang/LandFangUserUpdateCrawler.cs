@@ -103,7 +103,9 @@ namespace SimpleCrawler.Demo
             Settings.ThreadCount = 1;
             //Settings.CurWebProxy = GetWebProxy();
             Console.WriteLine("正在获取已存在的url数据");
+#pragma warning disable CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             var partName = "所在地";
+#pragma warning restore CS0219 // 变量“partName”已被赋值，但从未使用过它的值
             //注意需要定时爬去isSpecialUrl 为1 的url 这些url需要用无账号登陆进行使用
             //布隆url初始化,防止重复读取url//         "中山", 
             // ,
@@ -488,11 +490,15 @@ namespace SimpleCrawler.Demo
                     }
                     return false;
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (WebException ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex)
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
                 {
                     IPInvalidProcess(ipProxy);
                 }

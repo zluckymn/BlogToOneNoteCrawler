@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SimpleCrawler.Demo</RootNamespace>
     <AssemblyName>SimpleCrawler.Demo</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -35,8 +35,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\..\..\Library\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.11.17.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.17\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Microsoft.Office.Interop.OneNote">
       <HintPath>..\..\..\Library\Interop.Microsoft.Office.Interop.OneNote.dll</HintPath>
@@ -48,8 +48,8 @@
     <Reference Include="MongoDB.Driver">
       <HintPath>..\..\..\..\115Box\A3\packages\MongoDriver\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>library\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SuperWebClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
@@ -71,6 +71,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccountQueue.cs" />
+    <Compile Include="Activity\ActivityDetailCrawler_MenPai.cs" />
+    <Compile Include="Activity\ActivityListCrawler_MenPai.cs" />
+    <Compile Include="ChipHell\TopicDetailCrawler_ChipHell.cs" />
+    <Compile Include="ChipHell\TopicListCrawler_ChipHell.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="HuiCaiMaterial\HuiCongMaterialCompanyDetailAPPCrawler_WeiXin.cs" />
+    <Compile Include="HuiCaiMaterial\HuiCongMaterialDetailAPPCrawler_WeiXin.cs" />
+    <Compile Include="HuiCaiMaterial\HuiCongMaterialAPPCrawler_WeiXin.cs" />
+    <Compile Include="LandFang\LandFangDetailAPPCrawler_HouseLandRadio_TuDiYun.cs" />
+    <Compile Include="LandFang\LandFangDetailAPPCrawler_TuDiYun.cs" />
+    <Compile Include="LandFang\LandFangKindergartenDetailWebCrawler_TuDiYun.cs" />
+    <Compile Include="LiePinPosition\PositionDetailCrawler_LiePin.cs" />
+    <Compile Include="LiePinPosition\PositionListCrawler_LiePin.cs" />
+    <Compile Include="BossPosition\PositionDetailCrawler_Boss.cs" />
+    <Compile Include="BossPosition\PositionConditionCrawler_Boss.cs" />
+    <Compile Include="BossPosition\PositionListCrawler_Boss.cs" />
     <Compile Include="Cookie\FullWebBrowserCookie.cs" />
     <Compile Include="Cookie\INativeMethods.cs" />
     <Compile Include="DistrictLeader\DistrictLeaderCrawler.cs" />
@@ -84,6 +100,26 @@
     <Compile Include="FangGuanJu\FangProjectDetailCrawler_JiangYin.cs" />
     <Compile Include="FangGuanJu\FangDetailCrawler_JiangYin.cs" />
     <Compile Include="FangGuanJu\FangListCrawler_JiangYin.cs" />
+    <Compile Include="MapBar\MapBarPoiDetailCrawler.cs" />
+    <Compile Include="QCC\QCCEnterpriseNameGuidMatchCrawler.cs" />
+    <Compile Include="QCC\QCCEnterpriseWebPositionDetailInfoCrawler.cs" />
+    <Compile Include="QCC\QCCEnterpriseWebDetailInfoCrawler.cs" />
+    <Compile Include="QCC\QCCEnterpriseWeiXinDetailInfoCrawler.cs" />
+    <Compile Include="Shoes\goodsListCrawler_ShiHuo.cs" />
+    <Compile Include="Shoes\goodsCommentDetailCrawler_ShiHuo.cs" />
+    <Compile Include="Shoes\ShoesListCrawler_ShiHuo.cs" />
+    <Compile Include="Shoes\ShoesCommentDetailCrawler_ShiHuo.cs" />
+    <Compile Include="ShunQi\EnterpriserDetailCrawler_ShunQi.cs" />
+    <Compile Include="ShunQi\EnterpriserListCrawler_ShunQi.cs" />
+    <Compile Include="ShunQi\EnterpriserSearchCrawler_ShunQi.cs" />
+    <Compile Include="Stick\StickDetailCrawler_DouTu.cs" />
+    <Compile Include="Stick\StickListCrawler_DouTu.cs" />
+    <Compile Include="Study163\OnlineStudyListCrawler_163.cs" />
+    <Compile Include="Study163\OnlineStudyDetailCrawler_163.cs" />
+    <Compile Include="XiaoHongShu\GoodsNoteCrawler_XHS.cs" />
+    <Compile Include="XiaoHongShu\GoodsListCrawler_XHS.cs" />
+    <Compile Include="Game\GameRoomDetailCrawler_DouYu.cs" />
+    <Compile Include="Game\GameRoomListCrawler_DouYu.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDoctorListAPPCrawler.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDoctorSheduleAPPCrawler.cs" />
     <Compile Include="GoodDoctor\DoctorHospitalDetailAPPCrawler.cs" />
@@ -93,6 +129,10 @@
     <Compile Include="HuXiu\HuXiuDetailCrawler.cs" />
     <Compile Include="HuXiu\HuXiuListCrawler.cs" />
     <Compile Include="IPProxyHelper.cs" />
+    <Compile Include="MeiTu\MeiTuCityBusinessEnterpriseAPPCrawler_MedicBeau.cs" />
+    <Compile Include="QCC\CancellationEnterpriseDetail_BeiJing.cs" />
+    <Compile Include="QCC\CancellationEnterpriseList_BeiJing.cs" />
+    <Compile Include="SimpleCrawlerBase.cs" />
     <Compile Include="JGJUserInfo\JGJProjectAPPCrawler.cs" />
     <Compile Include="JGJUserInfo\JGJUserAPPCrawler.cs" />
     <Compile Include="JGJUserInfo\JGJUserDetailAppCrawler.cs" />
@@ -137,6 +177,7 @@
     <Compile Include="QCC\QCCEnterpriseCrawler_FUJIAN.cs" />
     <Compile Include="QCC\QCCEnterpriseCrawler_Province.cs" />
     <Compile Include="QCC\QCCEnterpriseCrawler_FOSHAN.cs" />
+    <Compile Include="QCC\CancellationEnterpriseList.cs" />
     <Compile Include="QCC\QCCEnterpriseDetailInfoGuidAdd.cs" />
     <Compile Include="QCC\QCCEnterpriseDetailInfoAnalyse.cs" />
     <Compile Include="QCC\QCCEnterpriseDetailInfoCrawler.cs" />
@@ -157,6 +198,12 @@
     <Compile Include="SoHu\SoHuBuildingListCrawler.cs" />
     <Compile Include="WeiXin\WeiXinUrlDetailCrawler.cs" />
     <Compile Include="WenShu\WenShuAPPCrawler.cs" />
+    <Compile Include="XiaoLanBen\EnterpriseDetailCrawler_XiaoLanBen.cs" />
+    <Compile Include="XiaoLanBen\EnterpriseListCrawler_XiaoLanBen.cs" />
+    <Compile Include="ZhengHeDao\EnterpriserEvaluationDetailCrawler_ZhengHeDao.cs" />
+    <Compile Include="ZhengHeDao\EnterpriserFeedDetailCrawler_ZhengHeDao.cs" />
+    <Compile Include="ZhengHeDao\EnterpriserDetailCrawler_ZhengHeDao.cs" />
+    <Compile Include="ZhengHeDao\EnterpriserListCrawler_ZhengHeDao.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\115Box\A3\Yinhe.ProcessingCenter\Yinhe.ProcessingCenter.csproj">
@@ -178,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

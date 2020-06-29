@@ -415,7 +415,9 @@ namespace SimpleCrawler.Demo
             
             // return SimulateLoginEx();
           
+#pragma warning disable CS0162 // 检测到无法访问的代码
             var userName = string.Empty;
+#pragma warning restore CS0162 // 检测到无法访问的代码
             var passWord = string.Empty;
           
             if (AccountQueue.Count() > 0)
@@ -439,7 +441,9 @@ namespace SimpleCrawler.Demo
                 Environment.Exit(0);
             }
              
+#pragma warning disable CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
             IPProxy ipProxy = null;
+#pragma warning restore CS0219 // 变量“ipProxy”已被赋值，但从未使用过它的值
           
             HttpManager.Instance.InitWebClient(hi, true, 30, 30);
             Random rand = new Random(Environment.TickCount);

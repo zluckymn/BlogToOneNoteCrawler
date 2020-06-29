@@ -58,8 +58,9 @@
             List<BsonDocument> list2 = (from c in this.allAppCityList
                                         where c.Text("Level") == "2"
                                         select c).ToList<BsonDocument>();
-            // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
-           // var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
+           // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
+           // var filterCity = "自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥".SplitParam(",").ToList();
+            // var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
             foreach (BsonDocument document in list.Distinct())
             {
                 string str = document.Text("ProvinceName");
@@ -102,135 +103,144 @@
 
         public void DataReceive(DataReceivedEventArgs args)
         {
-            if (this.userCrawlerCountHashTable.ContainsKey(this.Settings.LandFangIUserId))
+            try
             {
-                int num3 = int.Parse(this.userCrawlerCountHashTable[this.Settings.LandFangIUserId].ToString());
-                this.userCrawlerCountHashTable[this.Settings.LandFangIUserId] = num3 + 1;
-                if (num3 >= this.Settings.MaxAccountCrawlerCount)
+                if (this.userCrawlerCountHashTable.ContainsKey(this.Settings.LandFangIUserId))
                 {
-                    this.SimulateLogin();
-                }
-            }
-            else
-            {
-                this.userCrawlerCountHashTable.Add(this.Settings.LandFangIUserId, 1);
-            }
-            Newtonsoft.Json.Linq.JObject obj2 = Newtonsoft.Json.Linq.JObject.Parse(args.Html);
-            Newtonsoft.Json.Linq.JToken token = obj2["resulDic"];
-            int pageIndex = int.Parse(GetUrlParam(args.Url, "pindex"));
-            int allRecordCount = int.Parse(obj2["Total"].ToString());
-            string keyWord = (args.urlInfo.Authorization == null) ? string.Empty : args.urlInfo.Authorization;
-            foreach (Newtonsoft.Json.Linq.JToken token2 in (IEnumerable<Newtonsoft.Json.Linq.JToken>) token)
-            {
-                StorageData data;
-                BsonDocument document = new BsonDocument();
-                string str2 = token2["sParcelId"].ToString();
-                string str3 = token2["sParceName"].ToString();
-                string cityName = token2["sCity"].ToString();
-                string regionName = token2["sArea"].ToString();
-                string provinceName = token2["sProvince"].ToString();
-                string str6 = token2["sDealStatus"].ToString();
-                if (cityName.EndsWith("市"))
-                {
-                    char[] trimChars = new char[] { '市' };
-                    cityName = cityName.TrimEnd(trimChars);
-                }
-                if (provinceName.EndsWith("省"))
-                {
-                    char[] trimChars = new char[] { '省' };
-                    provinceName = provinceName.TrimEnd(trimChars);
-                }
-                BsonDocument hitCity = (from c in this.cityList
-                    where (cityName == c.Text("name")) && (c.Text("type") == "1")
-                    select c).FirstOrDefault<BsonDocument>();
-                if (hitCity == null)
-                {
-                    this.NeedFixRegion(cityName, provinceName, regionName, "城市");
-                    continue;
-                }
-                BsonDocument bsonDoc = (from c in this.cityList
-                    where (c.Int("type") == 0) && (c.Text("provinceCode") == hitCity.Text("provinceCode"))
-                    select c).FirstOrDefault<BsonDocument>();
-                if (bsonDoc == null)
-                {
-                    Console.WriteLine("省份不存在" + provinceName);
-                    return;
-                }
-                provinceName = bsonDoc.Text("name");
-                string tempRegionName = regionName.Replace("本级", "").Replace("区", "").Replace("县", "");
-                BsonDocument document3 = (from c in this.cityList
-                    where ((c.Int("type") == 2) && c.Text("name").Contains(tempRegionName)) && (c.Text("provinceCode") == hitCity.Text("provinceCode"))
-                    select c).FirstOrDefault<BsonDocument>();
-                if (document3 == null)
-                {
-                    if (!regionName.Contains("本级"))
+                    int num3 = int.Parse(this.userCrawlerCountHashTable[this.Settings.LandFangIUserId].ToString());
+                    this.userCrawlerCountHashTable[this.Settings.LandFangIUserId] = num3 + 1;
+                    if (num3 >= this.Settings.MaxAccountCrawlerCount)
                     {
-                        var hitRegionList = cityList.Where(d=> d.Text("cityCode") == hitCity.Text("cityCode")).ToList();
-                        document3 = hitRegionList.Where(c => (c.Int("type") == 2) && c.Text("name").Contains("其它")).FirstOrDefault();
- 
-                        if (document3 == null)
-                        {
-                            this.NeedFixRegion(cityName, provinceName, regionName, "县市");
-                            Console.WriteLine("县市不存在" + regionName);
-                            continue;
-                        }
-                        else
-                        {
-                            regionName = document3.Text("name");
-                        }
+                        this.SimulateLogin();
                     }
-                  
                 }
                 else
                 {
-                    regionName = document3.Text("name");
+                    this.userCrawlerCountHashTable.Add(this.Settings.LandFangIUserId, 1);
                 }
-                string str7 = string.Format("http://land.fang.com/market/{0}.html", str2.ToLower());
-                IMongoQuery[] queries = new IMongoQuery[] { Query.EQ("url", str7) };
-                BsonDocument document4 = this.dataop.FindOneByQuery(this.DataTableName, Query.Or(queries));
-                if (document4 == null)
+                Newtonsoft.Json.Linq.JObject obj2 = Newtonsoft.Json.Linq.JObject.Parse(args.Html);
+                Newtonsoft.Json.Linq.JToken token = obj2["resulDic"];
+                int pageIndex = int.Parse(GetUrlParam(args.Url, "pindex"));
+                int allRecordCount = int.Parse(obj2["Total"].ToString());
+                string keyWord = (args.urlInfo.Authorization == null) ? string.Empty : args.urlInfo.Authorization;
+                foreach (Newtonsoft.Json.Linq.JToken token2 in (IEnumerable<Newtonsoft.Json.Linq.JToken>)token)
                 {
-                    if (!this.filter.Contains(str7))
+                    StorageData data;
+                    BsonDocument document = new BsonDocument();
+                    string str2 = token2["sParcelId"].ToString();
+                    string str3 = token2["sParceName"].ToString();
+                    string cityName = token2["sCity"].ToString();
+                    string regionName = token2["sArea"].ToString();
+                    string provinceName = token2["sProvince"].ToString();
+                    string str6 = token2["sDealStatus"].ToString();
+                    if (cityName.EndsWith("市"))
                     {
-                        document.Add("guid", str2);
-                        document.Add("url", str7);
-                        document.Add("所在地", cityName);
-                        if (!string.IsNullOrEmpty(provinceName))
+                        char[] trimChars = new char[] { '市' };
+                        cityName = cityName.TrimEnd(trimChars);
+                    }
+                    if (provinceName.EndsWith("省"))
+                    {
+                        char[] trimChars = new char[] { '省' };
+                        provinceName = provinceName.TrimEnd(trimChars);
+                    }
+                    BsonDocument hitCity = (from c in this.cityList
+                                            where (cityName == c.Text("name")) && (c.Text("type") == "1")
+                                            select c).FirstOrDefault<BsonDocument>();
+                    if (hitCity == null)
+                    {
+                        this.NeedFixRegion(cityName, provinceName, regionName, "城市");
+                        continue;
+                    }
+                    BsonDocument bsonDoc = (from c in this.cityList
+                                            where (c.Int("type") == 0) && (c.Text("provinceCode") == hitCity.Text("provinceCode"))
+                                            select c).FirstOrDefault<BsonDocument>();
+                    if (bsonDoc == null)
+                    {
+                        Console.WriteLine("省份不存在" + provinceName);
+                        return;
+                    }
+                    provinceName = bsonDoc.Text("name");
+                    string tempRegionName = regionName.Replace("本级", "").Replace("区", "").Replace("县", "");
+                    BsonDocument document3 = (from c in this.cityList
+                                              where ((c.Int("type") == 2) && c.Text("name").Contains(tempRegionName)) && (c.Text("provinceCode") == hitCity.Text("provinceCode"))
+                                              select c).FirstOrDefault<BsonDocument>();
+                    if (document3 == null)
+                    {
+                        if (!regionName.Contains("本级"))
                         {
-                            document.Add("地区", provinceName);
+                            var hitRegionList = cityList.Where(d => d.Text("cityCode") == hitCity.Text("cityCode")).ToList();
+                            document3 = hitRegionList.Where(c => (c.Int("type") == 2) && c.Text("name").Contains("其它")).FirstOrDefault();
+
+                            if (document3 == null)
+                            {
+                                this.NeedFixRegion(cityName, provinceName, regionName, "县市");
+                                Console.WriteLine("县市不存在" + regionName);
+                                continue;
+                            }
+                            else
+                            {
+                                regionName = document3.Text("name");
+                            }
                         }
-                        if (!string.IsNullOrEmpty(regionName))
+
+                    }
+                    else
+                    {
+                        regionName = document3.Text("name");
+                    }
+                    string str7 = string.Format("http://land.fang.com/market/{0}.html", str2.ToLower());
+                    IMongoQuery[] queries = new IMongoQuery[] { Query.EQ("url", str7) };
+                    BsonDocument document4 = this.dataop.FindOneByQuery(this.DataTableName, Query.Or(queries));
+                    if (document4 == null)
+                    {
+                        if (!this.filter.Contains(str7))
                         {
-                            document.Add("县市", regionName);
+                            document.Add("guid", str2);
+                            document.Add("url", str7);
+                            document.Add("所在地", cityName);
+                            if (!string.IsNullOrEmpty(provinceName))
+                            {
+                                document.Add("地区", provinceName);
+                            }
+                            if (!string.IsNullOrEmpty(regionName))
+                            {
+                                document.Add("县市", regionName);
+                            }
+                            document.Add("name", str3);
+                            document.Add("needUpdate", "1");
+                            Console.WriteLine(string.Format("{0}添加{1}剩余url:{2}", str3, this.Settings.LandFangIUserId, UrlQueue.Instance.Count));
+                            this.filter.Add(str7);
+                            data = new StorageData
+                            {
+                                Document = document,
+                                Name = this.DataTableName,
+                                Type = StorageType.Insert
+                            };
+                            DBChangeQueue.Instance.EnQueue(data);
                         }
-                        document.Add("name", str3);
+                    }
+                    else if (str6 != document4.Text("交易状况"))
+                    {
                         document.Add("needUpdate", "1");
-                        Console.WriteLine(string.Format("{0}添加{1}剩余url:{2}", str3, this.Settings.LandFangIUserId, UrlQueue.Instance.Count));
-                        this.filter.Add(str7);
-                        data = new StorageData {
+                        data = new StorageData
+                        {
                             Document = document,
+                            Query = Query.EQ("url", str7),
                             Name = this.DataTableName,
-                            Type = StorageType.Insert
+                            Type = StorageType.Update
                         };
                         DBChangeQueue.Instance.EnQueue(data);
                     }
                 }
-                else if (str6 != document4.Text("交易状况"))
+                Console.WriteLine(string.Format("{0}剩余url:{1}", this.Settings.LandFangIUserId, UrlQueue.Instance.Count));
+                if ((pageIndex == 1) && (pageIndex < allRecordCount))
                 {
-                    document.Add("needUpdate", "1");
-                    data = new StorageData {
-                        Document = document,
-                        Query = Query.EQ("url", str7),
-                        Name = this.DataTableName,
-                        Type = StorageType.Update
-                    };
-                    DBChangeQueue.Instance.EnQueue(data);
+                    this.InitNextUrl(args.Url, keyWord, allRecordCount, pageIndex, this.pageSize);
                 }
             }
-            Console.WriteLine(string.Format("{0}剩余url:{1}", this.Settings.LandFangIUserId, UrlQueue.Instance.Count));
-            if ((pageIndex == 1) && (pageIndex < allRecordCount))
-            {
-                this.InitNextUrl(args.Url, keyWord, allRecordCount, pageIndex, this.pageSize);
+            catch (Exception ex)
+            { 
+            
             }
         }
 

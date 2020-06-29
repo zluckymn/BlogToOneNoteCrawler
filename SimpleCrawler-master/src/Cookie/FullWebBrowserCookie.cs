@@ -82,7 +82,7 @@ namespace SimpleCrawler.Demo
 
             if (throwIfNoCookie || (lastErrorCode != (int)INativeMethods.ErrorFlags.ERROR_NO_MORE_ITEMS))
             {
-                throw new Win32Exception(lastErrorCode);
+               // throw new Win32Exception(lastErrorCode);
             }
 
             return null;
