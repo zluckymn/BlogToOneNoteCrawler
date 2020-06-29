@@ -572,7 +572,7 @@ namespace SimpleCrawler
                 //proxy.HttpProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
                 //proxy.SslProxy = SysAppConfig.ProxyHost + ":" + SysAppConfig.ProxyPort;
                 //options.Proxy = proxy;
-                //options.AddArguments("--proxy-server=http://H1538UM3D6R2133P:511AF06ABED1E7AE@http-pro.abuyun.com:9010");
+                
                 options.AddArgument("ignore-certificate-errors");
                 options.AddArgument("–incognito");
                 options.AddArgument("disable-infobars");
