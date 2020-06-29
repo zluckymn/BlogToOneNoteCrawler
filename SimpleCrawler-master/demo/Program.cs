@@ -94,14 +94,14 @@ namespace SimpleCrawler.Demo
         {
             // 设置代理服务器
             var proxy = new WebProxy();
-            proxy.Address = new Uri(string.Format("{0}:{1}", "http://http-pro.abuyun.com", "9010"));
-            proxy.Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE");
+            proxy.Address = new Uri(string.Format("{0}:{1}", "http://http-pro.abuyun.com", ConstParam.proxyPort));
+            proxy.Credentials = new NetworkCredential(ConstParam.proxyUser, ConstParam.proxyPass);
             return proxy;
         }
         static string GetWebProxyString()
         {
              
-            return string.Format("{0}:{1}@{2}:{3}", "H1538UM3D6R2133P", "511AF06ABED1E7AE", "http-pro.abuyun.com", "9010");
+            return string.Format("{0}:{1}@{2}:{3}", ConstParam.proxyUser, ConstParam.proxyPass, "http-pro.abuyun.com", ConstParam.proxyPort);
         }
 
         /// <summary>

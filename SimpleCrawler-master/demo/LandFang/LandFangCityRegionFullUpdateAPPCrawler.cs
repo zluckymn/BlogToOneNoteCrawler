@@ -295,14 +295,14 @@
         public WebProxy GetWebProxy()
         {
             return new WebProxy { 
-                Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010")),
-                Credentials = new NetworkCredential("H1538UM3D6R2133P", "511AF06ABED1E7AE")
+                Address = new Uri(string.Format("{0}:{1}", ConstParam.proxyHost, ConstParam.proxyPort)),
+                Credentials = new NetworkCredential(ConstParam.proxyUser, ConstParam.proxyPass)
             };
         }
 
         public string GetWebProxyCurl()
         {
-            return string.Format("http://{0}:{1}@{2}:{3}", new object[] { "H1538UM3D6R2133P", "511AF06ABED1E7AE", "proxy.abuyun.com", "9010" });
+            return string.Format("http://{0}:{1}@{2}:{3}", new object[] { ConstParam.proxyUser, ConstParam.proxyPass, "proxy.abuyun.com", ConstParam.proxyPort });
         }
 
         public string GetXYValue(int startIndex, int allLength, string html)

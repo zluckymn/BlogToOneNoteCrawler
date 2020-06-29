@@ -32,8 +32,8 @@ namespace SimpleCrawler.Demo
 #pragma warning disable CS0414 // 字段“QCCEnterpriseCrawler_Province.USEWEBPROXY”已被赋值，但从未使用过它的值
         private bool USEWEBPROXY = true;
 #pragma warning restore CS0414 // 字段“QCCEnterpriseCrawler_Province.USEWEBPROXY”已被赋值，但从未使用过它的值
-        string proxyHost = "http://proxy.abuyun.com";
-        string proxyPort = "9010";
+        string proxyHost = ConstParam.proxyHost;
+        string proxyPort = ConstParam.proxyPort;
         // 代理隧道验证信息
         //string proxyUser = "H1880S335RB41F8P";
         //string proxyPass = "ECB2CD5B9D783F4E";

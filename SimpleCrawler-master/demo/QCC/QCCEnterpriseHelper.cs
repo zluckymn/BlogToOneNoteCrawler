@@ -38,10 +38,10 @@ namespace MZ.Mongo
             public   static string SearchType = "EnterpriseGuidByKeyWord_APP";
             public   static string EnterpriseDetailInfoTableName = "QCCEnterpriseDetailInfo";
             public static string QCCEnterpriseKeyForInitTableName = "QCCEnterpriseKeyForInit";//待爬取的客户列表
-            const string proxyHost = "http://proxy.abuyun.com";
-            const string proxyPort = "9010";
-            const string proxyUser = "H1538UM3D6R2133P";//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
-            const string proxyPass = "511AF06ABED1E7AE";//"ECB2CD5B9D783F4E";////C835A336CD070F9D
+            const string proxyHost = ConstParam.proxyHost;
+            const string proxyPort = ConstParam.proxyPort;
+            const string proxyUser = ConstParam.proxyUser;//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
+            const string proxyPass = ConstParam.proxyPass;//"ECB2CD5B9D783F4E";////C835A336CD070F9D
             SimpleCrawler.HttpHelper http = new SimpleCrawler.HttpHelper();
             public DeviceInfo curDeviceInfo { get; set; }
           

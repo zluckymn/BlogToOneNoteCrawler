@@ -116,7 +116,7 @@ namespace SimpleCrawler.Demo
         {
             // 设置代理服务器
             var proxy = new WebProxy();
-            proxy.Address = new Uri(string.Format("{0}:{1}", "http://proxy.abuyun.com", "9010"));
+            proxy.Address = new Uri(string.Format("{0}:{1}", ConstParam.proxyHost, ConstParam.proxyPort));
             proxy.Credentials = new NetworkCredential("HJ6B0D59N2DB125P", "D9566E8C93091049");
             return proxy;
         }

@@ -138,13 +138,13 @@ namespace SimpleCrawler.Demo
         }
         public bool isSpecialUrlMode = false;
 
-        string proxyHost = "http://proxy.abuyun.com";
-        string proxyPort = "9010";
+        string proxyHost = ConstParam.proxyHost;
+        string proxyPort = ConstParam.proxyPort;
         // 代理隧道验证信息
         //string proxyUser = "H1880S335RB41F8P";
         //string proxyPass = "ECB2CD5B9D783F4E";
-        string proxyUser = "H1538UM3D6R2133P";//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
-        string proxyPass = "511AF06ABED1E7AE";//"ECB2CD5B9D783F4E";////C835A336CD070F9D
+        string proxyUser = ConstParam.proxyUser;//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
+        string proxyPass = ConstParam.proxyPass;//"ECB2CD5B9D783F4E";////C835A336CD070F9D
         /// <summary>
         /// 代理
         /// </summary>
