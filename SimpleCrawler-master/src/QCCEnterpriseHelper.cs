@@ -132,6 +132,7 @@ namespace SimpleCrawler
         public HttpResult GetEnterpriseInfoByName(string name)
         {
             //企业背后关系详细
+
             var guidUrl = string.Format("https://" + ConstParam.wwwurl + "/gongsi_getList?key={0}", name);
             var urlInfo = new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=undefined", name) };
             var result = GetPostDataKeyWordEnhence(urlInfo);
