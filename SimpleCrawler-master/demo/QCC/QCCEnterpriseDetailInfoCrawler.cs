@@ -119,8 +119,8 @@ namespace SimpleCrawler.Demo
                         key = enterprise.Text("guid");
                     }
                     if (key.Contains("-")) continue;
-                    var backDetailInfoUrl = string.Format("http://www.qichacha.com/more_findmuhou?keyNo={0}", key);
-                    ////var detailInfoUrl = string.Format("http://www.qichacha.com/cms_map?keyNo={0}&upstreamCount=1&downstreamCount=1", enterprise.Text("guid"));
+                    var backDetailInfoUrl = string.Format("http://" + ConstParam.wwwurl + "/more_findmuhou?keyNo={0}", key);
+                     
                     ////UrlQueue.Instance.EnQueue(new UrlInfo(detailInfoUrl) { Depth = 1 });
                     UrlQueue.Instance.EnQueue(new UrlInfo(backDetailInfoUrl) { Depth = 1 });
                 }

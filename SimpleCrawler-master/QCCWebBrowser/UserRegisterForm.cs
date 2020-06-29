@@ -49,7 +49,7 @@ namespace QCCWebBrowser
             {
                 var item = new HttpItem()
                 {
-                    URL = "http://www.qichacha.com/user_logout",
+                    URL = "http://" + ConstParam.wwwurl + "/user_logout",
                     Method = "get",//URL     可选项 默认为Get   
                     ContentType = "text/html",//返回类型    可选项有默认值 
                     //Timeout = Settings.Timeout,

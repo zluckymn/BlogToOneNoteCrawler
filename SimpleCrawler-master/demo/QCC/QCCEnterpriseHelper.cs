@@ -137,7 +137,7 @@ namespace MZ.Mongo
                     //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
                     //Cookie = "",//字符串Cookie     可选项
                     UserAgent = "okhttp/3.2.0",//用户的浏览器类型，版本，操作系统     可选项有默认值
-                    //Referer = "app.qichacha.net",//来源URL     可选项
+                    
                     Postdata =curUrlObj.PostData,
                     // Allowautoredirect = true,
                     // Cookie = Settings.SimulateCookies

@@ -118,8 +118,8 @@ namespace SimpleCrawler
         public HttpResult GetEnterpriseInventInfo(string guid)
         {
             //企业背后关系详细
-            //var uStr = string.Format("https://appv2.qichacha.net/app/v2/base/getInvestments?unique={0}&province=&cityCode=&pageIndex=1&industrycode=&startdateyear=&sign={1}&timestamp={2}", guid, curDeviceInfo.sign, curDeviceInfo.timestamp);
-            var uStr = string.Format("http://www.qichacha.com/cms_map?keyNo={0}", guid);
+          
+            var uStr = string.Format("http://"+ ConstParam.wwwurl + "/cms_map?keyNo={0}", guid);
             var result = GetHttpHtml(uStr);
             return result;
         }
@@ -132,7 +132,7 @@ namespace SimpleCrawler
         public HttpResult GetEnterpriseInfoByName(string name)
         {
             //企业背后关系详细
-            var guidUrl = string.Format("https://www.qichacha.com/gongsi_getList?key={0}", name);
+            var guidUrl = string.Format("https://" + ConstParam.wwwurl + "/gongsi_getList?key={0}", name);
             var urlInfo = new UrlInfo(guidUrl) { Depth = 1, PostData = string.Format("key={0}&type=undefined", name) };
             var result = GetPostDataKeyWordEnhence(urlInfo);
             return result;
@@ -195,7 +195,7 @@ namespace SimpleCrawler
                 //IsToLower = false,//得到的HTML代码是否转成小写     可选项默认转小写
                 //Cookie = "",//字符串Cookie     可选项
                 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36",//用户的浏览器类型，版本，操作系统     可选项有默认值
-                Referer = "https://www.qichacha.com/",//来源URL     可选项
+                Referer = "https:/" + ConstParam.wwwurl + "/",//来源URL     可选项
                 Postdata = curUrlObj.PostData,
                 Allowautoredirect = true,
                 Cookie = globalCookie, 

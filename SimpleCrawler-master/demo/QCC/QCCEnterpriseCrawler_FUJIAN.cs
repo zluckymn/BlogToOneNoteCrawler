@@ -154,7 +154,7 @@ namespace SimpleCrawler.Demo
             Settings.DBSaveCountLimit = 50;
             Settings.ContentType = "application/x-www-form-urlencoded";
            // Settings.IgnoreFailUrl = true;//失败数据不进行继续爬取，多几次就好，因为有些数据获取的为空与无登陆一样无法判断
-            geetestHelper.GetCapUrl = "http://www.qichacha.com/index_getcap?rand={0}";
+           
             var allEnterpriseList = dataop.FindAll(DataTableName).SetFields("id").ToList();
             foreach (var enterprise in allEnterpriseList)
             {
@@ -472,8 +472,7 @@ namespace SimpleCrawler.Demo
             if (passResult.Status)
             {
 
-                hi.Url = "http://www.qichacha.com/user_loginaction";
-                hi.Refer = "http://www.qichacha.com/user_login";
+              
                 hi.PostData = string.Format("nameNormal={0}&pwdNormal={1}&geetest_challenge={2}&geetest_validate={3}&geetest_seccode={3}%7Cjordan", nameNormal, pwdNormal, passResult.Challenge, passResult.ValidCode);
                 var ho = HttpManager.Instance.ProcessRequest(hi);
                 if (ho.IsOK)
