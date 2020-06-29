@@ -40,8 +40,8 @@ namespace MZ.Mongo
             public static string QCCEnterpriseKeyForInitTableName = "QCCEnterpriseKeyForInit";//待爬取的客户列表
             const string proxyHost = ConstParam.proxyHost;
             const string proxyPort = ConstParam.proxyPort;
-            const string proxyUser = ConstParam.proxyUser;//"H1880S335RB41F8P";////HVW8J9B1F7K4W83P
-            const string proxyPass = ConstParam.proxyPass;//"ECB2CD5B9D783F4E";////C835A336CD070F9D
+            const string proxyUser = ConstParam.proxyUser;
+            const string proxyPass = ConstParam.proxyPass;
             SimpleCrawler.HttpHelper http = new SimpleCrawler.HttpHelper();
             public DeviceInfo curDeviceInfo { get; set; }
           
@@ -66,7 +66,7 @@ namespace MZ.Mongo
             public HttpResult GetEnterpriseDetailInfo(string guid)
             {
               
-                var uStr = string.Format("https://app.qichacha.net/app/v1/base/getEntDetail?unique={0}&timestamp={1}&sign={2}", guid, curDeviceInfo.timestamp, curDeviceInfo.sign);
+                var uStr = string.Format("https://"+ConstParam.qUrl+"/app/v1/base/getEntDetail?unique={0}&timestamp={1}&sign={2}", guid, curDeviceInfo.timestamp, curDeviceInfo.sign);
                 var result= GetHttpHtml(uStr);
                 return result;
             }
@@ -78,7 +78,7 @@ namespace MZ.Mongo
             public HttpResult GetEnterpriseBackDetailInfo(string guid)
             {
                 //企业背后关系详细
-                var uStr = string.Format("https://app.qichacha.net/app/v1/msg/getPossibleGenerateRelation?unique={0}&sign={1}&token={2}&timestamp={3}&from=h5",guid, curDeviceInfo.sign, curDeviceInfo.accessToken.Replace("Bearer", "").Trim(), curDeviceInfo.timestamp);
+                var uStr = string.Format("https://"+ ConstParam.qUrl + "/app/v1/msg/getPossibleGenerateRelation?unique={0}&sign={1}&token={2}&timestamp={3}&from=h5",guid, curDeviceInfo.sign, curDeviceInfo.accessToken.Replace("Bearer", "").Trim(), curDeviceInfo.timestamp);
                 var result= GetHttpHtml(uStr);
                 return result;
             }
@@ -145,7 +145,7 @@ namespace MZ.Mongo
 
 
                 item.Header.Add("Accept-Encoding", "gzip");
-                // item.Header.Add("Host", "app.qichacha.net");
+                
                 item.Header.Add("Authorization", curDeviceInfo.accessToken);
                 //item.Header.Add("Accept-Language", "zh-CN");
                 item.Header.Add("charset", "UTF-8");
@@ -162,7 +162,7 @@ namespace MZ.Mongo
             public string GetAccessToken()
             {
 
-                var url = "https://app.qichacha.net/app/v1/admin/getAccessToken";
+                var url =ConstParam.AccessTokenUrl;
                 var postData = string.Format("appId={0}&deviceId={1}&version=9.2.0&deviceType=android&os=&timestamp={2}&sign={3}", curDeviceInfo.appId, curDeviceInfo.deviceId, curDeviceInfo.timestamp, curDeviceInfo.sign);
                 var result = GetPostData(new UrlInfo(url) { PostData = postData });
                 if (result.Html.Contains("成功"))
@@ -190,7 +190,7 @@ namespace MZ.Mongo
                         return GetAccessToken();
                     }
               
-                    var url = "https://app.qichacha.net/app/v1/admin/refreshToken";
+                    var url = ConstParam.RefreshTokenUrl;
                     var postData = string.Format("refreshToken={0}&timestamp={1}&appId={2}&sign={3}", curDeviceInfo.refreshToken, curDeviceInfo.timestamp, curDeviceInfo.appId, curDeviceInfo.sign);
                     var result = GetPostData(new UrlInfo(url) { PostData = postData });
                     if (result.Html.Contains("成功"))

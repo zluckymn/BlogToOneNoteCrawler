@@ -89,8 +89,8 @@ namespace SimpleCrawler
         /// <returns></returns>
         public HttpResult GetEnterpriseDetailInfo(string guid)
         {
-
-            var uStr = string.Format("https://app.qichacha.net/app/v1/base/getEntDetail?unique={0}&timestamp={1}&sign={2}", guid, curDeviceInfo.timestamp, curDeviceInfo.sign);
+            
+            var uStr = string.Format("https://"+ ConstParam.qUrl + "/app/v1/base/getEntDetail?unique={0}&timestamp={1}&sign={2}", guid, curDeviceInfo.timestamp, curDeviceInfo.sign);
             var result = GetHttpHtml(uStr);
 
             return result;
@@ -104,8 +104,8 @@ namespace SimpleCrawler
         {
 
             //企业背后关系详细
-            var uStr = string.Format("https://app.qichacha.net/app/v1/msg/getPossibleGenerateRelation?unique={0}&sign={1}&token={2}&timestamp={3}&from=h5", guid, curDeviceInfo.sign, curDeviceInfo.accessToken.Replace("Bearer", "").Trim(), curDeviceInfo.timestamp);
-            // uStr = string.Format("https://appv2.qichacha.net/app/v1/msg/getPossibleGenerateRelation?unique={0}&sign={1}&token={2}&timestamp={3}&from=h5", guid, curDeviceInfo.sign, curDeviceInfo.accessToken.Replace("Bearer", "").Trim(), curDeviceInfo.timestamp);
+            var uStr = string.Format("https://"+ ConstParam.qUrl + "/app/v1/msg/getPossibleGenerateRelation?unique={0}&sign={1}&token={2}&timestamp={3}&from=h5", guid, curDeviceInfo.sign, curDeviceInfo.accessToken.Replace("Bearer", "").Trim(), curDeviceInfo.timestamp);
+          
             var result = GetHttpHtml(uStr);
             return result;
         }
@@ -248,8 +248,8 @@ namespace SimpleCrawler
         {
  
 
-            hi.Url = "https://appv2.qichacha.net/app/v1/admin/getAccessToken";
-            //hi.Refer = "https://appv2.qichacha.net";
+            hi.Url =ConstParam.AccessTokenUrlV2;
+           
             hi.PostData = string.Format("appId={0}&deviceId={1}&version=10.0.4&deviceType=android&os=&timestamp={2}&sign={3}", curDeviceInfo.appId, curDeviceInfo.deviceId, curDeviceInfo.timestamp, curDeviceInfo.sign);
             
             hi.UserAgent = "okhttp/3.6.0";
@@ -290,7 +290,7 @@ namespace SimpleCrawler
                 return GetAccessToken();
             }
 
-            var url = "https://appv2.qichacha.net/app/v1/admin/refreshToken";
+            var url = ConstParam.RefreshTokenUrlV2;
             var postData = string.Format("refreshToken={0}&timestamp={1}&appId={2}&sign={3}", curDeviceInfo.refreshToken, curDeviceInfo.timestamp, curDeviceInfo.appId, curDeviceInfo.sign);
             var result = GetPostData(new UrlInfo(url) { PostData = postData });
             if (result.Html.Contains("成功"))
@@ -414,7 +414,7 @@ namespace SimpleCrawler
             if (allAccountHashMapList.ContainsKey(pwdNormal))
             {
                 hashPwd = allAccountHashMapList[pwdNormal];
-                var _url = new UrlInfo("https://appv2.qichacha.net/app/v1/admin/login");
+                var _url = new UrlInfo(ConstParam.LoginUrlV2);
                 _url.PostData = string.Format("loginType=2&accountType=1&account={0}&password={1}&identifyCode=&key=&token=&timestamp={2}&sign={3}", phoneNum, hashPwd, deviceInfo.timestamp, deviceInfo.sign);
                 var result = GetPostData(_url);
                 if (result.StatusCode == HttpStatusCode.OK && result.Html.Contains("成功"))
