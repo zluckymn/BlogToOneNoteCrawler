@@ -51,6 +51,8 @@ namespace SimpleCrawler.Demo
         private string _DataTableName = "";//存储的数据库表名
         private string _DataTableCategoryName = "";//存储的数据库表名目录名
 
+        internal string guidDetail = "";
+
         /// <summary>
         /// 返回
         /// </summary>
@@ -179,7 +181,7 @@ namespace SimpleCrawler.Demo
             {
                 CurThreadId = Thread.CurrentThread.ManagedThreadId;
             }
-            if (UrlQueue.Instance.Count <= 10 && Thread.CurrentThread.ManagedThreadId == CurThreadId)
+            if (UrlQueue.Instance.Count <= 100 && Thread.CurrentThread.ManagedThreadId == CurThreadId)
             {
                 return true;
             }
@@ -195,8 +197,17 @@ namespace SimpleCrawler.Demo
            
          
         }
-
-
+        /// <summary>
+        ///  更新目录
+        /// </summary>
+        /// <param name="guid"></param>
+        public void UpdateDataParentCategory(string guid)
+        {
+            var updateDoc = new BsonDocument();
+            updateDoc.Set("guid", guid);
+            updateDoc.Set(updatedField, updatedValue);
+            UpdateData(updateDoc, dataTable: DataTableCategoryName);
+        }
         public bool hasExistObj(string guid, string fieldName = "guid")
         {
             return (this.dataop.FindCount(this.DataTableName, Query.EQ(fieldName, guid)) > 0);
@@ -310,7 +321,7 @@ namespace SimpleCrawler.Demo
                 query = Query.EQ(keyFiled, doc.Text(keyFiled));
             }
             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = doc, Name = dataTable, Query = query, Type = StorageType.Update });
-
+            guidDetail = doc.Text(keyFiled);
         }
         /// <summary>
         /// 更新数据状态
@@ -331,7 +342,7 @@ namespace SimpleCrawler.Demo
             var updateDoc = new BsonDocument();
             updateDoc.Set(updatedField, updatedValue);
             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateDoc, Name = dataTable, Query = query, Type = StorageType.Update });
-
+            guidDetail = keyValue;
         }
          
 
@@ -384,17 +395,18 @@ namespace SimpleCrawler.Demo
                 updateAction?.Invoke(doc);
                 System.Threading.Interlocked.Increment(ref updateCount);
             }
+            guidDetail = doc.Text(keyFiled);
         }
 
         public void ShowMessage(string message)
         {
             Console.WriteLine(message);
         }
-        public void ShowStatus()
+        public void ShowStatus(string result="")
         {
             var curProxyAddress = Settings.CurWebProxy != null ? Settings.CurWebProxy.Address.ToString() : String.Empty;
-            Console.WriteLine($"截至目前位置总个数_{globalTotalCount} 新增_{addCount} 更新_{updateCount}");
-            Console.WriteLine($"重试队列待请求url个数:{UrlRetryQueue.Instance.Count}");
+            Console.WriteLine($"截至目前位置总个数_{globalTotalCount} 新增_{addCount} 更新_{updateCount} guid:{guidDetail}");
+            Console.WriteLine($"重试队列待请求url个数:{UrlRetryQueue.Instance.Count}_{result}");
             Console.WriteLine($"url队列待请求url个数:{UrlQueue.Instance.Count}");
             Console.WriteLine($"数据库等待更新个数:{DBChangeQueue.Instance.Count} 线程ID：{Thread.CurrentThread.ManagedThreadId} 代理地址：{curProxyAddress}");
 
@@ -473,7 +485,7 @@ namespace SimpleCrawler.Demo
         /// 获取待更新数据的数据
         /// </summary>
         /// <returns></returns>
-        public List<BsonDocument> FindDataForUpdate(IMongoQuery query = null, string[] fields = null, string dataTableName = "")
+        public List<BsonDocument> FindDataForUpdate(IMongoQuery query = null, string[] fields = null, string dataTableName = "",int limit=0)
         {
             if (string.IsNullOrEmpty(dataTableName))
             {
@@ -487,7 +499,17 @@ namespace SimpleCrawler.Demo
             {
                 fields = new string[] { "guid" };
             }
-            var allHitObjList = dataop.FindFieldsByQuery(dataTableName, query, fields).ToList();
+            var allHitObjList = new List<BsonDocument>();
+            if (limit == 0)
+            {
+                allHitObjList = dataop.FindFieldsByQuery(dataTableName, query, fields)
+                   .ToList();
+            }
+            else {
+                allHitObjList = dataop.FindFieldsByQuery(dataTableName, query, fields).SetLimit(limit)
+                      .ToList();
+            }
+           
             return allHitObjList;
         }
 
@@ -544,7 +566,17 @@ namespace SimpleCrawler.Demo
         #endregion
 
         #region url 操作
- 
+
+
+        private string ReplaceParamAllowEmpty(string url, string joinStr, string paramName, string oldValue, string newValue)
+        {
+             
+            if (url.Contains(paramName))
+            {
+                return url.Replace(string.Format(joinStr + "{0}={1}", paramName, oldValue), string.Format(joinStr + "{0}={1}", paramName, newValue));
+            }
+            return (url + string.Format(joinStr + "{0}={1}", paramName, newValue));
+        }
 
         private string ReplaceParam(string url,string joinStr, string paramName, string oldValue, string newValue)
         {
@@ -559,10 +591,18 @@ namespace SimpleCrawler.Demo
             return (url + string.Format(joinStr+"{0}={1}", paramName, newValue));
         }
 
-        public string ReplaceUrlParam(string _curUrl, string parameName, string newValue, string joinStr="&")
+        public string ReplaceUrlParam(string _curUrl, string parameName, string newValue, string joinStr="&",bool allowEmpty=false)
         {
             var oldValue =HttpUtility.UrlEncode(GetUrlParam(_curUrl, parameName));
-            return this.ReplaceParam(_curUrl, joinStr,parameName, oldValue, newValue);
+            if (allowEmpty == false)
+            {
+                return this.ReplaceParam(_curUrl, joinStr, parameName, oldValue, newValue);
+            }
+            else
+            {
+                return this.ReplaceParamAllowEmpty(_curUrl, joinStr, parameName, oldValue, newValue);
+            }
+           
         }
  
 
@@ -777,16 +817,19 @@ namespace SimpleCrawler.Demo
         /// </summary>
         internal void InitialMQ(string mqName= "mz.core.enterprise_info")
         {
+            Console.WriteLine($"正在初始化队列{mqName}");
             MQHelper.Instance().Init(mqName);
+            Console.WriteLine($"初始化队列成功");
         }
         /// <summary>
         /// 推送消息到队列
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        internal async Task<bool> PushMessageAsync(BsonDocument doc)
+        internal   bool PushMessageAsync(BsonDocument doc)
         {
-            var result = await MQHelper.Instance().PublishAsync<String>(doc.ToJson());
+            var result =   MQHelper.Instance().Publish<String>(doc.ToJson());
+            Console.WriteLine($"推送队列结果{result}");
             return result;
         }
         /// <summary>
@@ -811,6 +854,9 @@ namespace SimpleCrawler.Demo
             return string.Empty;
         }
         #endregion
+
+ 
+
     }
 
 }

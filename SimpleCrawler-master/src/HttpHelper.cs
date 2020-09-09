@@ -402,7 +402,14 @@ namespace SimpleCrawler
                 if (buffer != null)
                 {
                     request.ContentLength = buffer.Length;
-                    request.GetRequestStream().Write(buffer, 0, buffer.Length);
+                    //request.GetRequestStream().Write(buffer, 0, buffer.Length);
+                    //2020.08.06
+                    //出现System.Net.ProtocolViolationException: You must write ContentLength bytes to the request stream before calling [Begin]GetResponse
+                    //进行修复
+                    using (var dataStream = request.GetRequestStream())
+                    {
+                        dataStream.Write(buffer, 0, buffer.Length);
+                    }
                 }
             }
         }

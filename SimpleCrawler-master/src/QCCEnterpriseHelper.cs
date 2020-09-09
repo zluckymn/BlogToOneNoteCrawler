@@ -389,7 +389,34 @@ namespace SimpleCrawler
             }
             return url;
         }
+        /// <summary>
+        /// 替换URL字符串
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        public string FixUrlSignStr(string url, CrawlSettings settings)
+        {
 
+            var _timestamp = HttpHelper.GetUrlParam(url, "timestamp");
+            var _sign = HttpHelper.GetUrlParam(url, "sign");
+            var _token = HttpHelper.GetUrlParam(url, "token");
+            if (!string.IsNullOrEmpty(_timestamp) && _timestamp != settings.timestamp)
+            {
+                url = url.Replace(_timestamp, settings.timestamp);
+            }
+            if (!string.IsNullOrEmpty(_sign) && _sign != settings.sign)
+            {
+                url = url.Replace(_sign, settings.sign);
+            }
+            if (!string.IsNullOrEmpty(_token) && _sign != settings.AccessToken)
+            {
+                url = url.Replace(_token, settings.AccessToken.Replace("Bearer", "").Trim());
+            }
+            return url;
+        }
+
+        
 
         public WebProxy GetWebProxy()
         {

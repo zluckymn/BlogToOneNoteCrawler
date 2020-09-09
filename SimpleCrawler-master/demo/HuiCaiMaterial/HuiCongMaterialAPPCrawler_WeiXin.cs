@@ -60,7 +60,7 @@ namespace SimpleCrawler.Demo
         }
         public bool isSpecialUrlMode = false;
       
-
+        //家装建材 安防消防， 电子元件
         int pageSize = 200;//24
         int pageBeginNum = 1;
         // string materialUrl = "http://z.hc360.com/getmmtlast.cgi?dt=1&w={0}&v=59&e={1}&c=供应信息&n={2}&m=2&H=1&bt=0";

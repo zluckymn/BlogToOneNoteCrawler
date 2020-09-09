@@ -124,32 +124,32 @@ namespace SimpleCrawler.Demo
             var guid = GetUrlParam(args.Url, "guid");
             var keyWord = GetUrlParam(args.Url, "keyWord");
 
-            var curXiaolanBenAppHelper = new XiaoLanBenWebHelper();
-            curXiaolanBenAppHelper.webProxy = Settings.CurWebProxy;
-            var enterpriseDetail = curXiaolanBenAppHelper.SearchEnterpriseDetail(keyWord, sleepTime: 300);
-            if (enterpriseDetail == null)
-            {
-                return;
-            }
-            var updateBsonDoc = new BsonDocument();
-            if (!enterpriseDetail.ContainsColumn("basicInfo"))
-            {
-                updateBsonDoc.Set("isDetailUpdate", 2);
-                UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
-                Console.WriteLine("无获取到匹配数据");
-                return;
-            }
+            //var curXiaolanBenAppHelper = new XiaoLanBenWebHelper();
+            //curXiaolanBenAppHelper.webProxy = Settings.CurWebProxy;
+            //var enterpriseDetail = curXiaolanBenAppHelper.SearchEnterpriseDetail(keyWord, sleepTime: 300);
+            //if (enterpriseDetail == null)
+            //{
+            //    return;
+            //}
+            //var updateBsonDoc = new BsonDocument();
+            //if (!enterpriseDetail.ContainsColumn("basicInfo"))
+            //{
+            //    updateBsonDoc.Set("isDetailUpdate", 2);
+            //    UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
+            //    Console.WriteLine("无获取到匹配数据");
+            //    return;
+            //}
 
            
-            updateBsonDoc.Set("eid", enterpriseDetail.Text("eid"));
+            //updateBsonDoc.Set("eid", enterpriseDetail.Text("eid"));
 
          
 
-            // DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBsonDoc, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
-            UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
-            //添加到新数据库
-            enterpriseDetail.Set("guid", guid);
-            //var node = QuickConsistentHashHelper.Instance_EnterpriseGuid().GetHashItem(guid);
+            //// DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBsonDoc, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
+            //UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
+            ////添加到新数据库
+            //enterpriseDetail.Set("guid", guid);
+            ////var node = QuickConsistentHashHelper.Instance_EnterpriseGuid().GetHashItem(guid);
             //var tableName_Detail = node.Type;
             //dataOp_New.UpdateOrInsert(tableName_Detail, Query.EQ("guid", guid), enterpriseDetail);
             addCount++;

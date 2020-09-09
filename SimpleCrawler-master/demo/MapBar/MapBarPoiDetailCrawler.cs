@@ -46,55 +46,52 @@ namespace SimpleCrawler.Demo
         /// <param name="filter"></param>
         public MapBarPoiDetailCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop) : base(_Settings, _filter, _dataop)
         {
-            DataTableName = "MapBar_Poi";//房间
+            DataTableName = "MapBar_Poi";//房间Market_JianCai_Merge 
             DataTableName_City = "MapBar_City";//房间
             updatedValue = "1";//是否更新字段
-            uniqueKeyField = "id";
+            uniqueKeyField = "guid";
             allCityList = dataop.FindAll(DataTableName_City).ToList();
         }
         List<BsonDocument> allHitObjList;
         public void initialUrl()
         {
-            var catQuery = Query.Or(Query.EQ("catCode", "G20"), Query.EQ("catCode", "3D0"));
+           // var catQuery = Query.Or(Query.EQ("catCode", "G20"), Query.EQ("catCode", "3D0"));
+            // var catQuery = Query.Or(Query.EQ("catCode", "G20"), Query.EQ("catCode", "3D0"));
             //获取最新一条
-          //  var latestId = dataop.FindAllByQuery(DataTableName, Query.Exists("lon", false)).SetSortOrder(new SortByDocument() { { "_id", -1 } }).FirstOrDefault().Text("_id");
+            //  var latestId = dataop.FindAllByQuery(DataTableName, Query.Exists("lon", false)).SetSortOrder(new SortByDocument() { { "_id", -1 } }).FirstOrDefault().Text("_id");
 
-            foreach (var city in allCityList)
+            var query = Query.And(Query.NE("isInvalid",1),Query.Exists("loc", false));
+            var allCount = dataop.FindCount(DataTableName, query);
+         
+            var random = new Random();
+            var skipCount = random.Next(0, takeCount);
+            if (allCount > 10 * takeCount)
             {
-                var cityCode = city.Text("cityCode");
-                var query = Query.And(Query.EQ("cityCode", cityCode), Query.Exists("lon", false), catQuery);
-                var allCount = dataop.FindCount(DataTableName, query);
-                if (allCount <= 0) continue;
-                var random = new Random();
-                var skipCount = random.Next(0, takeCount);
-                if (allCount > 10 * takeCount)
+                skipCount = random.Next(0, takeCount);
+            }
+            else
+            {
+                if (allCount <= takeCount)
                 {
-                    skipCount = random.Next(0, takeCount);
+                    skipCount = 0;
                 }
                 else
                 {
-                    if (allCount <= takeCount)
-                    {
-                        skipCount = 0;
-                    }
-                    else
-                    {
-                        skipCount = random.Next(0, allCount);
-                    }
+                    skipCount = random.Next(0, allCount);
                 }
+            }
 
-                allHitObjList = dataop.FindFieldsByQuery(DataTableName, query, new string[] { "guid", "url" }).Skip(skipCount).Take(takeCount).ToList();
-                //初始化布隆过滤器
-                foreach (var hitObj in allHitObjList)
+            allHitObjList = dataop.FindFieldsByQuery(DataTableName, query, new string[] { "guid", "url" }).Skip(skipCount).Take(takeCount).ToList();
+            //初始化布隆过滤器
+            foreach (var hitObj in allHitObjList)
+            {
+                var curUrl = hitObj.Text("url");
+                if (!filter.Contains(curUrl))
                 {
-                    var curUrl = hitObj.Text("url");
-                    if (!filter.Contains(curUrl))
-                    {
-                        UrlQueue.Instance.EnQueue(new UrlInfo(curUrl) { UniqueKey = hitObj.Text("guid") });
-                        filter.Add(curUrl);// 防止执行2次
-                    }
-
+                    UrlQueue.Instance.EnQueue(new UrlInfo(curUrl) { UniqueKey = hitObj.Text("guid") });
+                    filter.Add(curUrl);// 防止执行2次
                 }
+
             }
         }
         override
@@ -109,7 +106,7 @@ namespace SimpleCrawler.Demo
             Settings.IPProxyList = new List<IPProxy>();
             Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
             Settings.ThreadCount = 5;
-            Settings.MaxReTryTimes = 5;
+            Settings.MaxReTryTimes = 2;
 
             Settings.ContentType = "text/html; charset=utf-8";
             Settings.UserAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36";
@@ -132,11 +129,18 @@ namespace SimpleCrawler.Demo
         override
         public void DataReceive(DataReceivedEventArgs args)
         {
+            if (CanLoadNewData())
+            {
+                initialUrl();
+            }
+            var url = args.Url+".html";
+            var keyCode = GetGuidFromUrl(url,"/");
             var html = args.Html;
             var htmlDoc = html.HtmlLoad();
             var telNode = htmlDoc.DocumentNode.SelectSingleNode("//li[@class='telCls']");
             var addressNode = htmlDoc.DocumentNode.SelectNodes("//ul[@class='POI_ulA']/li").Where(c=>c.InnerText.Contains("地址")).FirstOrDefault();
             var guid = args.urlInfo.UniqueKey;
+        
             if (telNode != null&& addressNode!=null)
             {
                 var updateDoc = new BsonDocument();
@@ -150,17 +154,32 @@ namespace SimpleCrawler.Demo
                 }
                 else
                 {
+                    if (addressArray.Length >= 2) {
+                        updateDoc.Set("cityName", addressArray[0].Trim());
+                        updateDoc.Set("regionName", addressArray[1].Trim());
+                    }
+                    
                     Console.WriteLine("地址格式不正确");
                  }
+                if(addressArray!=null&& addressArray.Length>0)
+                {
+                    updateDoc.Set("address", string.Join("", addressArray));
+
+                }
                 var coordStr = html.ToolsSubStr("coord=", "\">");
                 var coordArray = coordStr.SplitParam(new string[] { "," });
                 if (coordArray.Count()== 2)
                 {
                     updateDoc.Set("lat", coordArray[1]);
-                    updateDoc.Set("lon", coordArray[0]);
+                    updateDoc.Set("lng", coordArray[0]);
+
+                    var loc = new BsonArray();
+                    loc.Add(updateDoc.Double("lng"));
+                    loc.Add(updateDoc.Double("lat"));
+                    updateDoc.Set("loc", loc);
                 }
-               
-                updateDoc.Set("tel", tel);
+                updateDoc.Set("keyCode", keyCode);
+                updateDoc.Set("phone", tel);
                 updateDoc.Set("guid", args.urlInfo.UniqueKey);
                 
                 UpdateData(updateDoc, dataTable: DataTableName);
@@ -184,6 +203,17 @@ namespace SimpleCrawler.Demo
                 }
                 else
                 {
+                    if(QuickTaskHelper.Instance().ContinueMethodByBusyGear(args.urlInfo.UniqueKey,1))
+                   {
+                        if (args.Html.Contains("404source"))
+                        {
+                            var updateDoc = new BsonDocument();
+                            updateDoc.Set("guid", args.urlInfo.UniqueKey);
+                            updateDoc.Set("isInvalid", 1);
+                            UpdateData(updateDoc, DataTableName,Query.EQ("guid", args.urlInfo.UniqueKey));
+                        }
+                    }
+                    
                     Console.WriteLine(args.Url);
                     return true;
                 }

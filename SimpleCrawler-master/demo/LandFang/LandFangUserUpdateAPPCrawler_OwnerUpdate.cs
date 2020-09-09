@@ -22,9 +22,9 @@ using Helper;
 namespace SimpleCrawler.Demo
 {
     /// <summary>
-    /// 通过app进行更新
+    /// 对QCCEnterpriseKey_OtherEnterprise_Land_Relation 中 isHouse=1的进行数据更新
     /// </summary>
-    public class LandFangUserUpdateAPPCrawler : ISimpleCrawler
+    public class LandFangUserUpdateAPPCrawler_OwnerUpdate : ISimpleCrawler
     {
 
        
@@ -49,7 +49,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         public string DataTableName
         {
-            get { return _DataTableName; }
+            get { return "QCCEnterpriseKey_OtherEnterprise_Land_Relation"; }
 
         }
         /// <summary>
@@ -84,7 +84,7 @@ namespace SimpleCrawler.Demo
         private void InitMapDic()
         {
             columnMapDic.Add("sParcelID", "guid");
-            columnMapDic.Add("sParcelName", "name");
+            columnMapDic.Add("sParcelName", "land_name");
             columnMapDic.Add("sParcelSN", "地块编号");
             columnMapDic.Add("sParcelArea", "地区");
             columnMapDic.Add("sParcelAreaCity", "所在地");
@@ -132,7 +132,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         /// <param name="_Settings"></param>
         /// <param name="filter"></param>
-        public LandFangUserUpdateAPPCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
+        public LandFangUserUpdateAPPCrawler_OwnerUpdate(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
         {
             mongoOp = MongoOpCollection.GetNew121MongoOp_MT("LandFang");
             dataop =new DataOperation(mongoOp);
@@ -203,9 +203,8 @@ namespace SimpleCrawler.Demo
             }
             //var orQuery = Query.In("地区", " ");deleteStatus Query.EQ("竞得方", ""),Query.EQ("竞得方", "暂无")
             var takeCount = 10000;
-           // var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("竞得方", "暂无"),  Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
-
-             var query = Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
+            
+            var query = Query.And( Query.And(Query.EQ("isHouse", 1),Query.Exists("竞得方",false)));
             //Query.Or(orQuery, distincorQuery),
             // var query = Query.And(orQuery, Query.EQ("x", ""), Query.NE("deleteStatus", "1"));
             //(Query.NE("deleteStatus", "1"), 

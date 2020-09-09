@@ -210,8 +210,8 @@
             this.Settings.UserAgent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1068.1 Safari/536.3";
             this.Settings.KeepCookie = true;
             Dictionary<string, string> dictionary = new Dictionary<string, string>();
-            this.Settings.SimulateCookies = this.cookie;
-            dictionary.Add("Cookie", this.Settings.SimulateCookies);
+           // this.Settings.SimulateCookies = this.cookie;
+           // dictionary.Add("Cookie", this.Settings.SimulateCookies);
             dictionary.Add("Accept-Encoding", "gzip");
             dictionary.Add("Charsert", "UTF-8");
             this.Settings.HeadSetDic = dictionary;

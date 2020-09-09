@@ -1,0 +1,181 @@
+﻿using DotNet.Utilities;
+using HtmlAgilityPack;
+using MongoDB.Bson;
+using MongoDB.Driver.Builders;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+using System.Xml;
+using Yinhe.ProcessingCenter;
+
+using Yinhe.ProcessingCenter.DataRule;
+using System.Collections;
+using Newtonsoft.Json.Linq;
+using LibCurlNet;
+using Helper;
+
+namespace SimpleCrawler.Demo
+{
+
+    /// <summary>
+    /// 门派url
+    /// https://menpai.member.fun/api/Activity/GetActivityList
+    ///
+    /// </summary>
+    public class Duelyst_ListCrawler : SimpleCrawlerBase
+    {
+
+        
+#pragma warning disable CS0414 // 字段“PositionListCrawler_LiePin.isUpdate”已被赋值，但从未使用过它的值
+        bool isUpdate = true;
+#pragma warning restore CS0414 // 字段“PositionListCrawler_LiePin.isUpdate”已被赋值，但从未使用过它的值
+        const int takeCount = 10;
+        /// <summary>
+        /// 谁的那个
+        /// </summary>
+        /// <param name="_Settings"></param>
+        /// <param name="filter"></param>
+        public Duelyst_ListCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop) : base(_Settings, _filter, _dataop)
+        {
+            DataTableName = "DuelystCards";//房间
+            DataTableCategoryName = "DuelystFactions";//房间
+            updatedValue = "1";//是否更新字段
+            uniqueKeyField = "guid";
+        }
+
+        public void initialUrl()
+        {
+            
+           
+            ///获取等待爬取的公司
+            var hitFactions = dataop.FindAll(DataTableCategoryName);
+        
+            foreach (var faction in hitFactions)
+            {
+               
+                var name = faction.Text("name");
+                // name = "厦门蒙友互联软件有限公司";
+                var type = faction.Text("type");
+                var url = $"https://duelyst.gamepedia.com/{name}";
+                if (!filter.Contains(url)) {
+                    UrlQueue.Instance.EnQueue(new UrlInfo(url) { UniqueKey = type });
+                    filter.Add(url);// 防止执行2次
+                }
+                
+            }
+
+        }
+       
+        override
+        public void SettingInit()//进行Settings.SeedsAddress Settings.HrefKeywords urlFilterKeyWord 基础设定
+        {
+            //种子地址需要加布隆过滤
+            //Settings.Depth = 4;
+            //代理ip模式
+            //种子地址需要加布隆过滤
+            //Settings.Depth = 4;
+            //代理ip模式
+            Settings.IPProxyList = new List<IPProxy>();
+            Settings.IgnoreSucceedUrlToDB = true;//不添加地址到数据库
+            Settings.ThreadCount = 1;
+            Settings.MaxReTryTimes = 10;
+            // Settings.AutoSpeedLimit = true;
+            //Settings.AutoSpeedLimitMinMSecond = 3000;
+            //Settings.AutoSpeedLimitMinMSecond = 10000;
+            //Settings.ContentType = "application/json; charset=UTF-8";
+            Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36";
+            Settings.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3";
+            Settings.HeadSetDic = new Dictionary<string, string>();
+            Settings.HeadSetDic.Add("Accept-Encoding", "gzip, deflate, br");
+            Settings.HeadSetDic.Add("upgrade-insecure-requests", "1");
+            //Settings.HeadSetDic.Add(":scheme", "https");
+            //Settings.HeadSetDic.Add(":path", "/Argeon_Highmayne");
+            //Settings.HeadSetDic.Add(":method", "GET");
+            //Settings.HeadSetDic.Add(":authority", "duelyst.gamepedia.com");
+           //Settings.SimulateCookies = "Geo={%22region%22:%22FJ%22%2C%22country%22:%22CN%22%2C%22continent%22:%22AS%22}; _ga=GA1.2.987882347.1594083335; __qca=P0-1227115721-1594083385201; __gads=ID=b05f8069fced27fa:T=1594083398:S=ALNI_MaHAGtfVP3fAbyrBDkvfMj4w7Oz-w; vector-nav-p-Factions=true; crfgL0cSt0r=true; _gid=GA1.2.1608004051.1594206130; wikia_beacon_id=3Dmw2iT6gy; tracking_session_id=nwxlyfoG9c; ___rl__test__cookies=1594206451799; OUTFOX_SEARCH_USER_ID_NCOO=76744037.13684113; _gat_tracker0=1; _gat_tracker1=1; mnet_session_depth=1%7C1594207140419; pv_number=9; pv_number_global=9; _sg_b_p=%2FLyonar_Kingdoms%2C%2FArgeon_Highmayne%2C%2FSonghai_Empire%2C%2FVetruvian_Imperium%2C%2FAbyssian_Host%2C%2FMagmar_Aspects%2C%2FVanar_Kindred%2C%2FNeutral%2C%2FSonghai_Empire%2C%2FArgeon_Highmayne; _sg_b_v=2%3B1542%3B1594206133";
+            Settings.Referer = "duelyst.gamepedia.com";
+            Console.WriteLine("正在获取已存在的url数据");
+            Console.WriteLine("初始化url");
+            //var areas = new string[] { "040010180"};//, "040010180", "040010100", "040010130" "040010220"
+            //foreach (var area in areas)
+            //{
+            //    initialUrl(area,0 );
+            //}
+            initialUrl();
+            base.SettingInit();
+
+
+
+        }
+#pragma warning disable CS0414 // 字段“PositionListCrawler_LiePin.noCountTimes”已被赋值，但从未使用过它的值
+        int noCountTimes = 3;
+#pragma warning restore CS0414 // 字段“PositionListCrawler_LiePin.noCountTimes”已被赋值，但从未使用过它的值
+        /// <summary>
+        /// 数据接收处理，失败后抛出NullReferenceException异常，主线程会进行捕获
+        /// </summary>
+        /// <param name="args">url参数</param>
+        override
+        public void DataReceive(DataReceivedEventArgs args)
+        {
+            var hmtl = args.Html;
+            var root = hmtl.HtmlLoad();
+            var guid = args.urlInfo.UniqueKey;
+            if (root == null) return;
+            var hitANodes= root.DocumentNode.SelectNodes("//b/a");
+            if (hitANodes != null)
+            {
+              
+                foreach (var aNode in hitANodes)
+                {
+                  
+                    var href= GetNodeAttribute(aNode, "href");
+                    var name = GetNodeAttribute(aNode, "title");
+                    var bsonDoc = new BsonDocument();
+                    bsonDoc.Set("name", name);
+                    bsonDoc.Set("href", href);
+                    bsonDoc.Set("guid", name.EncodeMD5().ToLower());
+                    PushData(bsonDoc);
+                }
+            
+            }
+            
+            ShowStatus();
+        }
+
+        /// <summary>
+        /// IP限定处理，ip被限制 账号被限制跳转处理
+        /// </summary>
+        /// <param name="args"></param>
+        override
+        public bool IPLimitProcess(DataReceivedEventArgs args)
+        {
+            try
+            { 
+
+                if (args.Html.Contains("png"))//需要编写被限定IP的处理
+                {
+                    return false;
+                }
+                else
+                {
+                    Console.WriteLine(args.Url);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return true;
+            }
+        }
+
+
+    }
+
+}

@@ -23,8 +23,9 @@ namespace SimpleCrawler.Demo
 {
     /// <summary>
     /// 通过app进行更新
+    /// 季度进行数据更新对未成交的数据进行跟踪更新
     /// </summary>
-    public class LandFangUserUpdateAPPCrawler : ISimpleCrawler
+    public class LandFangUserUpdateAPPCrawler_SeasonUpdate : ISimpleCrawler
     {
 
        
@@ -132,7 +133,7 @@ namespace SimpleCrawler.Demo
         /// </summary>
         /// <param name="_Settings"></param>
         /// <param name="filter"></param>
-        public LandFangUserUpdateAPPCrawler(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
+        public LandFangUserUpdateAPPCrawler_SeasonUpdate(CrawlSettings _Settings, BloomFilter<string> _filter, DataOperation _dataop)
         {
             mongoOp = MongoOpCollection.GetNew121MongoOp_MT("LandFang");
             dataop =new DataOperation(mongoOp);
@@ -190,9 +191,9 @@ namespace SimpleCrawler.Demo
             // var cityStr = "南京,苏州,常州,无锡,南通,西安,烟台,佛山,泉州,广州,深圳,成都,昆明,大连,青岛,哈尔滨,沈阳,日照, 南宁,武汉,长沙,合肥,济南,郑州,南昌,杭州,兰州,长春,海口,西宁,石家庄,宁波,贵阳,西宁,乌鲁木齐,呼和浩特,银川,拉萨,福州,厦门,东莞";
             //var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
             // var cityStr = "东莞，上海，深圳，武汉，成都，重庆";
-            var cityStr = "保定,成都,广州,杭州,济宁,南宁,宁波,石家庄,潍坊,徐州,烟台,长春,西安,福州,自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥";
-              cityStr = "自贡";//,
-            var distinctAreaStr = cityStr.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+           // var cityStr = "保定,成都,广州,杭州,济宁,南宁,宁波,石家庄,潍坊,徐州,烟台,长春,西安,福州,自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥";
+            var cityStr = "东莞";//,
+            var distinctAreaStr = MongoOpCollection.TargetCitys();
             var orQuery = Query.In(partName, distinctAreaStr.Select(c => (BsonValue)c));
             var distincorQuery = Query.In("地区", "北京,上海,天津,重庆".Select(c => (BsonValue)c));
             isSpecialUrlMode = false;//使用特殊模式表是某些url 需要进行不登陆进行爬去，true代表不登陆爬取
@@ -203,11 +204,9 @@ namespace SimpleCrawler.Demo
             }
             //var orQuery = Query.In("地区", " ");deleteStatus Query.EQ("竞得方", ""),Query.EQ("竞得方", "暂无")
             var takeCount = 10000;
-           // var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("竞得方", "暂无"),  Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
-
-             var query = Query.And(Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or( Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
+            // var query = Query.And( Query.NE("deleteStatus", "1"), specialUrlQuery, Query.Or(Query.EQ("竞得方", "暂无"),  Query.Exists("竞得方", false), Query.EQ("竞得方", "******")));
             //Query.Or(orQuery, distincorQuery),
-            // var query = Query.And(orQuery, Query.EQ("x", ""), Query.NE("deleteStatus", "1"));
+            var query = Query.And(orQuery,Query.Or( Query.Exists("竞得方", false),Query.EQ("竞得方", "暂无")), Query.NE("updateMonth", DateTime.Now.Month % 6), Query.NE("deleteStatus", "1"));
             //(Query.NE("deleteStatus", "1"), 
             if (allCount <=1)
             {
@@ -447,16 +446,19 @@ namespace SimpleCrawler.Demo
             {
                 updateBson.Add("needUpdate", "0");
             }
-            
             if (string.IsNullOrEmpty(updateBson.Text("x")))
             {
                 updateBson.Remove("x");
                 updateBson.Remove("y");
                 Console.WriteLine("经纬度无法被更新");
             }
-            updateBson.Set("updateMonth", DateTime.Now.Month % 6);//6个月只更新一次
+            updateBson.Add("updateMonth", DateTime.Now.Month % 6);//6个月只更新一次
             updateBson.Add("isUserUpdated", "1");//更新了数据
-            Console.WriteLine($"{landName},{Settings.LandFangIUserId}更新 竞得方:{updateBson.Text("竞得方")}{urlKey}");
+            if (!string.IsNullOrEmpty(updateBson.Text("竞得方"))&& updateBson.Text("竞得方")!="暂无")
+            {
+                Console.WriteLine($"{landName},{Settings.LandFangIUserId}更新 竞得方:{updateBson.Text("竞得方")}{urlKey}");
+            }
+            
             //updateBson.Set("url", hitUrl);
             DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBson, Name = DataTableName, Query = Query.EQ("url", urlKey), Type = StorageType.Update });
 

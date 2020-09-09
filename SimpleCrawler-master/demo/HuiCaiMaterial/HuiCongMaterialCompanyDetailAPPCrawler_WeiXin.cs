@@ -67,7 +67,7 @@ namespace SimpleCrawler.Demo
         public void initialUrl()
         {
 
-            var hitMatList = FindDataForUpdateLimit(Query.Exists("isUpdate", false), fields: new string[] { "guid" }, DataTableName,limit:10000);
+            var hitMatList = FindDataForUpdateLimit(Query.Exists("isUpdate", false), fields: new string[] { "guid" }, DataTableName,limit:1000000);
 
             foreach (var matObj in hitMatList)
             {
@@ -80,9 +80,7 @@ namespace SimpleCrawler.Demo
                 }
 
             }
-
-
-
+             
         }
 
         override
@@ -98,10 +96,11 @@ namespace SimpleCrawler.Demo
             // Settings.IPProxyList.AddRange(ipProxyList.Select(c => new IPProxy(c.Text("ip"))).Distinct());
             // Settings.IPProxyList.Add(new IPProxy("1.209.188.180:8080"));
             Settings.IgnoreSucceedUrlToDB = true;
-            Settings.ThreadCount = 3;
+            Settings.ThreadCount = 1;
             Settings.DBSaveCountLimit = 1;
-            Settings.AutoSpeedLimit = true;
-            Settings.AutoSpeedLimitMaxMSecond =1000;
+            Settings.MaxReTryTimes = 1;
+            //Settings.AutoSpeedLimit = false;
+            //Settings.AutoSpeedLimitMaxMSecond =1000;
             //Settings.CurWebProxy = GetWebProxy();
             Settings.ContentType = "application/x-www-form-urlencoded;charset=utf8;";
             this.Settings.UserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.12(0x17000c2d) NetType/WIFI";

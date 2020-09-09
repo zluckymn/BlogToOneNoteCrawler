@@ -680,6 +680,12 @@ namespace SimpleCrawler
                     }
                     urlInfo.PostData = urlInfo.PostData.Replace(reqToken, WenShuAppHelper.GetRequestToken());
                     break;
+                case "QCCEnterpriseAPPDetailInfoCrawler":
+
+                    var qccHelper = new QCCEnterpriseHelper();
+                    var qccFixUrl = qccHelper.FixUrlSignStr(urlInfo.UrlString,Settings);
+                    urlInfo.UrlString = qccFixUrl;
+                    break;
 
                 case "HuiCongMaterial":
                     var huiCongAppHelper = new HuiCongAppHelper();

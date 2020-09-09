@@ -111,6 +111,10 @@
             this.isUpCrawDetailCHK = new System.Windows.Forms.CheckBox();
             this.ignoreCancelChk = new System.Windows.Forms.CheckBox();
             this.existedUpdateChk = new System.Windows.Forms.CheckBox();
+            this.isNewInsertChk = new System.Windows.Forms.CheckBox();
+            this.showdetailGlobalCountChk = new System.Windows.Forms.CheckBox();
+            this.button18 = new System.Windows.Forms.Button();
+            this.isEGuidChk = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // webBrowser
@@ -881,11 +885,55 @@
             this.existedUpdateChk.Text = "存在是否更新现有数据";
             this.existedUpdateChk.UseVisualStyleBackColor = true;
             // 
+            // isNewInsertChk
+            // 
+            this.isNewInsertChk.AutoSize = true;
+            this.isNewInsertChk.Location = new System.Drawing.Point(454, 93);
+            this.isNewInsertChk.Name = "isNewInsertChk";
+            this.isNewInsertChk.Size = new System.Drawing.Size(156, 16);
+            this.isNewInsertChk.TabIndex = 65;
+            this.isNewInsertChk.Text = "数据是否保存一份到新表";
+            this.isNewInsertChk.UseVisualStyleBackColor = true;
+            // 
+            // showdetailGlobalCountChk
+            // 
+            this.showdetailGlobalCountChk.AutoSize = true;
+            this.showdetailGlobalCountChk.Location = new System.Drawing.Point(614, 93);
+            this.showdetailGlobalCountChk.Name = "showdetailGlobalCountChk";
+            this.showdetailGlobalCountChk.Size = new System.Drawing.Size(144, 16);
+            this.showdetailGlobalCountChk.TabIndex = 66;
+            this.showdetailGlobalCountChk.Text = "是否展示待爬取总个数";
+            this.showdetailGlobalCountChk.UseVisualStyleBackColor = true;
+            // 
+            // button18
+            // 
+            this.button18.Location = new System.Drawing.Point(535, 400);
+            this.button18.Name = "button18";
+            this.button18.Size = new System.Drawing.Size(75, 23);
+            this.button18.TabIndex = 67;
+            this.button18.Text = "关键字加载";
+            this.button18.UseVisualStyleBackColor = true;
+            this.button18.Click += new System.EventHandler(this.button18_Click);
+            // 
+            // isEGuidChk
+            // 
+            this.isEGuidChk.AutoSize = true;
+            this.isEGuidChk.Location = new System.Drawing.Point(764, 92);
+            this.isEGuidChk.Name = "isEGuidChk";
+            this.isEGuidChk.Size = new System.Drawing.Size(114, 16);
+            this.isEGuidChk.TabIndex = 68;
+            this.isEGuidChk.Text = "主键是否为eGuid";
+            this.isEGuidChk.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1258, 549);
+            this.Controls.Add(this.isEGuidChk);
+            this.Controls.Add(this.button18);
+            this.Controls.Add(this.showdetailGlobalCountChk);
+            this.Controls.Add(this.isNewInsertChk);
             this.Controls.Add(this.existedUpdateChk);
             this.Controls.Add(this.ignoreCancelChk);
             this.Controls.Add(this.isUpCrawDetailCHK);
@@ -1054,6 +1102,10 @@
         private System.Windows.Forms.CheckBox isUpCrawDetailCHK;
         private System.Windows.Forms.CheckBox ignoreCancelChk;
         private System.Windows.Forms.CheckBox existedUpdateChk;
+        private System.Windows.Forms.CheckBox isNewInsertChk;
+        private System.Windows.Forms.CheckBox showdetailGlobalCountChk;
+        private System.Windows.Forms.Button button18;
+        private System.Windows.Forms.CheckBox isEGuidChk;
     }
 }
 

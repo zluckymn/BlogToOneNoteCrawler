@@ -1,5 +1,6 @@
 ﻿namespace SimpleCrawler.Demo
 {
+    using Helper;
     using HtmlAgilityPack;
     using MongoDB.Bson;
     using MongoDB.Driver;
@@ -58,10 +59,13 @@
             List<BsonDocument> list2 = (from c in this.allAppCityList
                                         where c.Text("Level") == "2"
                                         select c).ToList<BsonDocument>();
-           // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
-           // var filterCity = "自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥".SplitParam(",").ToList();
+            // var filterCity = new string[] { "成都", "重庆", "合肥", "惠州", "南京" };
+            // var filterCity = "自贡,株洲,漳州,西安,唐山,上饶,厦门,泉州,三亚,梅州,惠州,济南,合肥".SplitParam(",").ToList();
             // var filterCity = new string[] { "南通","绍兴","温州","南充","张家口","烟台","资阳","绵阳","南宁","徐州","宿迁","珠海","江阴","湖州","台州" };
-            foreach (BsonDocument document in list.Distinct())
+
+            var filterCity = MongoOpCollection.TargetCitys();
+            // foreach (BsonDocument document in list2.Distinct().Where(c=> filterCity.Any(d=>c.Text("CityName").Contains(d))))//.Where(c=>c.Text("ProvinceName").Contains("江苏"))
+            foreach (BsonDocument document in list2.Distinct())
             {
                 string str = document.Text("ProvinceName");
                 string str2 = document.Text("CityName");
@@ -175,7 +179,8 @@
                             {
                                 this.NeedFixRegion(cityName, provinceName, regionName, "县市");
                                 Console.WriteLine("县市不存在" + regionName);
-                                continue;
+
+                               // continue;
                             }
                             else
                             {

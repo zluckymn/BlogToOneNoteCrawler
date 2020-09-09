@@ -32,6 +32,7 @@ namespace SimpleCrawler.Demo
     using System.Runtime.InteropServices;
     using System.Threading;
     using MongoDB.Driver;
+    using Helper;
 
     /// <summary>
     /// The program.
@@ -48,24 +49,59 @@ namespace SimpleCrawler.Demo
         //private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
 
         // private static string crawlerClassName = "HuiCongMaterialDetailAPPCrawler";
-        // private static string connStr = "mongodb://MZsa:MZdba@59.61.72.34:47088/SimpleCrawler";
+   ";
         // private static string crawlerClassName = "EnterpriserListCrawler_ZhengHeDao";
         // private static string connStr = "mongodb://192.168.1.121:37888/DouTu";
         // private static string connStr = "mongodb://192.168.1.121:37888/ShunQi";
-        //地块
-        private static string connStr = "mongodb://192.168.1.121:37888/LandFang";
-        private static string crawlerClassName = "LandFangUserUpdateAPPCrawler";
-        //private static string crawlerClassName = "QCCEnterpriseNameGuidMatchCrawler";// "EnterpriserListCrawler_ZhengHeDao";//"EnterpriseDetailCrawler_XiaoLanBen";//MHDetailCrawler MiPidListCrawler
 
-        //private static string connStr = "mongodb://MZsa:MZdba@59.61.72.38:37088/SimpleCrawler";
-        //private static string crawlerClassName = "HuiCongMaterialCompanyDetailAPPCrawler_WeiXin"; 
+        //地块
+        //private static string connStr = "mongodb://192.168.1.121:37888/LandFang";
+        //private static string crawlerClassName = "LandFangUserUpdateAPPCrawler_OwnerUpdate";//"LandFangCityRegionCityUpdateAPPCrawler" "LandFangUserUpdateAPPCrawler_SeasonUpdate LandFangCityRegionCityUpdateAPPCrawler";
+        //mapBar
+        //private static string connStr = "mongodb://192.168.1.121:37888/AppActivity";
+        //private static string crawlerClassName = "MapBarPoiDetailCrawler";//"LandFangCityRegionCityUpdateAPPCrawler" "LandFangUserUpdateAPPCrawler_SeasonUpdate LandFangCityRegionCityUpdateAPPCrawler";
+
+
+        //private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        //private static string crawlerClassName = "QCCEnterpriseWeiXinDetailInfoCrawler";//"LandFangCityRegionCityUpdateAPPCrawler" "LandFangUserUpdateAPPCrawler_SeasonUpdate LandFangCityRegionCityUpdateAPPCrawler";
+
+        /////企业详情控制台爬取
+        //private static string connStr = "mongodb://192.168.1.121:37888/LandFang";
+        //private static string crawlerClassName = "QCCEnterpriseAPPDetailInfoCrawler"; 
+
+        ////private static string crawlerClassName = "QCCEnterpriseNameGuidMatchCrawler";// "EnterpriserListCrawler_ZhengHeDao";//"EnterpriseDetailCrawler_XiaoLanBen";//MHDetailCrawler MiPidListCrawler
+        ////慧聪网
+        // private static string connStr = "mongodb://MZsa:MZdba@192.168.8.4:37088/SimpleCrawler";
+        // private static string crawlerClassName = "HuiCongMaterialCompanyDetailAPPCrawler_WeiXin";
         //正和岛；
         // private static string crawlerClassName = "EnterpriserSearchCrawler_ShunQi";
+        ////card漫画
+        //private static string connStr = "mongodb://192.168.1.121:37888/AppActivity";
+        ////private static string crawlerClassName = "KuaiKan_UserSimulateDetailCrawler";
+        //private static string crawlerClassName = "MHListCrawler_XiaManHua";
+
+
+        //private static string connStr = "mongodb://192.168.1.121:37888/SimpleCrawler";
+        //private static string crawlerClassName = "JinNong_ListCrawler";
 
         //private static string connStr = "mongodb://192.168.1.121:37888/ZhengHeDao";
         //private static string crawlerClassName = "EnterpriserFeedDetailCrawler_ZhengHeDao";
+        //card
+        //private static string connStr = "mongodb://MZsa:MZdba@192.168.1.121:37088/SimpleCrawler";
+        //private static string crawlerClassName = "SiMuListCrawler";
+
+        /////地图经纬度点
+        private static string connStr = "mongodb://192.168.1.77:37090/MapBar";
+        private static string crawlerClassName = "MapBarPoiDetailCrawler";//MapBarPoiDetailCrawler，MapBarPoiDetailCrawler
+
+        /////建材市场网
+        //private static string connStr = "mongodb://192.168.1.77:37090/MapBar";
+        //private static string crawlerClassName = "JianCai_DetailCrawler";
+
         private static MongoOperation _mongoDBOp = new MongoOperation(connStr);
         static DataOperation dataop = new DataOperation(new MongoOperation(connStr));
+
+
         private static readonly CrawlSettings Settings = new CrawlSettings();
         /// <summary>
         /// The filter.
@@ -137,6 +173,77 @@ namespace SimpleCrawler.Demo
         #region Methods
 
         /// <summary>
+        /// 用于修复mongoDb重复ID，重复字段问题
+        /// </summary>
+        /// <param name="dataOp"></param>
+        /// <param name="tableName"></param>
+        /// <param name="lastId"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static string FixMongoRepeatElementByErrorId(MongoOperation dataOp, string tableName,string lastId,ref int count)
+        {
+
+           
+            var allhitList = dataOp.FindAll(tableName, Query.GT("_id", ObjectId.Parse(lastId))).SetFields("guid").SetLimit(count);
+
+             
+                try
+                {
+                    foreach (var obj in allhitList)
+                    {
+                        lastId = obj.Text("_id");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (count == 1 && ex.Message.Contains("Duplicate element name"))
+                    {
+                        Console.WriteLine($"最后一个正确的{lastId}_错误消息{ex.Message}");
+                        try
+                        {
+                            var filterField = new FieldsDocument();
+                            filterField.Add("_id", 0).Add("createDate", 0).Add("createUserId", 0).Add("updateDate",0).Add("updateUserId",0).Add("enterpriseCode",0);
+                            var hitErrorObj = dataOp.FindAll(tableName, Query.GT("_id", ObjectId.Parse(lastId))).SetFields(filterField).SetLimit(count).FirstOrDefault();
+                            var result= dataOp.Delete(tableName, Query.EQ("guid", hitErrorObj.Text("guid")));
+                            if(result.Status==Status.Successful)
+                            {
+                                dataOp.UpdateOrInsert(tableName, Query.EQ("guid", hitErrorObj.Text("guid")),hitErrorObj);
+                            }
+                            count = 10000;
+                            return lastId;
+                        }
+                        catch (Exception ex1)
+                        {
+                            Console.WriteLine($"错误消息{ex1.Message}");
+                        }
+                        return string.Empty;
+                    }
+                    //Console.WriteLine(lastId);
+                    return lastId;
+                }
+              //  allhitList = dataOp.FindAll(tableName, Query.GT("_id", ObjectId.Parse(lastId))).SetFields("guid").SetLimit(count);
+            
+            return string.Empty;
+        }
+
+
+        public static void FixMongoRepeateElement()
+        {
+            var dataOp = MongoOpCollection.Get121MongoOp("SimpleCrawler");
+            var tableName = "QCCEnterpriseKey_GZ_NewInsert";
+            var lastId = "";
+            var takeCount = 10000;
+            do
+            {
+                lastId = FixMongoRepeatElementByErrorId(dataOp, tableName, lastId, ref takeCount);
+                takeCount = takeCount / 10;
+                if (takeCount <= 0)
+                {
+                    takeCount = 1;
+                }
+            } while (!string.IsNullOrEmpty(lastId) || takeCount <= 0);
+        }
+        /// <summary>
         /// The main.
         /// </summary>
         /// <param name="args">
@@ -145,7 +252,6 @@ namespace SimpleCrawler.Demo
         private static void Main(string[] args)
         {
           
-
             if (args.Count() > 0)
             {
 
@@ -183,7 +289,7 @@ namespace SimpleCrawler.Demo
             //Settings.HrefKeywords.Add(string.Format("building.asp?ProjectID="));
             //Settings.HrefKeywords.Add(string.Format("result_new"));
             // 设置爬取线程个数
-            //Settings.ThreadCount = 5;
+             Settings.ThreadCount = 5;
             //Settings.ThreadCount =1;
             // 设置爬取深度
             Settings.Depth = 27;
@@ -335,12 +441,13 @@ namespace SimpleCrawler.Demo
                 while (DBChangeQueue.Instance.Count > 0)
                 {
                     Console.WriteLine("正在等待保存数据库");
-                    
+                    Thread.Sleep(1000);
+                    StartDBChangeProcess();
                 }
                 if (DBChangeQueue.Instance.Count <= 0)
                 {
                    // simpleCrawler.SettingInit();
-                    Thread.Sleep(20000);
+                    Thread.Sleep(10000);
                     if (UrlQueue.Instance.Count <= 0)
                     {
                         Console.WriteLine("处理完毕,5秒后退出");

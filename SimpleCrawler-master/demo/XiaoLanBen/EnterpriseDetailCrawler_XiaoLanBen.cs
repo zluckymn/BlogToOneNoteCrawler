@@ -128,37 +128,37 @@ namespace SimpleCrawler.Demo
             var guid = GetUrlParam(args.Url,"guid");
             var keyWord = GetUrlParam(args.Url, "keyWord");
             var eid= GetUrlParam(args.Url, "eid");
-            var curXiaolanBenAppHelper = new XiaoLanBenAppHelper();
-            curXiaolanBenAppHelper.webProxy = Settings.CurWebProxy;
-            var enterpriseDetail = curXiaolanBenAppHelper.SearchEnterpriseDetailByEid(eid, sleepTime: 0);
-            if (enterpriseDetail == null)
-            {
-                return ;
-            }
-            var updateBsonDoc = new BsonDocument();
-            if (!enterpriseDetail.ContainsColumn("basicInfo"))
-            {
-                updateBsonDoc.Set("isDetailUpdate", 2);
-                UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
-                Console.WriteLine("无获取到匹配数据");
-                return;
-            }
+           // var curXiaolanBenAppHelper = new XiaoLanBenAppHelper();
+            //curXiaolanBenAppHelper.webProxy = Settings.CurWebProxy;
+           // var enterpriseDetail = curXiaolanBenAppHelper.SearchEnterpriseDetailByEid(eid, sleepTime: 0);
+           // if (enterpriseDetail == null)
+           // {
+           //     return ;
+           // }
+           // var updateBsonDoc = new BsonDocument();
+           // if (!enterpriseDetail.ContainsColumn("basicInfo"))
+           // {
+           //     updateBsonDoc.Set("isDetailUpdate", 2);
+           //     UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
+           //     Console.WriteLine("无获取到匹配数据");
+           //     return;
+           // }
            
-            var baseInfo = enterpriseDetail.GetBsonDocument("basicInfo");
-            updateBsonDoc.Set("isDetailUpdate", 1);
+           // var baseInfo = enterpriseDetail.GetBsonDocument("basicInfo");
+           // updateBsonDoc.Set("isDetailUpdate", 1);
 
-            updateBsonDoc.Set("paid_in_capi", baseInfo.Double("acConam"));
-            updateBsonDoc.Set("insuredPersonsNum", baseInfo.Double("ssNum"));
-            updateBsonDoc.Set("checkDate", baseInfo.Text("updateTime"));
+           // updateBsonDoc.Set("paid_in_capi", baseInfo.Double("acConam"));
+           // updateBsonDoc.Set("insuredPersonsNum", baseInfo.Double("ssNum"));
+           // updateBsonDoc.Set("checkDate", baseInfo.Text("updateTime"));
 
-           // DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBsonDoc, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
-            UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
-            //添加到新数据库
-            enterpriseDetail.Set("eid", baseInfo.Text("eid"));
-            enterpriseDetail.Set("guid", guid);
-            var node = QuickConsistentHashHelper.Instance_EnterpriseGuid().GetHashItem(guid);
-            var tableName_Detail = node.Type;
-            dataOp_New.UpdateOrInsert(tableName_Detail, Query.EQ("guid", guid), enterpriseDetail);
+           //// DBChangeQueue.Instance.EnQueue(new StorageData() { Document = updateBsonDoc, Name = DataTableName, Query = Query.EQ("guid", guid), Type = StorageType.Update });
+           // UpdateData(updateBsonDoc, DataTableName, Query.EQ("guid", guid));
+           // //添加到新数据库
+           // enterpriseDetail.Set("eid", baseInfo.Text("eid"));
+           // enterpriseDetail.Set("guid", guid);
+           // var node = QuickConsistentHashHelper.Instance_EnterpriseGuid().GetHashItem(guid);
+           // var tableName_Detail = node.Type;
+           // dataOp_New.UpdateOrInsert(tableName_Detail, Query.EQ("guid", guid), enterpriseDetail);
             addCount++;
             ShowStatus();
             Console.WriteLine($"总个数{allCount}");
